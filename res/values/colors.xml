@@ -1,0 +1,31 @@
+<resources>
+
+    <color name="green">#ff00ff00</color>
+    <color name="white_f7">#f7f7f7</color>
+    <color name="transparent">#0000</color>
+    <color name="white">#ffff</color>
+    <color name="black">#f000</color>
+    
+    <color name="purple_light">#a276eb</color>
+    <color name="purple_middle">#8658ce</color>
+    <color name="purple_dark">#6a3ab2</color>
+    <color name="grey_line">#eeeeee</color>
+    <color name="grey_line_cc">#ccc</color>
+    <color name="green">#19C5FF</color>
+    <color name="green_light">#38CDFE</color>
+    <color name="green_middle">#33CCFF</color>
+    <color name="green_little">#d7f2ff</color>
+    <color name="green_note_cheked">#bae8fd</color>
+    <color name="gree_dark">#00BFFF</color>
+    
+    <color name="black">#ff000000</color>
+    <color name="black_25">#40000000</color>
+    <color name="black_75">#C0000000</color>
+    <color name="black_80">#88000000</color>
+    <color name="black_5">#555555</color>
+    <color name="white">#ffffffff</color>
+    <color name="light_blue">#39baf6</color>
+    <color name="grey_999999">#999999</color>
+    <color name="grey_666666">#266666</color>
+    <color name="blue_deep">#0072d6</color>
+</resources>

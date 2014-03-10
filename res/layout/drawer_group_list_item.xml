@@ -1,0 +1,24 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:padding="16dp"
+    android:background="@drawable/pressor_green_trans"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
+    >
+	<TextView
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:id="@+id/drawer_group_name"
+	    android:gravity="center_vertical"
+	    android:text="@string/app_name"/>
+	<TextView
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:id="@+id/drawer_group_number"
+	    android:layout_alignParentRight="true"
+	    android:gravity="center_vertical"
+	    android:text="@string/app_name"/>
+</RelativeLayout>

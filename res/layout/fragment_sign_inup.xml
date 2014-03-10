@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView 
+   		 xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	android:layout_centerHorizontal="true"
+    	android:fillViewport="true"
+	    >
+<RelativeLayout 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+     >
+
+    <RelativeLayout
+        android:layout_width="@dimen/edit_input_width"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical" >
+
+	    <ImageView
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:scaleType="centerInside"
+			    android:src="@drawable/ic_launcher"
+			    android:layout_centerHorizontal="true"
+			    android:id="@+id/logo" />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:layout_below="@id/logo"
+            android:id="@+id/btns_signinup"
+             >
+
+            <Button
+                android:id="@+id/btn_swith_to_sign_in"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:background="@drawable/selector_white_btn"
+                android:text="sign_in"
+                style="@style/WhiteButtonTextAppeare"
+                 />
+
+            <Button
+                android:id="@+id/btn_swith_to_sign_up"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_blue_btn"
+                android:layout_below="@id/btn_swith_to_sign_in"
+                android:text="sign_up"
+                style="@style/BlueButtonTextAppeare"
+                android:layout_marginTop="16dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="start_with"
+                android:layout_below="@id/btn_swith_to_sign_up"
+                android:id="@+id/start_with_lable"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="30dp"
+                android:textSize="20sp"
+                android:textColor="@color/white"
+                />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</RelativeLayout>
+	</ScrollView>

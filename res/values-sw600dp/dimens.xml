@@ -4,5 +4,9 @@
          Customize dimensions originally defined in res/values/dimens.xml (such as
          screen margins) for sw600dp devices (e.g. 7" tablets) here.
     -->
-
+    <dimen name="drawer_width">320dp</dimen>
+    
+    <dimen name="edit_pwd_padding">5dp</dimen>
+    
+    <dimen name="edite_input_margin">10dp</dimen>
 </resources>
