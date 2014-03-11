@@ -39,7 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                android:background="@drawable/selector_white_btn"
+                android:background="@drawable/bg_white_btn_rect"
                 android:text="sign_in"
                 style="@style/WhiteButtonTextAppeare"
                  />
@@ -48,7 +48,7 @@
                 android:id="@+id/btn_swith_to_sign_up"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/selector_blue_btn"
+                android:background="@drawable/bg_blue_btn_rect"
                 android:layout_below="@id/btn_swith_to_sign_in"
                 android:text="sign_up"
                 style="@style/BlueButtonTextAppeare"

@@ -18,6 +18,7 @@
 	        android:layout_gravity="left"
 	        android:id="@+id/drawer_bar"
 	        android:focusable="true"
+	        android:focusableInTouchMode="true"
 	        android:background="@color/white"
 	        >
 	        <include layout="@layout/drawer_group_list"/>

@@ -13,4 +13,6 @@
     <dimen name="edite_input_margin">6dp</dimen>
     <dimen name="edite_input_height">38dp</dimen>
     <dimen name="edit_pwd_padding">5dp</dimen>
+    
+    <dimen name="contact_tab_padding">16dp</dimen>
 </resources>

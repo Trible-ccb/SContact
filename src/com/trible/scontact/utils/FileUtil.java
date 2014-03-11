@@ -2,9 +2,11 @@ package com.trible.scontact.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -12,6 +14,36 @@ import org.apache.commons.io.IOUtils;
 
 public class FileUtil {
 
+	public boolean createFileTo(File f,InputStream is,boolean append){
+		if ( f == null )return false;
+		File tmp = f ;
+		OutputStream os = null ;
+		try {
+			if ( f.exists() ){
+				if ( !append ){
+					f.deleteOnExit();
+					f.createNewFile();
+				}
+			} else {
+				f.createNewFile();
+			}
+
+			byte[] data = new byte[1024 * 10];
+			os = new FileOutputStream(tmp, append);
+			int len;
+			while ((len = is.read(data, 0, data.length)) != -1) {
+				os.write(data, 0, len);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		} finally {
+			IOUtils.closeQuietly(os);
+			IOUtils.closeQuietly(is);
+		}
+		return true;
+	}
 	static public String convertStreamToString(InputStream is, String encoiding) {
 
 		StringBuilder sb = new StringBuilder();

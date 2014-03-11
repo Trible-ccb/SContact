@@ -57,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="@drawable/selector_blue_btn"
+            android:background="@drawable/bg_blue_btn_rect"
             android:text="sign_up"
             style="@style/BlueButtonTextAppeare"
             android:layout_below="@id/sign_up_btns"

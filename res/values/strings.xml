@@ -1,11 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- common text -->
     <string name="app_name">SContact</string>
+
+    
+    <string name="open_drawer">Open Drawer</string>
+    <string name="close_drawer">Close Drawer</string>
+    
+    <!-- decription text , none display-->
+    <string name="open_drawer">Open Drawer</string>
+    <string name="close_drawer">Close Drawer</string>
+    
+    <!-- menu text -->
     <string name="action_settings">Settings</string>
     <string name="action_add">Add</string>
     <string name="action_search">Search</string>
     
-    <string name="open_drawer">Open Drawer</string>
-    <string name="close_drawer">Close Drawer</string>
+    <!-- toast text -->    
+    
+    <!-- hint text -->
+    
+    <!-- long text -->
+    
+    <!-- label text -->
+    <string name="remote_contacts">Remote Contacts</string>
+    <string name="local_contacts">Local Contacts</string>
+    
 </resources>

@@ -1,12 +1,11 @@
 package com.trible.scontact.components.activity;
 
-import android.app.SearchManager;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -15,10 +14,10 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBarDrawerToggle;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.widget.SearchView;
 import com.trible.scontact.R;
 import com.trible.scontact.components.adpater.GroupsListAdapter;
 import com.trible.scontact.components.fragment.FriendsListFragment;
+import com.trible.scontact.components.widgets.TabLayoutHelper;
 import com.trible.scontact.models.Groupsinfo;
 import com.trible.scontact.utils.Bog;
 
@@ -34,6 +33,7 @@ public class SContactMainActivity extends CustomSherlockFragmentActivity
 	GroupsListAdapter mGroupListAdapter;
 	ActionBarDrawerToggle mDrawerToggle;
 	FriendsListFragment mFriendsListFragment;
+	TabLayoutHelper mContactTabHelper;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +41,18 @@ public class SContactMainActivity extends CustomSherlockFragmentActivity
 		getSupportActionBar().setDisplayShowHomeEnabled(true);
 		getSupportActionBar().setHomeButtonEnabled(true);
 		setContentView(R.layout.activity_scontact);
+		initDefaultData();
+		initView();
+	}
+
+	void initDefaultData(){
 		mGroupListAdapter = new GroupsListAdapter(this);
+	}
+	void initView(){
+		initLeftDrawer();
+		initContentView();
+	}
+	void initContentView(){
 		FragmentManager manager = getSupportFragmentManager();
 		mFriendsListFragment = (FriendsListFragment) manager
 				.findFragmentByTag("FriendsFragment");
@@ -51,11 +62,19 @@ public class SContactMainActivity extends CustomSherlockFragmentActivity
 			tst.replace(R.id.frame_users_list,mFriendsListFragment, "FriendsFragment");
 			tst.commit();
 		}
-
-		initView();
 	}
+	void initLeftDrawer(){
+		mContactTabHelper = new TabLayoutHelper((ViewGroup) findViewById(R.id.tabs_layout));
+		mContactTabHelper.setOnItemClickListner(new OnItemClickListener() {
 
-	void initView(){
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				Bog.toast("position = " + position);
+			}
+		});
+		mContactTabHelper.setDefaultSelection(0);
+		
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 		mGroupListView = (ListView) findViewById(R.id.group_list_view);
 		mGroupListView.setAdapter(mGroupListAdapter);
@@ -69,9 +88,7 @@ public class SContactMainActivity extends CustomSherlockFragmentActivity
 		        ActionBar.DISPLAY_SHOW_HOME |
 		        ActionBar.DISPLAY_HOME_AS_UP);
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
-
 	}
-	
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);

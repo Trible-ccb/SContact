@@ -1,6 +1,5 @@
 package com.trible.scontact.utils;
 
-import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;

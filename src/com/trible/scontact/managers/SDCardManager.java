@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import android.content.Context;
@@ -18,6 +19,7 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 
 import com.trible.scontact.utils.Bog;
+import com.trible.scontact.utils.MD5FileUtil;
 
 public class SDCardManager {
 
@@ -30,11 +32,13 @@ public class SDCardManager {
 	
 	private static Context mContext;
 	public boolean hasStorage  = true;
+	private static boolean needClassicPaths = false;
 	
 	private SDCardManager() {
+		mPaths = new HashMap<String, String>();
 		initBasePath();
-
-//		deleteDirectory(new File(getDownloadCacheDir()));
+		if ( needClassicPaths )
+		initWithClassicPaths();
 	}
 
 	public static SDCardManager getInstance() {
@@ -48,91 +52,21 @@ public class SDCardManager {
 	}
 
 	public static void initStorage(Context c,String AppName) {
-		
 		APP_NAME = AppName;
-		
 		getInstance();
 		mContext = c;
-//		s.deleteDirectory(new File(s.getImageCacheDir()));
 	}
 	
-	public static void destory() {
+	public static void initStorageWithClassicPaths(Context c,String AppName) {
+		needClassicPaths = true;
+		initStorage(c,AppName);
 		
 	}
 	
-	public File getDownLoadCache(String name) {
-		return new File(getDownloadCacheDir(), name);
-	}
-
-	public File setDownLoadCache(int id, InputStream is) {
-		File tmp = new File(getDownloadCacheDir(), String.valueOf(id) + ".tmp");
-		try {
-			if (!tmp.exists()) {
-				tmp.createNewFile();
-				tmp.deleteOnExit();
-			}
-
-			byte[] data = new byte[1024 * 10];
-			OutputStream os = new FileOutputStream(tmp);
-			int len;
-			while ((len = is.read(data, 0, data.length)) != -1) {
-				os.write(data, 0, len);
-			}
-			os.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-
-		return tmp;
-	}
-
-	public InputStream getDownLoadCache(int id) {
-		File tmp = new File(getDownloadCacheDir(), String.valueOf(id) + ".tmp");
-		InputStream is = null;
-		try {
-			is = new FileInputStream(tmp);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		return is;
-	}
-
-	/**
-	 * Image cache I/O
-	 * 
-	 * @param imgURL
-	 *            image URL
-	 * @return null if no cache
-	 */
-	// TODO 
-	// catch the out of memory exception
-	public Bitmap getImageCache(String imgURL, int width, int height) {
-		File img = getImageCachePath(imgURL);
-		if (img == null) {
-			return null;
-		}
-
-		Bitmap ret = null;
-		try {
-			if (img.exists()) {
-				ret = BitmapFactory.decodeFile(img.getPath());
-				if(ret != null && width!= -1 && height != -1){
-					return Bitmap.createScaledBitmap(ret, width, height, false);
-				}
-			}
-		} catch (Exception e){
-			img.delete();
-			return null;
-		}
-		return ret;
-	}
     public static boolean compressImage(Bitmap image ,int sizeK,FileOutputStream f) {
     	if ( image == null || f == null )return false;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();  
-        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这�?00表示不压缩，把压缩后的数据存放到baos�? 
+        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这100表示不压缩，把压缩后的数据存放到baos�? 
         int options = 100;
         try{
             while ( baos.toByteArray().length > sizeK * 1024) {  //循环判断如果压缩后图片是否大于sizeK kb,大于继续压缩         
@@ -140,7 +74,7 @@ public class SDCardManager {
             	if ( baos.toByteArray().length > sizeK * 1024 * 4 ){
             		options /= 2;
             	} else {
-            		options -= 10;//每次都减�?0
+            		options -= 10;//每次都减10
             	}
             	if ( options < 0 ){
             		break;
@@ -166,46 +100,6 @@ public class SDCardManager {
         image.recycle();
         return true;
     }
-	
-	public boolean setImageCache(String imgURL,InputStream is) {
-		File img = getImageCachePath(imgURL);
-		if (img != null) {
-			if (!img.exists()) {
-				return setFile(img, is, false);
-			}
-			return true;
-		}
-		return false;
-	}
-
-	public File getImageCachePath(String imagURL) {
-		if (imagURL != null && imagURL.trim().length() > 0) {
-			File path = new File(getImageCacheDir(), imagURL.replaceAll(
-					"\\/|\\:|@|\\?|&|=", "_")+"_");
-			return path;
-		} else
-			return null;
-	}
-	public String getImgCacheFullPath(String imgUrlName){
-		File f = getImageCachePath(imgUrlName);
-		if (f == null){
-			return "";
-			
-		} else {
-			return f.getPath();
-		}
-	}
-	public InputStream getImgCacheStream(String imagURL){
-		File tmp = getImageCachePath(imagURL);
-		InputStream is = null;
-		try {
-			is = new FileInputStream(tmp);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return is;
-	}
 	/**
 	 * 
 	 * @param path
@@ -228,60 +122,7 @@ public class SDCardManager {
 		return (path.delete());
 	}
 
-	private boolean setFile(File f, InputStream is, boolean append) {
-		if (f.exists()) {
-			String name = f.getName();
-			String path = f.getPath();
-			File tmp = new File(path + name + "_tmp");
-			if (tmp.exists()) {
-				tmp.delete();
-			}
-
-			try {
-				writeFile(tmp, is, append);
-			} catch (IOException e) {
-				
-				return false;
-			}
-
-			if (!f.delete()) {
-				tmp.delete();
-				return false;
-			} else {
-				if (!tmp.renameTo(f)) {
-					tmp.delete();
-					return false;
-				}
-			}
-
-		} else {
-			try {
-				f.createNewFile();
-				writeFile(f, is, false);
-
-			} catch (IOException e) {
-				
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private void writeFile(File dest, InputStream is, boolean append)
-			throws IOException {
-		FileOutputStream writer = null;
-		writer = new FileOutputStream(dest, append);
-		byte[] buffer = new byte[1024 * 10];
-		int byteCount = 0;
-		while ((byteCount = is.read(buffer, 0, buffer.length)) >= 0) {
-			writer.write(buffer, 0, byteCount);
-		}
-		writer.flush();
-		writer.close();
-	}
-
 	private String initRootPath() {
-
 		String path = getSDCardPath(APP_NAME);
 		if (path == null) {
 			path = getInternalBaseDataPath("data/" + APP_NAME);
@@ -289,18 +130,11 @@ public class SDCardManager {
 		return path;
 	}
 	
-	 public String getAPPCachePath(){
-		return mInstance.getCachePath();
-	}
 
 	private void initBasePath() {
-
 		mBasePath = initRootPath();
 		if (mBasePath != null) {
 			hasStorage = true;
-			getDataPath();
-			getCachePath();
-			getImageCacheDir();
 		} else {
 			hasStorage = false; 
 			// TODO handle exception
@@ -308,70 +142,28 @@ public class SDCardManager {
 		
 	}
 
-	private String getBasePath(){
+	private File getBasePath(){
+		return new File(getBasePathString());
+	}
+	
+	private String getBasePathString(){
 		if(mBasePath == null){
 			initBasePath();
 		}
-		
 		assert mBasePath != null;
-		
 		return mBasePath;
-	}
-	private String getDataPath() {
-		File f = new File(getBasePath() );
-		if (!f.exists()) {
-			f.mkdirs();
-		}
-		
-		return f.getPath();
-	}
-
-	private String getCachePath() {
-		File f = new File(getBasePath()  + "/cache");
-		if (!f.exists()) {
-			f.mkdirs();
-		}
-		
-		return f.getPath();
-	}
-	public String getDebugPath() {
-		File f = new File(getBasePath()  + "/debugfile");
-		if (!f.exists()) {
-			f.mkdirs();
-		}
-		
-		return f.getPath();
-	}
-	private String getDownloadCacheDir() {
-		File f = new File(getBasePath()  + "/download");
-		if (!f.exists()) {
-			f.mkdirs();
-		}
-		return f.getPath();
-	}
-
-	public String getImageCacheDir() {
-		File f = new File(getBasePath()  + "/imagecache");
-		if (!f.exists()) {
-			f.mkdirs();
-		}
-		return f.getPath();
 	}
 
 	private static String getSDCardPath(String path) {
 
 		File sdPath = new File(Environment.getExternalStorageDirectory(), path);
 		sdPath.deleteOnExit();
-		
 		if (!sdPath.exists()) {
-			
 			if (!sdPath.mkdirs()){
-				
 				return null;
 			}
 
 		}
-
 		return sdPath.getPath();
 	}
 
@@ -393,25 +185,89 @@ public class SDCardManager {
 	public boolean addPath(String path_key,String pathname) {
 		mPaths.put(path_key, pathname);
 		if ( path_key == null || pathname == null )return false;
-		
-		File f = new File(getBasePath()  + "/" + pathname);
+		File f = new File(getBasePathString()  + "/" + pathname);
 		if (!f.exists()) {
 			f.mkdirs();
 		}
 		return f.getPath() == null ? false : true;
 	}
 
-	public String getPath(String key) {
-		if ( key == null || mPaths.get(key) == null )return null;
+	public String getStringPath(String pathkey) {
+		if ( pathkey == null || mPaths.get(pathkey) == null )return null;
 		
-		File f = new File(getBasePath()  + "/" + mPaths.get(key));
+		File f = new File(getBasePathString()  + "/" + mPaths.get(pathkey));
 		return f.getPath();
 	}
+
+	public File getFilePath (String pathkey){
+		File f = new File(getStringPath(pathkey));
+		return f;
+	}
 	
-	 public static void wipeOldDataOnSDCard() {
-//	 File dir = getSDCardPath(APP_NAME);
-//	 deleteDirectory(dir);
-	 }
+	public File getFileOf(String pathkey,String filename){
+		String md5 = MD5FileUtil.getMD5String(filename);
+		return new File(getStringPath(pathkey), md5);
+	}
+	
+	public void createFileTo(String pathkey,String filename,InputStream is){
+		File tmp = getFileOf(pathkey, filename);
+		try {
+			FileUtils.writeStringToFile(tmp, IOUtils.toString(is));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+	}
+	
+	public void createFileTo(String pathkey,String filename,String data){
+		File tmp = getFileOf(pathkey, filename);
+		try {
+			FileUtils.writeStringToFile(tmp, data);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void appendFileTo(String pathkey,String filename,InputStream is){
+		File tmp = getFileOf(pathkey, filename);
+		try {
+			FileUtils.writeStringToFile(tmp, IOUtils.toString(is),true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+	}
+	
+	public void appendFileTo(String pathkey,String filename,String data){
+		File tmp = getFileOf(pathkey, filename);
+		try {
+			FileUtils.writeStringToFile(tmp, data,true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 
+	public void deleteAllPaths(){
+		try {
+			FileUtils.cleanDirectory(getBasePath());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public long getUsedVolumeInMegaByte(){
+		return FileUtils.sizeOfDirectory(getBasePath());
+	}
+	
+	private void initWithClassicPaths(){
+		addPath(PATH_DOWNLOAD, PATH_DOWNLOAD);
+		addPath(PATH_IMAGECACHE, PATH_IMAGECACHE);
+	}
+	
+	public static final String PATH_DOWNLOAD = "download";
+	public static final String PATH_IMAGECACHE = "images";
+	
 }
