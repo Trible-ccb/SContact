@@ -1,12 +1,8 @@
 package com.trible.scontact.components.adpater;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import com.trible.scontact.R;
-import com.trible.scontact.models.Friendinfo;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -15,6 +11,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.trible.scontact.R;
+import com.trible.scontact.models.Friendinfo;
 
 public class FriendsListAdapter extends BaseAdapter {
 
@@ -62,7 +61,7 @@ public class FriendsListAdapter extends BaseAdapter {
 		}
 		Friendinfo info = mDatas.get(position);
 		mHolder.mUserName.setText(info.getmFriendName());
-		mHolder.mUserDesc.setText(info.getmFriendDescription());
+		mHolder.mUserDesc.setText(info.getmFriendNumber());
 		
 		Calendar cal = Calendar.getInstance(Locale.CHINA);
 		cal.setTimeInMillis(info.getmFriendUpdateTime());

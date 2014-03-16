@@ -6,36 +6,27 @@
     android:focusable="true"
     android:orientation="vertical"
     android:focusableInTouchMode="true"
-    android:descendantFocusability="blocksDescendants"
     >
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/tabs_layout"
         >
-        <TextView
+        <include 
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/remote_contacts"
-            android:text="@string/remote_contacts"
-            android:gravity="center"
-            android:paddingTop="@dimen/contact_tab_padding"
-            android:paddingBottom="@dimen/contact_tab_padding"
-            android:background="@drawable/selector_midgreen_trans"
+            layout="@layout/layout_custom_tab_item"
             />
-        <TextView
+        <include 
+            layout="@layout/layout_custom_tab_item"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/local_contacts"
-            android:text="@string/local_contacts"
-            android:gravity="center"
-            android:paddingTop="@dimen/contact_tab_padding"
-            android:paddingBottom="@dimen/contact_tab_padding"
-            android:background="@drawable/selector_midgreen_trans"
             />
    </LinearLayout>
+   <include layout="@layout/layout_divider"/>
+   <include layout="@layout/drawer_group_list_header"/>
    <include layout="@layout/layout_divider"/>
 	<ListView
 	    android:layout_width="match_parent"

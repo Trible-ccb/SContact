@@ -20,7 +20,7 @@ public class CustomPasswordInput {
 	
 	public CustomPasswordInput(View rootView) {
 //		mContext = rootView.getContext();
-		mEditText = (EditText) rootView.findViewById(R.id.edt_input_box);
+		mEditText = (EditText) rootView.findViewById(R.id.edt_input_password);
 		mBox = (CheckBox) rootView.findViewById(R.id.checkbox);
 		mBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			

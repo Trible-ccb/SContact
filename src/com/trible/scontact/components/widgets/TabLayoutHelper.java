@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.TextView;
 
 public class TabLayoutHelper implements OnClickListener{
 
@@ -23,12 +24,34 @@ public class TabLayoutHelper implements OnClickListener{
 			v.setTag(i);
 		}
 	}
-
+	
+	public TabLayoutHelper(ViewGroup tabContrainer,int[] dataResId){
+		this(tabContrainer);
+		String[] ret = new String[dataResId.length];
+		for ( int i = 0 ; i < dataResId.length ; i++ ){
+			String s = tabContrainer.getResources().getString(dataResId[i]);
+			ret[i] = s;
+		}
+		updateWithText(ret);
+	}
+	
+	public TabLayoutHelper(ViewGroup vg,String[] dataText){
+		this(vg);
+		updateWithText(dataText);
+	}
+	void updateWithText(String[] texts){
+		if ( texts == null || texts.length == 0 )return;
+		for ( int i = 0 ; i < mViewGroup.getChildCount() ; i++ ){
+			TextView v = (TextView) mViewGroup.getChildAt(i);
+			v.setText(texts[i]);
+		}
+	}
+	
 	public void setDefaultSelection(int i){
 		if ( i < 0 || i >= mViewGroup.getChildCount() )return;
 		mDefaultSelection = i;
 		resetChilds();
-		mViewGroup.getChildAt(i).setSelected(true);
+		mViewGroup.getChildAt(i).performClick();
 	}
 	@Override
 	public void onClick(View v) {

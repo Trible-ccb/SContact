@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
-	<com.trible.scontact.components.widgets.MultiFunctionListView
+	<ListView
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:id="@+id/users_list_view"
 	    android:background="@color/white_f7"
 	    android:cacheColorHint="#000000"
-	    android:listSelector="@null"
+	    android:listSelector="@drawable/pressor_green_trans"
 	    />
 
 </RelativeLayout>

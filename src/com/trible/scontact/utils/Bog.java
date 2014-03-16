@@ -33,6 +33,10 @@ public class Bog {
 			Log.v(TAG, s);
 		}
 	}
+	public static void toast(int id){
+		toast(mContext.getResources().getString(id));
+	}
+	
 	public static void toast(String s){
 		if ( TextUtils.isEmpty(s) ){
 			return;
@@ -43,5 +47,15 @@ public class Bog {
 		}
 		t.setGravity(Gravity.CENTER, 0, 0);
 		t.show();
+	}
+	public static void toastDebug(int id){
+		if ( debug ){
+			toast(id);
+		}
+	}
+	public static void toastDebug(String s){
+		if ( debug ){
+			toast(s);
+		}
 	}
 }

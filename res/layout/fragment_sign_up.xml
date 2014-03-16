@@ -33,20 +33,12 @@
         	android:id="@+id/sign_up_btns"
 		    >
 		    	<include 
-				    layout="@layout/custom_edit_text" 
+				    layout="@layout/layout_custom_edit_text" 
 				    android:id="@+id/username_layout"/>
-		      	<View 
-				    android:layout_width="match_parent"
-				    android:layout_height="1dp"
-				    android:background="#B9B9B9"/>
 				<include 
-				    layout="@layout/custom_edit_text" 
+				    layout="@layout/layout_custom_edit_text" 
 				    android:id="@+id/email_layout"/>
-		      	<View 
-				    android:layout_width="match_parent"
-				    android:layout_height="1dp"
-				    android:background="#b9b9b9"/>
-				<include layout="@layout/custom_edit_password" 
+				<include layout="@layout/layout_custom_edit_password" 
 				    android:id="@+id/password_layout"/>
 		
 		</LinearLayout>

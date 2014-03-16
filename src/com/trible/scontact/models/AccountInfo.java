@@ -11,7 +11,7 @@ import android.os.SystemClock;
 
 //a locale cache for store users who had login
 @DatabaseTable (tableName = "usersinfo")
-public class UserInfo implements Serializable{
+public class AccountInfo extends Friendinfo implements Serializable{
 
 	/**
 	 * 
@@ -97,12 +97,24 @@ public class UserInfo implements Serializable{
 		this.mPhoneNumber = mPhoneNumber;
 	}
 	
-	public static List<UserInfo> getTestData(){
+	private static AccountInfo sAccountInfo;
+	
+	public static AccountInfo getInstance(){
+		if ( sAccountInfo == null ){
+			synchronized (AccountInfo.class) {
+				if ( sAccountInfo == null ){
+					sAccountInfo = new AccountInfo();
+				}
+			}
+		}
+		return sAccountInfo;
+	}
+	public static List<AccountInfo> getTestAccountData(){
 		int count = 20;
-		List<UserInfo> ret = new ArrayList<UserInfo>();
+		List<AccountInfo> ret = new ArrayList<AccountInfo>();
 		
 		for ( int i = 0 ; i < count ; i++ ){
-			UserInfo g = new UserInfo();
+			AccountInfo g = new AccountInfo();
 			g.setmUserName("User" + i);
 			g.setmUserId(i + 1);
 			g.setmUserDescription("Desc" + i);

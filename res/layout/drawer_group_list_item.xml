@@ -5,8 +5,6 @@
     android:gravity="center_vertical"
     android:padding="16dp"
     android:background="@drawable/pressor_green_trans"
-    android:clickable="true"
-    android:focusableInTouchMode="true"
     >
 	<TextView
 	    android:layout_width="wrap_content"

@@ -1,0 +1,88 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+         >
+
+        <include layout="@layout/layout_custom_edit_text" />
+        <TextView 
+           	    android:layout_width="wrap_content"
+           	    android:layout_height="wrap_content"
+           	    android:text="@string/capatity_lable"
+           	    android:layout_marginTop="10dp"
+           	    />
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/group_capatity_root"
+            android:orientation="horizontal"
+        	android:layout_marginTop="10dp"
+        	android:layout_marginBottom="10dp"
+            >
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/capatity_50"
+                android:text="@integer/capatity_50" />
+            <RadioButton
+                android:id="@+id/capatity_100"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@integer/capatity_100" />
+           	<RadioButton
+           	    android:id="@+id/capatity_500"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@integer/capatity_500" />
+           	<RadioButton
+           	    android:id="@+id/capatity_1000"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@integer/capatity_1000" />
+           	</RadioGroup>
+        <TextView 
+           	    android:layout_width="wrap_content"
+           	    android:layout_height="wrap_content"
+           	    android:text="@string/verify_lable"
+           	    android:layout_marginTop="10dp"
+           	    android:layout_marginBottom="10dp"
+           	    />
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/group_verify_root"
+            android:orientation="horizontal"
+             >
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/verify_by_identify"
+                android:text="@string/verify_by_identify_lable" />
+           	<RadioButton
+           	    android:id="@+id/verify_by_anyone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/verify_by_anyone_lable" />
+           	<RadioButton
+           	    android:id="@+id/verify_by_none"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/verify_by_none_lable" />
+        </RadioGroup>
+           	
+       	<CheckBox 
+        	    android:layout_width="wrap_content"
+        	    android:layout_height="wrap_content"
+        	    android:id="@+id/group_is_public"
+        	    android:text="@string/public_lable"
+        	    />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="group_capatity_array">
+        <item>@integer/capatity_50</item>
+        <item>@integer/capatity_100</item>
+        <item>@integer/capatity_500</item>
+        <item>@integer/capatity_1000</item>       
+    </integer-array>
+</resources>

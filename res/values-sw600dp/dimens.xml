@@ -9,4 +9,7 @@
     <dimen name="edit_pwd_padding">5dp</dimen>
     
     <dimen name="edite_input_margin">10dp</dimen>
+    
+    <dimen name="popup_width">300dp</dimen>
+    <dimen name="popup_margin">6dp</dimen>
 </resources>

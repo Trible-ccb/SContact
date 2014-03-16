@@ -18,13 +18,43 @@
     <string name="action_search">Search</string>
     
     <!-- toast text -->    
-    
+    <string name="done">Done</string>
+    <string name="failed">Failed</string>
+    <string name="waiting">Waiting</string>
+    <string name="group_name_empty">Please input name.</string>
     <!-- hint text -->
-    
+    <string name="hint_action_search">Group Or Friend</string>
+    <string name="hint_username">username</string>
+    <string name="hint_password">password</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_public_group">Anyone can find this group by search.</string>
+     <string name="hint_priavte_group">None can join but invited.</string>   
     <!-- long text -->
     
-    <!-- label text -->
+    <!-- label / title text -->
+    <string name="capatity_lable">Capatity</string>
+    <string name="call_lable">Call</string>
+    <string name="message_lable">Message</string>
+    <string name="invite_lable">Invite</string>
+    <string name="choose_action">Choose Action</string>
+    <string name="search_lable">Search</string>
+    <string name="search_people_lable">People</string>
+    <string name="search_group_lable">Groups</string>
+    <string name="create_group_lable">Create Group</string>
+    <string name="exit_group_lable">Exit Group</string>
+    <string name="apart_group_lable">Apart Group</string>
+    <string name="edit_group_lable">Edit Group</string>
+    <string name="scontact_title">Scontact</string> 
+    <string name="sign_title">Sign In - Up</string>
+    <string name="details_title">Details</string>
+    <string name="discard_title">Discard</string> 
+    <string name="setting_title">Setting</string>
+    <string name="add_title">Add</string>    
     <string name="remote_contacts">Remote Contacts</string>
     <string name="local_contacts">Local Contacts</string>
-    
+    <string name="verify_lable">Who can Join </string>
+    <string name="verify_by_anyone_lable">Anyone</string>
+    <string name="verify_by_identify_lable">Identified</string>
+    <string name="verify_by_none_lable">None</string>
+    <string name="public_lable">Public</string>
 </resources>

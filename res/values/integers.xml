@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="capatity_50">50</integer>
+    <integer name="capatity_100">100</integer>
+    <integer name="capatity_500">500</integer>
+    <integer name="capatity_1000">1000</integer>
+    
+    <integer name="in_out_during_slow">500</integer>
+    <integer name="in_out_during">300</integer>
+</resources>

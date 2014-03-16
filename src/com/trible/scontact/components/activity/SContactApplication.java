@@ -12,9 +12,12 @@ import android.app.Application;
  */
 public class SContactApplication extends Application {
 
+	public static SContactApplication mAppContext;
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		mAppContext = this;
 		initSystem();
 	}
 

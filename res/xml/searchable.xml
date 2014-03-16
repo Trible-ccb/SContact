@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <searchable xmlns:android="http://schemas.android.com/apk/res/android" 
     android:imeOptions="actionSearch"
+    android:hint="@string/hint_action_search"
+    android:label="@string/scontact_title"
+    android:searchButtonText="@string/search_lable"
     android:voiceSearchMode="showVoiceSearchButton|launchRecognizer"
-    android:searchMode="showSearchIconAsBadge"
-    android:icon="@drawable/ic_action_search">
+    
+    >
 
 </searchable>

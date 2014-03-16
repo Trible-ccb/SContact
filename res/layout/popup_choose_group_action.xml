@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:layout_centerInParent="true"
+		android:id="@+id/popup_choose_group_action_container"
+		android:background="#0000"
+        >
+		<TextView 
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:text="@string/edit_group_lable"
+		    android:id="@+id/edit_group_action"
+		    style="@style/ChooseActionItemStyle"
+		    />
+		<include layout="@layout/layout_divider"/>
+		<TextView 
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:text="@string/apart_group_lable"
+		    android:id="@+id/apart_group_action"
+		    style="@style/ChooseActionItemStyle"
+		    />
+		<include layout="@layout/layout_divider"/>
+		<TextView 
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:text="@string/exit_group_lable"
+		    android:id="@+id/exit_group_action"
+		    style="@style/ChooseActionItemStyle"
+		    />
+</LinearLayout>
+

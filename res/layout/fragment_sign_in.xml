@@ -26,20 +26,16 @@
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:orientation="vertical"
-	            android:background="@color/green"
 	            android:layout_below="@id/logo"
 	            android:id="@+id/sign_input_layout"
 	            android:gravity="center_vertical"
+	            android:background="@drawable/sign_in_bg"
 	            >
 	            	<include 
-					    layout="@layout/custom_edit_text" 
+					    layout="@layout/layout_custom_edit_text" 
 					    android:id="@+id/username_layout"/>
-					<View 
-					    android:layout_width="match_parent"
-					    android:layout_height="1dp"
-					    android:background="#B9B9B9"/>
 					<include 
-					    layout="@layout/custom_edit_password" 
+					    layout="@layout/layout_custom_edit_password" 
 			    		android:id="@+id/password_layout"/>
 	            
 	        </LinearLayout>

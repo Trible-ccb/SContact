@@ -1,5 +1,6 @@
 package com.trible.scontact.components.adpater;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.trible.scontact.R;
@@ -26,7 +27,11 @@ public class GroupsListAdapter extends BaseAdapter {
 		mDatas = data;
 		notifyDataSetChanged();
 	}
-	
+	public void addGroup(Groupsinfo info){
+		if ( mDatas == null )mDatas = new ArrayList<Groupsinfo>();
+		mDatas.add(info);
+		notifyDataSetChanged();
+	}
 	@Override
 	public int getCount() {
 		return mDatas == null ? 0 : mDatas.size();
@@ -39,7 +44,7 @@ public class GroupsListAdapter extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		return mDatas.get(position).getmGroupId();
+		return mDatas.get(position).getGroupId();
 	}
 
 	@Override

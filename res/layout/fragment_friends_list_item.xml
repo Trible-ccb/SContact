@@ -4,9 +4,6 @@
     android:layout_height="@dimen/users_list_item_height"
     android:gravity="center_vertical"
     android:padding="10dp"
-    android:background="@drawable/pressor_green_trans"
-    android:clickable="true"
-    android:focusableInTouchMode="true"
      >
 
     <ImageView
