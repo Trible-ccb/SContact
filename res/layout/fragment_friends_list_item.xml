@@ -1,14 +1,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/users_list_item_height"
+    android:layout_height="@dimen/list_item_height"
     android:gravity="center_vertical"
     android:padding="10dp"
      >
 
     <ImageView
-        android:layout_width="@dimen/users_list_item_image_height_width"
-        android:layout_height="@dimen/users_list_item_image_height_width"
+        android:layout_width="@dimen/list_item_image_height_width"
+        android:layout_height="@dimen/list_item_image_height_width"
         android:id="@+id/users_list_item_image"
         android:src="@drawable/ic_launcher"
         android:scaleType="centerInside"

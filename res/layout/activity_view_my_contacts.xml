@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:background="@color/white_f0"
+    >
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/create_contact_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        >
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:id="@+id/contact_name"
+            android:hint="@string/hint_contact"
+            android:layout_weight="1"
+            />
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/action_add"
+            android:id="@+id/add_btn"
+            android:layout_weight="0.3"
+            />
+    </LinearLayout>
+        
+   	<ListView
+   	    android:layout_width="match_parent"
+   	    android:layout_height="wrap_content"
+   	    android:id="@+id/my_contacts_list_view"
+   	    android:cacheColorHint="@color/transparent"
+   	    android:divider="@color/grey_line_cc"
+   	    android:listSelector="@drawable/pressor_blue_transparent"
+   	    android:layout_marginTop="16dp"
+   	    />
+</LinearLayout>

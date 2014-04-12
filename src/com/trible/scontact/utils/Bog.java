@@ -7,6 +7,8 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.trible.scontact.BuildConfig;
+import com.trible.scontact.pojo.ErrorInfo;
+import com.trible.scontact.pojo.GsonHelper;
 
 public class Bog {
 
@@ -57,5 +59,10 @@ public class Bog {
 		if ( debug ){
 			toast(s);
 		}
+	}
+	
+	public static void toastErrorInfo(byte[] arg2){
+		ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
+		Bog.toast(err == null ? ErrorInfo.getUnkownErr().toString() : err.toString());
 	}
 }

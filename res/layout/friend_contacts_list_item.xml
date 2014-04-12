@@ -4,19 +4,23 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:padding="16dp"
-    android:background="@drawable/pressor_green_trans"
     >
 	<TextView
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:id="@+id/drawer_group_name"
+	    android:id="@+id/contact_type"
 	    android:gravity="center_vertical"
+	    android:layout_centerVertical="true"
+	    android:singleLine="true"
+	    android:layout_marginRight="20dp"
 	    android:text="@string/app_name"/>
 	<TextView
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:id="@+id/drawer_group_number"
-	    android:layout_alignParentRight="true"
+	    android:layout_toRightOf="@+id/contact_type"
+	    android:id="@+id/contact_name"
 	    android:gravity="center_vertical"
+	    android:layout_centerVertical="true"
+	    android:singleLine="true"
 	    android:text="@string/app_name"/>
 </RelativeLayout>

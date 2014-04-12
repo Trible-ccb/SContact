@@ -4,7 +4,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
 		android:orientation="vertical"
-
 		android:layout_centerInParent="true"
 		android:id="@+id/popup_choose_friend_action_container"
 		android:background="#0000"

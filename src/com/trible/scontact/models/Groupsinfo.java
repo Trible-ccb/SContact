@@ -8,6 +8,7 @@ import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+@Deprecated
 @DatabaseTable(tableName="groupsinfo")
 public class Groupsinfo implements Serializable{
 

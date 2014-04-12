@@ -22,7 +22,6 @@ import com.loopj.android.http.RequestParams;
 
 /**
  * 
- * @author yuandunlong
  * 
  *         provide some static method Make asynchronous HTTP requests, handle
  *         responses in anonymous callbacks
@@ -30,7 +29,7 @@ import com.loopj.android.http.RequestParams;
  *         callback method excute in ui thread
  * 
  */
-public class DiigoAsyncHttpClient {
+public class SContactAsyncHttpClient {
 
 	private static AsyncHttpClient client = new AsyncHttpClient();
 	static {

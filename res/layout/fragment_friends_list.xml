@@ -7,7 +7,7 @@
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:id="@+id/users_list_view"
-	    android:background="@color/white_f7"
+	    android:background="@color/white_f0"
 	    android:cacheColorHint="#000000"
 	    android:listSelector="@drawable/pressor_green_trans"
 	    />

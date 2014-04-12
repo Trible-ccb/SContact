@@ -18,12 +18,29 @@ import org.apache.http.Header;
 import org.mozilla.universalchardet.UniversalDetector;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.text.TextUtils;
 
 public class StringUtil {
 
 	private static UniversalDetector detector = new UniversalDetector(null);
 
+	public static String getStringForByte(byte[] bs){
+		try {
+			return new String(bs,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+	public static String catStringFromResId(Context c, int...args){
+		if ( args == null )return null;
+		StringBuffer sb = new StringBuffer();
+		for ( int i = 0 ; i < args.length ; i++ ){
+			sb.append(c.getResources().getString(args[i]));
+		}
+		return sb.toString();
+	}
 	@SuppressLint("DefaultLocale")
 	public static boolean isValidURL(String url) {
 		if (TextUtils.isEmpty(url) || url.contains(" "))
@@ -44,6 +61,20 @@ public class StringUtil {
 		}
 	}
 
+	/**
+	 * @param phone 
+	 * @return true if phone is home number
+	 */
+	public static boolean isValidHomeNumber(String phone) {
+		String ps = "^(?<国家代码>(\\+86)|(\\(\\+86\\)))?\\D?(?<电话号码>(?<三位区号>((010|021|022|023|024|025|026|027|028|029|852)|(\\(010\\)|\\(021\\)|\\(022\\)|\\(023\\)|\\(024\\)|\\(025\\)|\\(026\\)|\\(027\\)|\\(028\\)|\\(029\\)|\\(852\\)))\\D?\\d{8}|(?<四位区号>(0[3-9][1-9]{2})|(\\(0[3-9][1-9]{2}\\)))\\D?\\d{7,8}))(?<分机号>\\D?\\d{1,4})?$";
+		Pattern p = Pattern.compile(ps);
+		Matcher m = p.matcher(phone);
+		if (m.matches()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 	public static boolean isValidEmail(String email) {
 
 		String pat_string = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$";
@@ -55,30 +86,17 @@ public class StringUtil {
 		return false;
 	}
 
-	public static boolean isValidPassword(String password) {
-
-		String ps = "^[0-9a-zA-Z._]{6,}$";
-		Pattern p = Pattern.compile(ps);
-		Matcher m = p.matcher(password);
-		if (m.matches()) {
-			return true;
-		} else {
-			return false;
-		}
+	public static boolean isValidName(String name){
+		return name == null ? false : name.matches("[^\"'%*]+");
 	}
-
-	public static boolean isValidUsername(String name) {
-		// 6 ~ 16 characters, must begin with a letter, case-insensitive
-		String ps = "^[0-9a-zA-Z_]{6,}$";
-		Pattern p = Pattern.compile(ps);
-		Matcher m = p.matcher(name);
-		if (m.matches()) {
-			return true;
-		} else {
-			return false;
-		}
+	
+	public static boolean isValidPwd(String pwd){
+		return pwd == null ? false : pwd.matches("[^\"']+");
+	}	
+	
+	public static boolean isValidPhone(String phone){
+		return phone == null ? false : phone.matches("[^\"'%*]+");
 	}
-
 	public static String MD5(String str) {
 		MessageDigest md5 = null;
 		try {
@@ -291,14 +309,26 @@ public class StringUtil {
 		}
 		return sb.toString();
 	}
-//	public static void main(String[] args) {
-//
-//		String s = "好汉�?共和�? \"sss dd\"";
-//
+	
+	public static String getEncodeURLParams(String v){
+		Bog.v("before encode v = " + v);
+		String ev = null;
+		try {
+			ev = URLEncoder.encode(v, "UTF-8");
+			Bog.v("after encode v = " + ev);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return ev;
+	}
+	public static void main(String[] args) {
+
+		String s = "12345678900";
+		Bog.v("s is home number:" + isValidHomeNumber(s));
 //		System.out.println(s);
 //		System.out.println(Arrays.toString((spliterAll(s, "\\s+", ",", "\""))));
 ////		String ss = replaceAll(s, "\\s+", ",", "\"");
 //		System.out.println(Arrays.toString((spliterAll(s, ",", " ", "\""))));
-//
-//	}
+
+	}
 }

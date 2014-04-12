@@ -18,6 +18,10 @@
         android:name="android.permission.WRITE_CONTACTS"/>
     <uses-permission
         android:name="android.permission.READ_CONTACTS"/>
+        <uses-permission
+        android:name="android.permission.CALL_PHONE"/>
+    <uses-permission
+        android:name="android.permission.SEND_SMS"/>
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -49,7 +53,7 @@
          <activity
             android:name="com.trible.scontact.components.activity.SignInUpActivity"/>
          <activity
-            android:name="com.trible.scontact.components.activity.CreateGroupActivity"/>         
+            android:name="com.trible.scontact.components.activity.CreateOrUpdateGroupActivity"/>         
         <activity
             android:name="com.trible.scontact.components.activity.SearchGroupOrFriendActivity"
             android:label="@string/scontact_title"
@@ -57,12 +61,13 @@
             android:parentActivityName="com.trible.scontact.components.activity.SContactMainActivity"
             >
             <intent-filter>
-                <action android:name="android.intent.action.SEARCH"/>
+            	<action android:name="android.intent.action.SEARCH"/>    
             </intent-filter>
+    		<meta-data android:name="android.app.searchable" android:resource="@xml/searchable"/>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.trible.scontact.components.activity.SContactMainActivity" />
-            <meta-data android:name="android.app.default_searchable" android:resource="@xml/searchable"/>            
+
         </activity>
         <activity
             android:name="com.trible.scontact.components.activity.ViewFriendDetailsActivity"
@@ -73,7 +78,19 @@
             android:name="com.trible.scontact.components.activity.ViewGroupDetailsActivity"
             android:parentActivityName="com.trible.scontact.components.activity.SContactMainActivity"
             >
-        </activity> 
+        </activity>
+        <activity
+            android:name="com.trible.scontact.components.activity.SettingsActivity"
+            android:parentActivityName="com.trible.scontact.components.activity.SContactMainActivity"
+            />
+        <activity
+            android:name="com.trible.scontact.components.activity.JoinGroupActivity"
+            android:parentActivityName="com.trible.scontact.components.activity.SContactMainActivity"
+            />
+       <activity
+            android:name="com.trible.scontact.components.activity.ViewAndAddMyContactsActivity"
+            android:parentActivityName="com.trible.scontact.components.activity.SContactMainActivity"
+            /> 
     </application>
 
 </manifest>

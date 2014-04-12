@@ -2,6 +2,8 @@ package com.trible.scontact.components.fragment;
 
 import java.util.List;
 
+import org.apache.http.Header;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,14 +16,23 @@ import android.widget.ListView;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
+import com.trible.scontact.components.activity.CustomSherlockFragmentActivity;
+import com.trible.scontact.components.activity.ViewFriendDetailsActivity;
 import com.trible.scontact.components.adpater.FriendsListAdapter;
 import com.trible.scontact.components.widgets.ChooseFriendActionDialog;
 import com.trible.scontact.controller.impl.LocalFriendsController;
 import com.trible.scontact.models.Friendinfo;
 import com.trible.scontact.networks.NetWorkEvent;
+import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.SimpleAsynTask;
 import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
+import com.trible.scontact.networks.params.AccountParams;
+import com.trible.scontact.pojo.AccountInfo;
+import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.pojo.ErrorInfo;
+import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
 
 public class FriendsListFragment extends SherlockFragment 
@@ -29,10 +40,12 @@ public class FriendsListFragment extends SherlockFragment
 
 	FriendsListAdapter mFriendsListAdapter;
 	ListView mFriendListView;
-	List<Friendinfo> mFriendinfo;
+	List<AccountInfo> mFriendinfo;
+	
 	LocalFriendsController mFriendsController;
 	
 	ChooseFriendActionDialog mFriendActionDialog;
+	CustomSherlockFragmentActivity mActivity;
 	
 	public static FriendsListFragment getInstance(){
 		return new FriendsListFragment();
@@ -55,10 +68,8 @@ public class FriendsListFragment extends SherlockFragment
 		mFriendListView.setAdapter(mFriendsListAdapter);
 		mFriendListView.setOnItemClickListener(this);
 		mFriendListView.setOnItemLongClickListener(this);
-		mFriendsListAdapter.setData(Friendinfo.getTestData());
 		mFriendsController = new LocalFriendsController(getActivity());
-		mFriendActionDialog = new ChooseFriendActionDialog(getActivity(),
-				getString(R.string.choose_action));
+		mActivity = (CustomSherlockFragmentActivity) getActivity();
 	}
 
 	@Override
@@ -82,19 +93,53 @@ public class FriendsListFragment extends SherlockFragment
 			
 			@Override
 			public void doInBackground() {
-				mFriendinfo = mFriendsController.getFriendsListByGroupId(gid);
+//				mFriendinfo = mFriendsController.getFriendsListByGroupId(gid);
+			}
+		});
+	}
+	public void loadRomoteFriendsByGroup(Long gid){
+		SContactAsyncHttpClient.post(AccountParams.getAccountByGroupIdParams(gid),
+				null, new AsyncHttpResponseHandler(){
+			@Override
+			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+				super.onSuccess(arg0, arg1, arg2);
+				mFriendinfo = GsonHelper.getInfosFromJson(arg2, new AccountInfo().listType());
+				mFriendsListAdapter.setData(mFriendinfo);
+				if ( mFriendinfo != null ){
+				} else {
+					ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
+					Bog.toast( err == null ? ErrorInfo.getUnkownErr().toString() : err.toString());
+				}
+			}
+			@Override
+			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+					Throwable arg3) {
+				super.onFailure(arg0, arg1, arg2, arg3);
+				Bog.toast( R.string.connect_server_err );
+			}
+			@Override
+			public void onFinish() {
+				super.onFinish();
 			}
 		});
 	}
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		mFriendActionDialog.show();
+		if( mFriendinfo != null && mFriendinfo.get(position) != null ){
+			mActivity.simpleDisplayActivity(ViewFriendDetailsActivity.getInentMyself(
+					mFriendinfo.get(position)));
+		}
+
 	}
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view,
 			int position, long id) {
-		mFriendActionDialog.show();
+		if ( mFriendinfo != null ){
+			mFriendActionDialog = new ChooseFriendActionDialog(getActivity(),
+					mFriendinfo.get(position));
+			mFriendActionDialog.show();
+		}
 		return false;
 	}
 }

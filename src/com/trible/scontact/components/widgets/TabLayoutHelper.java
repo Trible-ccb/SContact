@@ -47,6 +47,9 @@ public class TabLayoutHelper implements OnClickListener{
 		}
 	}
 	
+	public int getSelection(){
+		return mDefaultSelection;
+	}
 	public void setDefaultSelection(int i){
 		if ( i < 0 || i >= mViewGroup.getChildCount() )return;
 		mDefaultSelection = i;

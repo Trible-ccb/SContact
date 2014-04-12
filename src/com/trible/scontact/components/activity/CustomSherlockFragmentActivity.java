@@ -10,10 +10,18 @@ import com.trible.scontact.R;
 
 public class CustomSherlockFragmentActivity extends SherlockFragmentActivity {
 
+	
 	public void simpleDisplayActivity(Class<?> clazz){
 		Intent intent = new Intent(this, clazz);
 		startActivity(intent);
 		doSimpleInOutAnim();
+	}
+	public void simpleDisplayActivityAndFinish(Class<?> clazz){
+		Intent intent = new Intent(this, clazz);
+		startActivity(intent);
+		finish();
+		doSimpleInOutAnim();
+		
 	}
 	public void simpleGetResultFormActivity(Class<?> clazz,int requestCode){
 		Intent intent = new Intent(this, clazz);
@@ -21,15 +29,23 @@ public class CustomSherlockFragmentActivity extends SherlockFragmentActivity {
 		doSimpleInOutAnim();
 	}
 	
-	public void simpleDisplayActivityWithData(Class<?> clazz,Bundle b){
-		Intent intent = new Intent(this, clazz);
+	public void simpleDisplayActivity(Bundle b){
+		Intent intent = new Intent(this, (Class<?>) b.getSerializable("clazz"));
 		intent.putExtras(b);
 		startActivity(intent);
 		doSimpleInOutAnim();
 	}
+	public void simpleDisplayActivityAndFinish(Bundle b){
+		Intent intent = new Intent(this, (Class<?>) b.getSerializable("clazz"));
+		intent.putExtras(b);
+		startActivity(intent);
+		finish();
+		doSimpleInOutAnim();
+		
+	}
 	
-	public void simpleGetResultFromActivityWithData(Class<?> clazz,int requestCode,Bundle b){
-		Intent intent = new Intent(this, clazz);
+	public void simpleGetResultFromActivityWithData(int requestCode,Bundle b){
+		Intent intent = new Intent(this, (Class<?>) b.getSerializable("clazz"));
 		intent.putExtras(b);
 		startActivityForResult(intent, requestCode);
 		doSimpleInOutAnim();
@@ -50,7 +66,7 @@ public class CustomSherlockFragmentActivity extends SherlockFragmentActivity {
 				bar.setDisplayHomeAsUpEnabled(true);
 			}
 
-			bar.setBackgroundDrawable(getResources().getDrawable(R.color.white_f7));
+			bar.setBackgroundDrawable(getResources().getDrawable(R.color.white_f0));
 		}
 	}
 

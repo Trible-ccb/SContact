@@ -1,8 +1,8 @@
 package com.trible.scontact.components.adpater;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -14,65 +14,142 @@ import android.widget.TextView;
 
 import com.trible.scontact.R;
 import com.trible.scontact.models.Friendinfo;
+import com.trible.scontact.pojo.GroupInfo;
+import com.trible.scontact.utils.ListUtil;
+import com.trible.scontact.utils.TimeUtil;
 
 public class SearchResultAdapter extends BaseAdapter {
 
 	Context mContext;
 	LayoutInflater mInflater;
-	List<Friendinfo> mDatas;
+	List<Object> mGroupListData,mFriendListData,mCurrentDisplayData;
 	
 	public SearchResultAdapter(Context c){
 		mContext = c;
+		mFriendListData = new ArrayList<Object>();
+		mGroupListData = new ArrayList<Object>();
+		mCurrentDisplayData = mFriendListData;
 		mInflater = LayoutInflater.from(mContext);
 	}
-	public void setData(List<Friendinfo> data){
-		mDatas = data;
+
+	public void addGroupSection(SectionData sdata,List<GroupInfo> belongToSectionData){
+		if ( ListUtil.isEmpty(belongToSectionData) ){
+			sdata.visiable = false;
+		} else {
+			sdata.visiable = true;
+			mGroupListData.add(sdata);
+			mGroupListData.addAll(belongToSectionData);
+			notifyDataSetChanged();
+		}
+	}
+	
+	public void addFriendSection(SectionData sdata,List<Friendinfo> belongToSectionData){
+		if ( ListUtil.isEmpty(belongToSectionData) ){
+			sdata.visiable = false;
+		} else {
+			sdata.visiable = true;
+			mFriendListData.add(sdata);
+			mFriendListData.addAll(belongToSectionData);
+			notifyDataSetChanged();
+		}
+	}
+	
+	public void displayGroup(){
+		mCurrentDisplayData = mGroupListData;
 		notifyDataSetChanged();
 	}
 	
+	public void displayFriend(){
+		mCurrentDisplayData = mFriendListData;
+		notifyDataSetChanged();
+	}
+	
+	public void clear(){
+		mGroupListData.clear();
+		mFriendListData.clear();
+		mCurrentDisplayData.clear();
+		notifyDataSetChanged();
+	}
 	@Override
 	public int getCount() {
-		return mDatas == null ? 0 : mDatas.size();
+		return mCurrentDisplayData == null ? 0 : mCurrentDisplayData.size();
 	}
-
 	@Override
 	public Object getItem(int position) {
-		return mDatas.get(position);
+		return mCurrentDisplayData.get(position);
 	}
 
 	@Override
 	public long getItemId(int position) {
-		return mDatas.get(position).getmFriendId();
+		return position;
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		UserItemHolder mHolder;
-		if ( convertView == null ){
-			convertView = mInflater.inflate(R.layout.fragment_friends_list_item, null);
-			mHolder = new UserItemHolder();
-			mHolder.mUserName = (TextView) convertView.findViewById(R.id.users_list_item_name);
-			mHolder.mUserDesc = (TextView) convertView.findViewById(R.id.users_list_item_desc);
-			mHolder.mUserImage = (ImageView) convertView.findViewById(R.id.users_list_item_image);
-			mHolder.mUserUpdateTime = (TextView) convertView.findViewById(R.id.users_list_item_time);
-			convertView.setTag(mHolder);
+		Object obj = getItem(position);
+		if ( obj instanceof SectionData ){
+			return getSectionView(position, convertView, parent, (SectionData)obj);
+		} else if ( obj instanceof Friendinfo ){
+			return getFriendView(position, convertView, parent, (Friendinfo)obj);
+		} else if ( obj instanceof GroupInfo ){
+			return getGroupView(position, convertView, parent, (GroupInfo)obj);
 		} else {
-			mHolder = (UserItemHolder) convertView.getTag();
+			throw new UnknownError("unsupport item view obj is " + obj.getClass().getSimpleName());
 		}
-		Friendinfo info = mDatas.get(position);
-		mHolder.mUserName.setText(info.getmFriendName());
-		mHolder.mUserDesc.setText(info.getmFriendNumber());
-		
-		Calendar cal = Calendar.getInstance(Locale.CHINA);
-		cal.setTimeInMillis(info.getmFriendUpdateTime());
-		mHolder.mUserUpdateTime.setText(
-				cal.get(cal.YEAR) + "/" + cal.get(cal.MONTH) + "/" + cal.get(cal.DAY_OF_MONTH));
+	}
+	
+	public View getSectionView(int position, View convertView, ViewGroup parent,SectionData data){
+		convertView = mInflater.inflate(R.layout.search_result_section_item, null);
+		TextView name = (TextView) convertView.findViewById(R.id.section_name);
+		name.setText(data.sectionName);
 		return convertView;
 	}
-
-	class UserItemHolder {
-		TextView mUserName,mUserDesc,mUserUpdateTime;
-		ImageView mUserImage;
+	
+	public View getFriendView(int position, View convertView, ViewGroup parent,Friendinfo obj){
+		FriendViewHolder holder;
+		if ( convertView == null 
+				|| !(convertView.getTag() instanceof FriendViewHolder) ){
+			holder = new FriendViewHolder();
+			convertView = mInflater.inflate(R.layout.search_result_friend_item, null);
+			convertView.setTag(holder);
+		} else {
+			holder = (FriendViewHolder) convertView.getTag();
+		}
+		return convertView;
+	}
+	
+	public View getGroupView(int position, View convertView, ViewGroup parent,GroupInfo obj){
+		GroupViewHolder holder;
+		if ( convertView == null 
+				|| !(convertView.getTag() instanceof GroupViewHolder) ){
+			holder = new GroupViewHolder();
+			convertView = mInflater.inflate(R.layout.search_result_group_item, null);
+			convertView.setTag(holder);
+			holder.img = (ImageView) convertView.findViewById(R.id.image_item_img);
+			holder.title = (TextView) convertView.findViewById(R.id.text_item_title);
+			holder.time = (TextView) convertView.findViewById(R.id.text_item_time);
+			holder.desp = (TextView) convertView.findViewById(R.id.text_item_desc_text);
+		} else {
+			holder = (GroupViewHolder) convertView.getTag();
+		}
+		holder.desp.setText(obj.getDescription());
+		holder.title.setText(obj.getDisplayName());
+		holder.time.setText(TimeUtil.toTimeString(obj.getCreateTime()));
+		return convertView;
+	}
+	
+	class FriendViewHolder{
 		
+	}
+	class GroupViewHolder{
+		ImageView img;
+		TextView title,time,desp;
+	}
+	public static class SectionData{
+		public String sectionName;
+		public boolean visiable;
+		public SectionData(String sName){
+			sectionName = sName;
+		}
 	}
 }

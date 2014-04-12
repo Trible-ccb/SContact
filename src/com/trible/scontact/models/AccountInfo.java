@@ -10,6 +10,7 @@ import com.j256.ormlite.table.DatabaseTable;
 import android.os.SystemClock;
 
 //a locale cache for store users who had login
+@Deprecated
 @DatabaseTable (tableName = "usersinfo")
 public class AccountInfo extends Friendinfo implements Serializable{
 

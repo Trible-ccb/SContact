@@ -6,8 +6,8 @@
 
     <dimen name="drawer_width">280dp</dimen>
     <dimen name="drawer_item_height">48dp</dimen>
-    <dimen name="users_list_item_height">78dp</dimen>
-    <dimen name="users_list_item_image_height_width">64dp</dimen>
+    <dimen name="list_item_height">78dp</dimen>
+    <dimen name="list_item_image_height_width">64dp</dimen>
     
     <dimen name="edit_input_width">280dp</dimen>
     <dimen name="edite_input_margin">6dp</dimen>

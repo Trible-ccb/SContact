@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+   	xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/list_item_height"
+    android:layout_centerVertical="true"
+    android:id="@+id/result_friend_item_root"
+    android:background="@drawable/pressor_green_trans"        
+        >
+	    <ImageView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	       	android:id="@+id/image_item_img"
+	       	android:src="@drawable/ic_launcher"
+	       	android:layout_marginLeft="6dp"
+	       	android:layout_centerVertical="true"
+	       />
+	    <RelativeLayout
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	    	android:layout_toRightOf="@id/image_item_img"
+	    	android:paddingLeft="8dp"
+	    	android:paddingRight="8dp"
+	    	android:layout_centerVertical="true"
+	    	>
+	    	<RelativeLayout 
+	    	    android:layout_width="match_parent"
+	    	    android:layout_height="wrap_content"
+	    	    android:id="@+id/item_title_layout"
+	    	    >
+	    	    <LinearLayout 
+		    	    android:layout_width="match_parent"
+		    	    android:layout_height="wrap_content"
+		    	    android:orientation="horizontal"
+		    	    
+		    	    >
+				    <TextView
+				        android:layout_width="match_parent"
+				        android:layout_height="wrap_content"
+				        android:id="@+id/text_item_title"
+				        android:text="fasdfa"
+				        style="@style/NoteTextTitleAppeare"
+				        android:maxLines="2"
+				        android:minLines="2"
+				        />
+	    	    
+	    			</LinearLayout>
+	    			<TextView 
+				        android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:id="@+id/text_item_time"
+				        android:text="fdasfa"
+				        android:singleLine="true"
+				        android:drawablePadding="4dp"
+				        android:layout_alignParentRight="true"
+				        android:layout_gravity="right|center_vertical"
+				        style="@style/NoteTimeTextAppeare"
+				        android:gravity="right|center_vertical"
+				        />
+	    	</RelativeLayout>
+
+
+			    <RelativeLayout
+			        android:layout_width="match_parent"
+			        android:layout_height="wrap_content"
+			        android:layout_below="@id/item_title_layout"
+			    	android:orientation="horizontal"
+			    	android:id="@+id/bottom_text_holder"
+			        >
+				    <TextView 
+				        android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:id="@+id/text_item_desc_text"
+				        android:text="fadsfa"
+				        android:singleLine="true"
+				        style="@style/PreviewNoteTextAppeare"
+				        android:background="@drawable/pressor_blue_transparent"
+				        />
+				    
+			    </RelativeLayout>
+
+			</RelativeLayout>
+
+</RelativeLayout>    
+

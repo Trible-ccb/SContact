@@ -9,6 +9,7 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import android.os.SystemClock;
 
+@Deprecated
 @DatabaseTable (tableName = "user_group_info")
 public class UserMixGroup implements Serializable{
 

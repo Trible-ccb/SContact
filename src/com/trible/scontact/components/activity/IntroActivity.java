@@ -7,7 +7,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.trible.scontact.R;
-import com.trible.scontact.models.AccountInfo;
+import com.trible.scontact.pojo.AccountInfo;
+import com.trible.scontact.utils.GlobalValue;
 
 public class IntroActivity extends CustomSherlockFragmentActivity implements AnimationListener{
 
@@ -25,6 +26,7 @@ public class IntroActivity extends CustomSherlockFragmentActivity implements Ani
 		mAnimIn.setAnimationListener(this);
 		mIntroImage = (ImageView) findViewById(R.id.logo_first);
 		mIntroImage.startAnimation(mAnimIn);
+		mInfo = AccountInfo.getInstance();
 	}
 	
 	@Override
@@ -34,8 +36,7 @@ public class IntroActivity extends CustomSherlockFragmentActivity implements Ani
 
 	@Override
 	public void onAnimationEnd(Animation animation) {
-		int r = (int) (( Math.random() * 100) % 2);
-		if ( r == 0 ){
+		if ( GlobalValue.USTATUS_NORMAL.equals(mInfo.getStatus()) ){
 			simpleDisplayActivity(SContactMainActivity.class);
 		} else {
 			simpleDisplayActivity(SignInUpActivity.class);

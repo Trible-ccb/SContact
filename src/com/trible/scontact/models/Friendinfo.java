@@ -18,7 +18,7 @@ public class Friendinfo implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	@DatabaseField(generatedId = true)
-	private int mFriendId;
+	private long mFriendId;
 	
 	@DatabaseField
 	private String mFriendName;
@@ -58,10 +58,10 @@ public class Friendinfo implements Serializable{
 	public void setmFriendUpdateTime(long mFriendUpdateTime) {
 		this.mFriendUpdateTime = mFriendUpdateTime;
 	}
-	public int getmFriendId() {
+	public long getmFriendId() {
 		return mFriendId;
 	}
-	public void setmFriendId(int mFriendId) {
+	public void setmFriendId(long mFriendId) {
 		this.mFriendId = mFriendId;
 	}
 	public String getmFriendName() {
@@ -99,6 +99,13 @@ public class Friendinfo implements Serializable{
 	}
 	public String getmFriendNumber() {
 		return mFriendNumber;
+	}
+	public String[] getmFriendNumbers() {
+		String[] t = {};
+		if ( mFriendNumber != null ){
+			t = mFriendNumber.split("\\|");
+		}
+		return t;
 	}
 	public void setmFriendNumber(String mFriendNumber) {
 		this.mFriendNumber = mFriendNumber;

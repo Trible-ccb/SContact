@@ -1,7 +1,7 @@
 <resources>
 
     <color name="green">#ff00ff00</color>
-    <color name="white_f7">#f7f7f7</color>
+    <color name="white_f0">#f0f0f0</color>
     <color name="transparent">#0000</color>
     <color name="white">#ffff</color>
     <color name="black">#f000</color>

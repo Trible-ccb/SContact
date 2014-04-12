@@ -3,7 +3,7 @@ package com.trible.scontact.controller;
 import com.trible.scontact.models.AccountInfo;
 
 
-public interface IUserControl {
+public interface IAccountControl {
 
 	public boolean deleteUserInfo(int friendId);
 	public boolean createUserInfo(AccountInfo info);

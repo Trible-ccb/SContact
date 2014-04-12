@@ -1,18 +1,21 @@
 package com.trible.scontact.components.widgets;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
+import com.trible.scontact.networks.SimpleAsynTask;
+import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 
 public class LoadingDialog {
 	
 	PopupDialogger dialogger;
 
 	Context mContext;
-	String mTitleString;
 	View contentView;
 	TextView mTipTextView;
 	
@@ -21,9 +24,8 @@ public class LoadingDialog {
 	}
 
 
-	public  LoadingDialog(Context context,String title) {
+	public  LoadingDialog(Context context) {
 		mContext = context;
-		mTitleString = title;
 		contentView = createContentView();
 	}
 	
@@ -35,11 +37,25 @@ public class LoadingDialog {
 		return view;
 	}
 	public void show(){
-		dialogger.setTitleText(mTitleString);
+		dialogger.setTitleText(null);
 		dialogger.showDialog(mContext,contentView);
+	}
+	public void showAndDoTask(AsynTaskListner l){
+		dialogger.setTitleText(null);
+		final SimpleAsynTask task = new SimpleAsynTask();
+		task.doTask(l);
+		dialogger.showDialog(mContext,contentView,new OnDismissListener() {
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				task.cancelTask();
+			}
+		});
 	}
 	public void setTipText(String text){
 		if ( mTipTextView == null )return;
 		mTipTextView.setText(text);
+	}
+	public void setTipText(int textId){
+		mTipTextView.setText(textId);
 	}
 }

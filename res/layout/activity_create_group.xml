@@ -1,6 +1,8 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+     >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,6 +14,18 @@
          >
 
         <include layout="@layout/layout_custom_edit_text" />
+        <include 
+            layout="@layout/layout_custom_edit_text"
+            android:id="@+id/layout_custom_edit_text_desc"
+            android:visibility="gone"
+             />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/choose_contacts_btn"
+            android:text="@string/choose_contacts"
+            android:gravity="center"
+            />
         <TextView 
            	    android:layout_width="wrap_content"
            	    android:layout_height="wrap_content"
@@ -29,23 +43,23 @@
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/capatity_50"
-                android:text="@integer/capatity_50" />
+                android:id="@+id/capatity_normal"
+                android:text="@integer/capatity_normal" />
             <RadioButton
-                android:id="@+id/capatity_100"
+                android:id="@+id/capatity_level1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@integer/capatity_100" />
+                android:text="@integer/capatity_level1" />
            	<RadioButton
-           	    android:id="@+id/capatity_500"
+           	    android:id="@+id/capatity_level2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@integer/capatity_500" />
+                android:text="@integer/capatity_level2" />
            	<RadioButton
-           	    android:id="@+id/capatity_1000"
+           	    android:id="@+id/capatity_dev"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@integer/capatity_1000" />
+                android:text="@integer/capatity_dev" />
            	</RadioGroup>
         <TextView 
            	    android:layout_width="wrap_content"
@@ -58,7 +72,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/group_verify_root"
-            android:orientation="horizontal"
+            android:orientation="vertical"
              >
             <RadioButton
                 android:layout_width="wrap_content"
@@ -70,11 +84,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/verify_by_anyone_lable" />
-           	<RadioButton
-           	    android:id="@+id/verify_by_none"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/verify_by_none_lable" />
         </RadioGroup>
            	
        	<CheckBox 
@@ -85,4 +94,4 @@
         	    />
     </LinearLayout>
 
-</RelativeLayout>
+</ScrollView>

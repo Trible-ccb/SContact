@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.trible.scontact.R;
 import com.trible.scontact.models.Groupsinfo;
+import com.trible.scontact.pojo.GroupInfo;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -17,18 +18,18 @@ public class GroupsListAdapter extends BaseAdapter {
 
 	Context mContext;
 	LayoutInflater mInflater;
-	List<Groupsinfo> mDatas;
+	List<GroupInfo> mDatas;
 	
 	public GroupsListAdapter(Context c){
 		mContext = c;
 		mInflater = LayoutInflater.from(mContext);
 	}
-	public void setData(List<Groupsinfo> data){
+	public void setData(List<GroupInfo> data){
 		mDatas = data;
 		notifyDataSetChanged();
 	}
-	public void addGroup(Groupsinfo info){
-		if ( mDatas == null )mDatas = new ArrayList<Groupsinfo>();
+	public void addGroup(GroupInfo info){
+		if ( mDatas == null )mDatas = new ArrayList<GroupInfo>();
 		mDatas.add(info);
 		notifyDataSetChanged();
 	}
@@ -44,14 +45,14 @@ public class GroupsListAdapter extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		return mDatas.get(position).getGroupId();
+		return mDatas.get(position).getId();
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		GroupItemHolder mHolder;
 		if ( convertView == null ){
-			convertView = mInflater.inflate(R.layout.drawer_group_list_item, null);
+			convertView = mInflater.inflate(R.layout.draw_group_list_item, null);
 			mHolder = new GroupItemHolder();
 			mHolder.mGroupName = (TextView) convertView.findViewById(R.id.drawer_group_name);
 			mHolder.mGroupNum = (TextView) convertView.findViewById(R.id.drawer_group_number);
@@ -59,9 +60,9 @@ public class GroupsListAdapter extends BaseAdapter {
 		} else {
 			mHolder = (GroupItemHolder) convertView.getTag();
 		}
-		Groupsinfo info = mDatas.get(position);
-		mHolder.mGroupName.setText(info.getmGroupName());
-		mHolder.mGroupNum.setText(info.getmInGroupNumber() + "");
+		GroupInfo info = mDatas.get(position);
+		mHolder.mGroupName.setText(info.getDisplayName());
+		mHolder.mGroupNum.setText(info.getCapacity() + "");
 		return convertView;
 	}
 

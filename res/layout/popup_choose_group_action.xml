@@ -11,6 +11,14 @@
 		<TextView 
 		    android:layout_width="match_parent"
 		    android:layout_height="wrap_content"
+		    android:text="@string/view_group_lable"
+		    android:id="@+id/view_group_action"
+		    style="@style/ChooseActionItemStyle"
+		    />
+		<include layout="@layout/layout_divider"/>
+		<TextView 
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
 		    android:text="@string/edit_group_lable"
 		    android:id="@+id/edit_group_action"
 		    style="@style/ChooseActionItemStyle"
@@ -29,6 +37,14 @@
 		    android:layout_height="wrap_content"
 		    android:text="@string/exit_group_lable"
 		    android:id="@+id/exit_group_action"
+		    style="@style/ChooseActionItemStyle"
+		    />
+		<include layout="@layout/layout_divider"/>
+		<TextView 
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:text="@string/join_group_lable"
+		    android:id="@+id/join_group_action"
 		    style="@style/ChooseActionItemStyle"
 		    />
 </LinearLayout>

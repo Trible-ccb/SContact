@@ -13,19 +13,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
-import com.trible.scontact.models.Friendinfo;
+import com.trible.scontact.pojo.AccountInfo;
 
 public class FriendsListAdapter extends BaseAdapter {
 
 	Context mContext;
 	LayoutInflater mInflater;
-	List<Friendinfo> mDatas;
+	List<AccountInfo> mDatas;
 	
 	public FriendsListAdapter(Context c){
 		mContext = c;
 		mInflater = LayoutInflater.from(mContext);
 	}
-	public void setData(List<Friendinfo> data){
+	public void setData(List<AccountInfo> data){
 		mDatas = data;
 		notifyDataSetChanged();
 	}
@@ -42,7 +42,7 @@ public class FriendsListAdapter extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		return mDatas.get(position).getmFriendId();
+		return mDatas.get(position).getId();
 	}
 
 	@Override
@@ -59,12 +59,12 @@ public class FriendsListAdapter extends BaseAdapter {
 		} else {
 			mHolder = (UserItemHolder) convertView.getTag();
 		}
-		Friendinfo info = mDatas.get(position);
-		mHolder.mUserName.setText(info.getmFriendName());
-		mHolder.mUserDesc.setText(info.getmFriendNumber());
+		AccountInfo info = mDatas.get(position);
+		mHolder.mUserName.setText(info.getDisplayName());
+		mHolder.mUserDesc.setText(info.getDescription());
 		
 		Calendar cal = Calendar.getInstance(Locale.CHINA);
-		cal.setTimeInMillis(info.getmFriendUpdateTime());
+		cal.setTimeInMillis(info.getCreateTime());
 		mHolder.mUserUpdateTime.setText(
 				cal.get(cal.YEAR) + "/" + cal.get(cal.MONTH) + "/" + cal.get(cal.DAY_OF_MONTH));
 		return convertView;
