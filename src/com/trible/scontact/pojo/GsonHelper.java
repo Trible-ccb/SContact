@@ -24,8 +24,12 @@ public class GsonHelper {
 		return null;
 	}
 	public static <T> T getInfosFromJson(byte[] arg2 , Type t){
+		String content = StringUtil.getStringForByte(arg2);
+		return getInfosFromJson(content, t);
+	}
+	public static <T> T getInfosFromJson(String arg2 , Type t){
 		try {
-			String content = StringUtil.getStringForByte(arg2);
+			String content = arg2;
 			Bog.v(content);
 			T tmp = new Gson().fromJson(content,t);
 			return tmp;

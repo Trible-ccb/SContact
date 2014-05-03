@@ -38,6 +38,7 @@ import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.SimpleAsynTask;
 import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 import com.trible.scontact.networks.params.GroupParams;
+import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
@@ -162,10 +163,19 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 					break;
 			}
 		} else {//list item click
-			Object tgt = mAdapter.getItem(position);
+			Object tgt =  mAdapter.getItem(position);
 			if ( tgt instanceof GroupInfo ){
-				mGroupActionDialog = new ChooseGroupActionDialog(this, (GroupInfo) tgt);
-				mGroupActionDialog.show();
+				GroupInfo tmp = (GroupInfo) tgt;
+				simpleDisplayActivity(
+						ViewGroupDetailsActivity.getInentMyself(tmp));
+//				mGroupActionDialog = new ChooseGroupActionDialog(this, tmp);
+//				AccountInfo uInfo = AccountInfo.getInstance();
+//				if ( uInfo.getId().equals(tmp.getOwnerId())){
+//					mGroupActionDialog.setMutilVisible(true, false, true, false, false);
+//				} else {
+//					mGroupActionDialog.setMutilVisible(true, false, false, false, true);
+//				}
+//				mGroupActionDialog.show();
 			}
 		}
 	}

@@ -99,7 +99,7 @@ public class SearchResultAdapter extends BaseAdapter {
 	}
 	
 	public View getSectionView(int position, View convertView, ViewGroup parent,SectionData data){
-		convertView = mInflater.inflate(R.layout.search_result_section_item, null);
+		convertView = mInflater.inflate(R.layout.adapter_search_result_section_item, null);
 		TextView name = (TextView) convertView.findViewById(R.id.section_name);
 		name.setText(data.sectionName);
 		return convertView;
@@ -110,7 +110,7 @@ public class SearchResultAdapter extends BaseAdapter {
 		if ( convertView == null 
 				|| !(convertView.getTag() instanceof FriendViewHolder) ){
 			holder = new FriendViewHolder();
-			convertView = mInflater.inflate(R.layout.search_result_friend_item, null);
+			convertView = mInflater.inflate(R.layout.adapter_search_result_friend_item, null);
 			convertView.setTag(holder);
 		} else {
 			holder = (FriendViewHolder) convertView.getTag();
@@ -123,7 +123,7 @@ public class SearchResultAdapter extends BaseAdapter {
 		if ( convertView == null 
 				|| !(convertView.getTag() instanceof GroupViewHolder) ){
 			holder = new GroupViewHolder();
-			convertView = mInflater.inflate(R.layout.search_result_group_item, null);
+			convertView = mInflater.inflate(R.layout.adapter_search_result_group_item, null);
 			convertView.setTag(holder);
 			holder.img = (ImageView) convertView.findViewById(R.id.image_item_img);
 			holder.title = (TextView) convertView.findViewById(R.id.text_item_title);

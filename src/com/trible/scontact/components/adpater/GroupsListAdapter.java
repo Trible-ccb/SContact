@@ -52,7 +52,7 @@ public class GroupsListAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		GroupItemHolder mHolder;
 		if ( convertView == null ){
-			convertView = mInflater.inflate(R.layout.draw_group_list_item, null);
+			convertView = mInflater.inflate(R.layout.adapter_draw_group_list_item, null);
 			mHolder = new GroupItemHolder();
 			mHolder.mGroupName = (TextView) convertView.findViewById(R.id.drawer_group_name);
 			mHolder.mGroupNum = (TextView) convertView.findViewById(R.id.drawer_group_number);
@@ -62,7 +62,12 @@ public class GroupsListAdapter extends BaseAdapter {
 		}
 		GroupInfo info = mDatas.get(position);
 		mHolder.mGroupName.setText(info.getDisplayName());
-		mHolder.mGroupNum.setText(info.getCapacity() + "");
+		if ( info.getCapacity() == null ){
+			mHolder.mGroupNum.setVisibility(View.GONE);
+		} else {
+			mHolder.mGroupNum.setText(info.getCapacity() + "");
+		}
+		
 		return convertView;
 	}
 

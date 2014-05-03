@@ -1,4 +1,4 @@
-package com.trible.scontact.components.activity;
+package com.trible.scontact.value;
 
 public class RequestCode {
 

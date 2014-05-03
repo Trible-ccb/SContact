@@ -37,8 +37,8 @@ public class PopupDialogger extends Dialog implements AnimationListener{
 	
 	int rootViewId = R.layout.popup_base_scroll;
 	
-	public void setRootViewId(int rootViewId) {
-		this.rootViewId = rootViewId;
+	public void setUseNoneScrollRootViewId() {
+		this.rootViewId = R.layout.popup_base;
 	}
 
 	public enum PopupStatus{

@@ -36,7 +36,11 @@ import com.trible.scontact.components.widgets.TabLayoutHelper;
 import com.trible.scontact.controller.IGroupControl;
 import com.trible.scontact.controller.impl.LocalGroupControlller;
 import com.trible.scontact.controller.impl.RemoteGroupControlller;
+import com.trible.scontact.managers.PrefManager;
+import com.trible.scontact.networks.NetWorkEvent;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
+import com.trible.scontact.networks.SimpleAsynTask;
+import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.networks.params.ContactParams;
 import com.trible.scontact.networks.params.GroupParams;
@@ -46,7 +50,10 @@ import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
+import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.utils.StringUtil;
+import com.trible.scontact.value.PrefKeys;
+import com.trible.scontact.value.RequestCode;
 
 /**
  * @author Trible Chen
@@ -68,7 +75,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	LoadingDialog mLoadingDialog;
 	
 	IGroupControl mGroupController,mLocalGroupController,mReomoteGroupController;
-	List<GroupInfo> mGroupsInfo;
+	List<GroupInfo> mRemoteGroupsInfo,mLocalGroupsInfo,mCurGroupsInfo;
 	public static List<ContactInfo> myAllContacts;
 	View mCreateGroup;
 	ChooseGroupActionDialog mGroupAcionDialog;
@@ -154,8 +161,8 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			switch (arg0) {
 				case RequestCode.CREATE_GROUP:
 					GroupInfo newGroup = (GroupInfo) arg2.getSerializableExtra(CreateOrUpdateGroupActivity.RESULT_GROUP);
-					mGroupsInfo.add(newGroup);
-					mGroupListAdapter.setData(mGroupsInfo);
+					mRemoteGroupsInfo.add(newGroup);
+					mGroupListAdapter.setData(mRemoteGroupsInfo);
 					break;
 				case RequestCode.CHANGE_SETTING:
 					boolean signout = arg2.getBooleanExtra(SettingsActivity.SIGN_OUT_TAG, false);
@@ -189,7 +196,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 				loadMyAllContacts();
 				break;
 			case R.id.action_my_contacts:
-				simpleDisplayActivity(ViewAndAddMyContactsActivity.class);
+				simpleDisplayActivity(MyContactsActivity.class);
 				break;
 			default:
 				break;
@@ -228,9 +235,9 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			loadGroups();
 		} else {//drawer group item click
 			if ( mContactTabHelper.getSelection() == 0 ){
-				loadRomoteFriendsByGroup(mGroupsInfo.get(position).getId());
+				loadRomoteFriendsByGroup(mRemoteGroupsInfo.get(position).getId());
 			} else if ( mContactTabHelper.getSelection() == 1 ){
-				loadLocalFriendsByGroup(mGroupsInfo.get(position).getId());
+				loadLocalFriendsByGroup(mLocalGroupsInfo.get(position).getId());
 			}
 			mSelectedGroupPos = position;
 			mDrawerLayout.closeDrawers();
@@ -240,9 +247,16 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view,
 			int position, long id) {
-		
-		if ( mGroupsInfo != null && mGroupsInfo.get(position) != null ){
-			mGroupAcionDialog = new ChooseGroupActionDialog(this, mGroupsInfo.get(position));
+		if ( mContactTabHelper.getSelection() == 1 )return true;//only handle remote group
+		GroupInfo info = mRemoteGroupsInfo.get(position);
+		if ( mRemoteGroupsInfo != null && mRemoteGroupsInfo.get(position) != null ){
+			mGroupAcionDialog = new ChooseGroupActionDialog(this, mRemoteGroupsInfo.get(position));
+			AccountInfo uInfo = AccountInfo.getInstance();
+			if ( uInfo.getId().equals(info.getOwnerId())){
+				mGroupAcionDialog.setMutilVisible(true, true, true, false, false);
+			} else {
+				mGroupAcionDialog.setMutilVisible(true, false, true, true, false);
+			}
 			mGroupAcionDialog.show();
 		} else {
 			Bog.toast(R.string.invalid);
@@ -254,6 +268,14 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	//end override listener methods===============
 
 	//private methods===============
+	private void updateUILoadingGroup(){
+		mLoadingDialog.getDialog().dismissDialogger();
+		mLoadingDialog.show();
+	}
+	private void updateUILoadGroupDone(){
+		mLoadingDialog.getDialog().dismissDialogger();
+		mGroupListAdapter.setData(mCurGroupsInfo);
+	}
 	private void loadGroups(){
 		if ( mContactTabHelper.getSelection() == 0 ){
 			loadRemoteGroups();
@@ -262,34 +284,57 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		}
 	}
 	private void loadLocalGroups(){
-		mGroupController.getGroupsInfoList(0);
+		if ( mLocalGroupsInfo != null ){
+			mCurGroupsInfo = mLocalGroupsInfo;
+			updateUILoadGroupDone();
+			return;
+		}
+		updateUILoadingGroup();
+		SimpleAsynTask.doTask2(new AsynTaskListner() {
+			@Override
+			public void onTaskDone(NetWorkEvent event) {
+				if ( mContactTabHelper.getSelection() == 1 ){
+					mCurGroupsInfo = mLocalGroupsInfo;
+				}
+				updateUILoadGroupDone();
+			}
+			
+			@Override
+			public void doInBackground() {
+				mLocalGroupsInfo = mGroupController.getGroupInfoList(0);
+			}
+		});
 	}
 	private void loadRemoteGroups(){
-		
+		if ( mRemoteGroupsInfo != null ){
+			mCurGroupsInfo = mRemoteGroupsInfo;
+			updateUILoadGroupDone();
+			return;
+		}
 		mUserInfo = AccountInfo.getInstance();
-		mLoadingDialog.getDialog().dismissDialogger();
-		mLoadingDialog.show();
+		updateUILoadingGroup();
 		SContactAsyncHttpClient.post(
 				GroupParams.getUserGroupParams(mUserInfo.getId()),
 				null, new AsyncHttpResponseHandler(){
 					@Override
 					public void onFinish() {
 						super.onFinish();
-						mLoadingDialog.getDialog().dismissDialogger();
+						updateUILoadGroupDone();
 					}
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
 						super.onSuccess(arg0, arg1, arg2);
-						String content = StringUtil.getStringForByte(arg2);
 						ErrorInfo err;
-						mGroupsInfo		 = new Gson()
-												.fromJson(content,new TypeToken<List<GroupInfo>>(){}.getType());
-						if ( mGroupsInfo == null ){
-							mGroupsInfo = new ArrayList<GroupInfo>();
-							err = new Gson().fromJson(content, ErrorInfo.class);
+						mRemoteGroupsInfo	= GsonHelper.getInfosFromJson(arg2, new TypeToken<List<GroupInfo>>(){}.getType());
+						if ( mContactTabHelper.getSelection() == 0 ){
+							mCurGroupsInfo = mRemoteGroupsInfo;
+						}
+						if ( mRemoteGroupsInfo == null ){
+							mRemoteGroupsInfo = new ArrayList<GroupInfo>();
+							err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
 							Bog.toast(err.toString());
 						} else {
-							mGroupListAdapter.setData(mGroupsInfo);
+							updateUILoadGroupDone();
 						}
 					}
 					@Override
@@ -311,29 +356,34 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 
 	
 	void loadMyAllContacts(){
-		SContactAsyncHttpClient.post(ContactParams.getUserContactsParams(mUserInfo.getId()),
-				null, new AsyncHttpResponseHandler(){
-			@Override
-			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-				super.onSuccess(arg0, arg1, arg2);
-				myAllContacts = GsonHelper.getInfosFromJson(arg2, new ContactInfo().listType());
-				if ( myAllContacts != null ){
-				} else {
-					ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-					Bog.toast( err == null ? "" : err.toString());
+		//load cache first
+		myAllContacts = ContactInfo.getFromPref();
+		if ( ListUtil.isEmpty(myAllContacts) ){
+			SContactAsyncHttpClient.post(ContactParams.getUserContactsParams(mUserInfo.getId()),
+					null, new AsyncHttpResponseHandler(){
+				@Override
+				public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+					super.onSuccess(arg0, arg1, arg2);
+					myAllContacts = GsonHelper.getInfosFromJson(arg2, new ContactInfo().listType());
+					if ( myAllContacts != null ){
+						ContactInfo.saveToPref(myAllContacts);
+					} else {
+						Bog.toastErrorInfo(arg2);
+					}
 				}
-			}
-			@Override
-			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-					Throwable arg3) {
-				super.onFailure(arg0, arg1, arg2, arg3);
-				Bog.toast( R.string.connect_server_err );
-			}
-			@Override
-			public void onFinish() {
-				super.onFinish();
-			}
-		});
+				@Override
+				public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+						Throwable arg3) {
+					super.onFailure(arg0, arg1, arg2, arg3);
+					Bog.toast( R.string.connect_server_err );
+				}
+				@Override
+				public void onFinish() {
+					super.onFinish();
+				}
+			});
+		}
+		
 	}
 
 	//end private methods===========
@@ -345,14 +395,14 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 
 	@Override
 	public void onExited(GroupInfo g) {
-		if ( mGroupsInfo != null && g != null ){
-			for ( GroupInfo info : mGroupsInfo ){
+		if ( mRemoteGroupsInfo != null && g != null ){
+			for ( GroupInfo info : mRemoteGroupsInfo ){
 				if ( g.getId().equals(info.getId() )){
-					mGroupsInfo.remove(info);
+					mRemoteGroupsInfo.remove(info);
 					break;
 				}
 			}
 		}
-		mGroupListAdapter.setData(mGroupsInfo);
+		mGroupListAdapter.setData(mRemoteGroupsInfo);
 	}
 }

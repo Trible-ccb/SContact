@@ -6,6 +6,7 @@ import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.utils.Bog;
 
 import android.app.Application;
+import android.text.TextUtils;
 
 /**
  * @author Trible Chen
@@ -17,10 +18,15 @@ public class SContactApplication extends Application {
 	
 	public static String IP = "192.168.1.110";
 	public static String URL = "http://" + IP + ":8888/scontacts/services";
-	
 	public static void setIP(String s){
 		IP = s;
-		URL = "http://" + IP + ":8888/scontacts/services";
+		if ( s.contains(":") ){
+			URL = "http://" + IP + "/scontacts/services";
+		} else {
+			URL = "http://" + IP + ":8888/scontacts/services";
+		}
+		
+		PrefManager.getInstance().putString("IP", s);
 	}
 	@Override
 	public void onCreate() {
@@ -28,6 +34,8 @@ public class SContactApplication extends Application {
 		mAppContext = this;
 		initSystem();
 		initData();
+
+		
 	}
 
 	void initData(){

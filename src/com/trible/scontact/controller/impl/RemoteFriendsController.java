@@ -6,7 +6,7 @@ import java.util.List;
 import android.content.Context;
 
 import com.trible.scontact.controller.IFriendsControl;
-import com.trible.scontact.models.Friendinfo;
+import com.trible.scontact.pojo.AccountInfo;
 
 public class RemoteFriendsController implements IFriendsControl {
 
@@ -25,9 +25,9 @@ public class RemoteFriendsController implements IFriendsControl {
      * @return 
      */
 	@Override
-	public List<Friendinfo> getFriendsListByGroupId(long groupId) {
+	public List<AccountInfo> getFriendsListByGroupId(long groupId) {
   
-        List<Friendinfo> contactList = new ArrayList<Friendinfo>();  
+        List<AccountInfo> contactList = new ArrayList<AccountInfo>();  
   
         return contactList;  
 	}
@@ -39,19 +39,19 @@ public class RemoteFriendsController implements IFriendsControl {
 	}
 
 	@Override
-	public boolean createFriend(Friendinfo info) {
+	public boolean createFriend(AccountInfo info) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean updateFriend(Friendinfo uInfo) {
+	public boolean updateFriend(AccountInfo uInfo) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public List<Friendinfo> searchFriends(String fName) {
+	public List<AccountInfo> searchFriends(String fName) {
 		// TODO Auto-generated method stub
 		return null;
 	}

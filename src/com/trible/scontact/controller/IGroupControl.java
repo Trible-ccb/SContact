@@ -2,7 +2,8 @@ package com.trible.scontact.controller;
 
 import java.util.List;
 
-import com.trible.scontact.models.Groupsinfo;
+import com.trible.scontact.pojo.GroupInfo;
+
 
 public interface IGroupControl {
 
@@ -10,7 +11,7 @@ public interface IGroupControl {
 	 * @param userid
 	 * @return
 	 */
-	public List<Groupsinfo> getGroupsInfoList(int userid);
+	public List<GroupInfo> getGroupInfoList(int userid);
 	
 	/**delete the group of the user's own.also call apart group
 	 * @param groupId
@@ -24,14 +25,14 @@ public interface IGroupControl {
 	 * @param userId
 	 * @return
 	 */
-	public boolean createGroup(Groupsinfo info,int userId);
+	public boolean createGroup(GroupInfo info,int userId);
 	
 	/**
 	 * @param uInfo
 	 * @param userId
 	 * @return
 	 */
-	public boolean updateGroup(Groupsinfo uInfo,int userId);
+	public boolean updateGroup(GroupInfo uInfo,int userId);
 
 	/**Attention when implement this method
 	 * if a user has two or more number , he can choose some of them related to the group

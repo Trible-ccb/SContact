@@ -7,9 +7,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.text.TextUtils;
 
 import com.trible.scontact.controller.IFriendsControl;
-import com.trible.scontact.models.Friendinfo;
+import com.trible.scontact.pojo.AccountInfo;
+import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.value.GlobalValue;
 
 public class LocalFriendsController implements IFriendsControl {
 
@@ -28,7 +31,7 @@ public class LocalFriendsController implements IFriendsControl {
      * @return 
      */
 	@Override
-	public List<Friendinfo> getFriendsListByGroupId(long groupId) {
+	public List<AccountInfo> getFriendsListByGroupId(long groupId) {
 		String[] RAW_PROJECTION = new String[] { ContactsContract.Data.RAW_CONTACT_ID, };  
 		  
         String RAW_CONTACTS_WHERE = ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID  
@@ -46,37 +49,61 @@ public class LocalFriendsController implements IFriendsControl {
         		dataUri, RAW_PROJECTION,  
                 RAW_CONTACTS_WHERE, new String[] { groupId + "" }, "data1 asc");  
   
-        List<Friendinfo> contactList = new ArrayList<Friendinfo>();  
+        List<AccountInfo> contactList = new ArrayList<AccountInfo>();  
   
         while (cursor.moveToNext()) {  
             // RAW_CONTACT_ID  
             int col = cursor.getColumnIndex(ContactsContract.Data.RAW_CONTACT_ID);  
             int raw_contact_id = cursor.getInt(col);  
   
-            Friendinfo ce = new Friendinfo();  
+            AccountInfo ce = new AccountInfo();  
   
 //            ce.setContactId(raw_contact_id);
-            ce.setmFriendId(raw_contact_id);
+            ce.setId((long) raw_contact_id);
   
             Cursor dataCursor = mContext.getContentResolver().query(dataUri,  
                     null, "raw_contact_id=?",  
                     new String[] { raw_contact_id + "" }, null);  
   
-            StringBuffer sb = new StringBuffer();
+            List<ContactInfo> contacts = new ArrayList<ContactInfo>();
             while (dataCursor.moveToNext()) {  
                 String data1 = dataCursor.getString(dataCursor  
                         .getColumnIndex("data1"));  
                 String mime = dataCursor.getString(dataCursor  
                         .getColumnIndex("mimetype"));
-                if ("vnd.android.cursor.item/phone_v2".equals(mime)) {
-                	sb.append(data1 + "|");
-                } else if ("vnd.android.cursor.item/name".equals(mime)) {  
-                    ce.setmFriendName(data1); 
-                }  
+                int id = dataCursor.getInt(dataCursor.getColumnIndex("_id"));
+                if( mime != null ){
+                	int idx = mime.lastIndexOf("/");
+                	if ( idx != -1 ){
+                		mime = mime.substring(idx);
+                	}
+                }
+                if ( mime != null && !TextUtils.isEmpty(data1) ){
+                	if (mime.toLowerCase().contains("phone")) {
+                    	ContactInfo ci = new ContactInfo();
+                    	ci.setContact(data1);
+                    	contacts.add(ci);
+                    	ci.setType(GlobalValue.CTYPE_PHONE);
+                    	ci.setId((long) id);
+                    } else if (mime.toLowerCase().contains("name")) {
+                    	ce.setDisplayName(data1); 
+                    } else if (mime.toLowerCase().contains("email")) {
+                    	ContactInfo ci = new ContactInfo();
+                    	ci.setContact(data1);
+                    	contacts.add(ci);
+                    	ci.setId((long) id);
+                    	ci.setType(GlobalValue.CTYPE_EMAIL);
+                    } else if (mime.toLowerCase().contains("im")) {
+                    	ContactInfo ci = new ContactInfo();
+                    	ci.setContact(data1);
+                    	contacts.add(ci);
+                    	ci.setId((long) id);
+                    	ci.setType("IM");
+                    	ci.setType(GlobalValue.CTYPE_IM);
+                    }
+                }
             }
-            if ( sb != null && sb.length() > 0 && sb.lastIndexOf("|") == sb.length() - 1){
-            	ce.setmFriendNumber(sb.substring(0, sb.length() - 1 ));
-            }
+            ce.setContactsList(contacts);
             dataCursor.close();  
             contactList.add(ce);  
             ce = null;  
@@ -93,19 +120,19 @@ public class LocalFriendsController implements IFriendsControl {
 	}
 
 	@Override
-	public boolean createFriend(Friendinfo info) {
+	public boolean createFriend(AccountInfo info) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean updateFriend(Friendinfo uInfo) {
+	public boolean updateFriend(AccountInfo uInfo) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public List<Friendinfo> searchFriends(String fName) {
+	public List<AccountInfo> searchFriends(String fName) {
 		// TODO Auto-generated method stub
 		return null;
 	}

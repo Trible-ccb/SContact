@@ -63,7 +63,7 @@ public class ContactsListAdapter extends BaseAdapter {
 		final ContactViewHolder mHolder;
 		final int pos = position;
 		if ( convertView == null ){
-			convertView = mInflater.inflate(R.layout.contacts_list_item, null);
+			convertView = mInflater.inflate(R.layout.adapter_select_contacts_list_item, null);
 			mHolder = new ContactViewHolder();
 			mHolder.mContactName = (TextView) convertView.findViewById(R.id.contact_name);
 			mHolder.check = (CheckBox) convertView.findViewById(R.id.check_contact);

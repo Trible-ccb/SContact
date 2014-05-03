@@ -1,11 +1,18 @@
 package com.trible.scontact.components.widgets;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.http.Header;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -15,6 +22,7 @@ import com.trible.scontact.components.activity.CustomSherlockFragmentActivity;
 import com.trible.scontact.components.activity.JoinGroupActivity;
 import com.trible.scontact.components.activity.SContactMainActivity;
 import com.trible.scontact.components.activity.ViewGroupDetailsActivity;
+import com.trible.scontact.components.adpater.ChooseActionAdapter;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.GroupParams;
 import com.trible.scontact.networks.params.PhoneAndGroupParams;
@@ -24,15 +32,24 @@ import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
+import com.trible.scontact.utils.MD5FileUtil;
 
-public class ChooseGroupActionDialog implements OnClickListener{
+public class ChooseGroupActionDialog{
 	
 	PopupDialogger dialogger;
 	LoadingDialog mLoadingDialog;
 	
+	public static final String VIEW = "View Group";
+	public static final String APART = "Apart Group";
+	public static final String EDIT = "Edit Group";
+	public static final String JOIN = "Join Group";
+	public static final String EXIT = "Exit Group";
+	
 	CustomSherlockFragmentActivity mContext;
 	View contentView;
-	TextView see,apart,edit,exit,join;
+	ListView mActionList;
+	ChooseActionAdapter mAdapter;
+	List<String> mGroupActions;
 	
 	GroupInfo gInfo;
 	
@@ -49,74 +66,75 @@ public class ChooseGroupActionDialog implements OnClickListener{
 		if ( context instanceof OnGroupActionListener ){
 			mGroupActionListener = (OnGroupActionListener) context;
 		}
+		mAdapter = new ChooseActionAdapter(context);
+		mGroupActions = new ArrayList<String>();
 		contentView = createContentView();
 	}
 	
 	public void setMutilVisible(boolean canview,boolean canapart,boolean canedit,boolean canexit,boolean canjoin ){
-		see.setVisibility(canview ? 0 : View.GONE );
-		apart.setVisibility(canapart ? 0 : View.GONE );
-		edit.setVisibility(canedit ? 0 : View.GONE );
-		exit.setVisibility(canexit ? 0 : View.GONE );
-		join.setVisibility(canjoin ? 0 : View.GONE );
+		mGroupActions.clear();
+		if ( canview ){
+			mGroupActions.add(VIEW);
+		}
+		if ( canedit ){
+			mGroupActions.add(EDIT);
+		}
+		if ( canapart ){
+			mGroupActions.add(APART);
+		}
+		if ( canjoin ){
+			mGroupActions.add(JOIN);
+		}
+		if ( canexit ){
+			mGroupActions.add(EXIT);
+		}
+		mAdapter.setDatas( mGroupActions );
 	}
 	
 	private View createContentView(){
 		View view = LayoutInflater.from(mContext).inflate(R.layout.popup_choose_group_action, null);
-		see = (TextView) view.findViewById(R.id.view_group_action);
-		apart = (TextView) view.findViewById(R.id.apart_group_action);
-		edit = (TextView) view.findViewById(R.id.edit_group_action);
-		exit = (TextView) view.findViewById(R.id.exit_group_action);
-		join = (TextView) view.findViewById(R.id.join_group_action);
-		
-		see.setOnClickListener(this);
-		apart.setOnClickListener(this);
-		edit.setOnClickListener(this);
-		exit.setOnClickListener(this);
-		join.setOnClickListener(this);
-		AccountInfo uInfo = AccountInfo.getInstance();
-		if ( uInfo.getId().equals(gInfo.getOwnerId())){
-			setMutilVisible(true, true, true, false, false);
-		} else {
-			setMutilVisible(true, false, false, true, true);
-		}
+		mActionList = (ListView) view.findViewById(R.id.group_action_list_view);
+		mActionList.setAdapter(mAdapter);
+		mActionList.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				String action = mGroupActions.get(position);
+				if ( VIEW.equals(action) ){
+					mContext.simpleDisplayActivity(
+							ViewGroupDetailsActivity.getInentMyself(gInfo));
+				} else if ( APART.equals(action) ){
+					apartGroup();
+				} else if ( EDIT.equals(action) ){
+					if ( ListUtil.isEmpty(SContactMainActivity.myAllContacts) ){
+						Bog.toast(R.string.load_contacts_err);
+					} else {
+						mContext.simpleDisplayActivity(
+								CreateOrUpdateGroupActivity.getIntentMyself(gInfo));
+					}
+				} else if ( EXIT.equals(action) ){
+					exitGroup();
+				} else if ( JOIN.equals(action) ){
+					mContext.simpleDisplayActivity(
+							JoinGroupActivity.getIntentMyself(gInfo));
+				}
+				dialogger.dismissDialogger();
+			}
+			
+		});
 		dialogger = PopupDialogger.createDialog(mContext);
 		return view;
 	}
 	public void show(){
 		dialogger.setTitleText(null);
-		dialogger.showDialog(mContext,contentView);
-	}
-
-
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-			case R.id.view_group_action:
-				mContext.simpleDisplayActivity(
-						ViewGroupDetailsActivity.getInentMyself(gInfo));
-				break;
-			case R.id.edit_group_action:
-				if ( ListUtil.isEmpty(SContactMainActivity.myAllContacts) ){
-					Bog.toast(R.string.load_contacts_err);
-				} else {
-					mContext.simpleDisplayActivity(
-							CreateOrUpdateGroupActivity.getIntentMyself(gInfo));
-				}
-				break;
-			case R.id.apart_group_action:
-				apartGroup();
-				break;
-			case R.id.exit_group_action:
-				exitGroup();
-				break;
-			case R.id.join_group_action:
-				mContext.simpleDisplayActivity(
-						JoinGroupActivity.getIntentMyself(gInfo));
-				break;
-		default:
-			break;
+		dialogger.setUseNoneScrollRootViewId();
+		if ( ListUtil.isNotEmpty(mGroupActions) ){
+			dialogger.showDialog(mContext,contentView);
+		} else {
+			Bog.toast(R.string.unsupport_type);
 		}
-		dialogger.dismissDialogger();
+		
 	}
 	
 	void apartGroup(){

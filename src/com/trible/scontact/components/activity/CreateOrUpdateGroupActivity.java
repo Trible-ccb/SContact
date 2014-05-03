@@ -32,9 +32,9 @@ import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.utils.Bog;
-import com.trible.scontact.utils.GlobalValue;
 import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.utils.StringUtil;
+import com.trible.scontact.value.GlobalValue;
 
 public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 											implements OnClickListener{
@@ -52,7 +52,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 	Button mChooseContacts;
 	
 	GroupInfo mGroupInfo;
-	List<ContactInfo> mContacts;
+	List<ContactInfo> mContactsInGroup;//the contact list already in group
 	
 	public static final String RESULT_GROUP = "result_group";
 	
@@ -205,7 +205,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 		}
 		mLoadingDialog.getDialog().dismissDialogger();
 		mLoadingDialog.show();
-		mGroupInfo = getGroupInfoFromInput();
+		GroupInfo tmp = getGroupInfoFromInput();
 		List<ContactInfo> chooseContacts = mChooseContactsListDialog.getSelectedContacts();
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
@@ -214,8 +214,11 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 		}
 		int idx = sb.lastIndexOf(",");
 		sb.replace(idx, sb.length(), "]");
+		String url = mGroupInfo == null 
+				? GroupParams.getAddParams(tmp,sb.toString()) 
+						: GroupParams.getUpdateParams(tmp);
 		SContactAsyncHttpClient.post(
-				GroupParams.getAddParams(mGroupInfo,sb.toString()),
+				url,
 				null, new AsyncHttpResponseHandler(){
 					@Override
 					public void onFinish() {

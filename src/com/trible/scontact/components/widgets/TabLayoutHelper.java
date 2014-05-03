@@ -61,6 +61,7 @@ public class TabLayoutHelper implements OnClickListener{
 		if ( !v.isSelected() ){
 			resetChilds();
 			v.setSelected(true);
+			mDefaultSelection = mViewGroup.indexOfChild(v);
 			if ( mChildListner != null ){
 				mChildListner.onItemClick(null, v, (Integer)v.getTag(), v.getId());
 			}

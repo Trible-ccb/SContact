@@ -15,6 +15,8 @@ import com.trible.scontact.components.adpater.FriendContactsListAdapter;
 import com.trible.scontact.components.widgets.ChooseFriendActionDialog;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.utils.IntentUtil;
+import com.trible.scontact.value.GlobalValue;
 
 
 /**
@@ -52,8 +54,7 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 	}
 
 	void initView(){
-		mChooseFriendActionDialog = new ChooseFriendActionDialog(this, mFriend);
-		mChooseFriendActionDialog.setMutilVisible(true, true, false);
+		
 		mFriendName = (TextView) findViewById(R.id.friend_name);
 		mFriendImg = (ImageView) findViewById(R.id.friend_img);
 		mFriendDesc = (TextView) findViewById(R.id.friend_desc);
@@ -73,6 +74,17 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		String type = mContacts.get(position).getType();
+		String contact = mContacts.get(position).getContact();
+		mChooseFriendActionDialog = new ChooseFriendActionDialog(this, contact);
+		if ( GlobalValue.CTYPE_EMAIL.equals(type) ){
+			IntentUtil.sendEmail(this, contact, "", "");
+			return;
+		} else if ( GlobalValue.CTYPE_PHONE.equals(type) ){
+			mChooseFriendActionDialog.setMutilVisible(true, true, false);
+		} else if ( GlobalValue.CTYPE_IM.equals(type) ){
+			
+		} 
 		mChooseFriendActionDialog.show();
 	}
 }

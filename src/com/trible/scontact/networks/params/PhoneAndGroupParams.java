@@ -39,13 +39,26 @@ public class PhoneAndGroupParams {
 	public static String getExitGroupParams(Long gid,Long uid){
 		PhoneAndGroupInfo info = new PhoneAndGroupInfo();
 		info.setGroupId(gid);
-		info.setId(uid);
+		info.setUserId(uid);
 		String v = new Gson().toJson(info);
 		String url = FullAccountPath 
 				+ "/exit_group"
 				+ "?json=" 
 				+ StringUtil.getEncodeURLParams(v);
 		Bog.v("getSearchContactParams url = " + url);
+		return url;
+	}
+	
+	public static String getCheckUserInGroupParams(Long gid,Long uid){
+		PhoneAndGroupInfo info = new PhoneAndGroupInfo();
+		info.setGroupId(gid);
+		info.setUserId(uid);
+		String v = new Gson().toJson(info);
+		String url = FullAccountPath 
+				+ "/check_phoneandgroupInfo"
+				+ "?json=" 
+				+ StringUtil.getEncodeURLParams(v);
+		Bog.v("checkUserInGroupParams url = " + url);
 		return url;
 	}
 }

@@ -5,7 +5,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import com.google.gson.reflect.TypeToken;
-import com.trible.scontact.utils.GlobalValue;
+import com.trible.scontact.value.GlobalValue;
 
  
 public class ErrorInfo extends BaseInfo implements Serializable {

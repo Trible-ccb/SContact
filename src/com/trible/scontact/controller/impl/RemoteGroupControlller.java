@@ -6,7 +6,7 @@ import java.util.List;
 import android.content.Context;
 
 import com.trible.scontact.controller.IGroupControl;
-import com.trible.scontact.models.Groupsinfo;
+import com.trible.scontact.pojo.GroupInfo;
 
 public class RemoteGroupControlller implements IGroupControl{
 	
@@ -16,8 +16,8 @@ public class RemoteGroupControlller implements IGroupControl{
 		mContext = c;
 	}
 	@Override
-	public List<Groupsinfo> getGroupsInfoList(int userid) {
-		List<Groupsinfo> gInfos = new ArrayList<Groupsinfo>();
+	public List<GroupInfo> getGroupInfoList(int userid) {
+		List<GroupInfo> gInfos = new ArrayList<GroupInfo>();
 		return gInfos;
 	}
 
@@ -28,12 +28,12 @@ public class RemoteGroupControlller implements IGroupControl{
 	}
 
 	@Override
-	public boolean createGroup(Groupsinfo info, int userId) {
+	public boolean createGroup(GroupInfo info, int userId) {
 		return false;
 	}
 
 	@Override
-	public boolean updateGroup(Groupsinfo uInfo, int userId) {
+	public boolean updateGroup(GroupInfo uInfo, int userId) {
 		// TODO Auto-generated method stub
 		return false;
 	}

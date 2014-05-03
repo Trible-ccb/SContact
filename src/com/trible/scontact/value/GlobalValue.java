@@ -1,4 +1,4 @@
-package com.trible.scontact.utils;
+package com.trible.scontact.value;
 
 import java.util.HashMap;
 
@@ -102,6 +102,17 @@ public class GlobalValue {
 	public static final Integer CSTATUS_USED = 0;
 	public static final Integer CSTATUS_DELETED = 1;
 	public static final Integer CSTATUS_NULL = CSTATUS_USED;
+	
+//	contact types values;
+	public static final String CTYPE_PHONE = "Phone";
+	public static final String CTYPE_EMAIL = "Email";
+	public static final String CTYPE_IM = "IM";
+	public static final String CTYPE_QQ = "QQ";
+	public static final String CTYPE_WEIXIN = "WeiXin";
+	public static final String CTYPE_ZUOJI = "Home Phone";
+	
+
+	public static String[] CONTACT_TYPES = {CTYPE_PHONE,CTYPE_EMAIL,CTYPE_QQ,CTYPE_WEIXIN,CTYPE_ZUOJI};
 	/** ===Contact Static Value End=== */
 	
 	/** ===Group Static Value Start=== */
@@ -144,4 +155,5 @@ public class GlobalValue {
 		GROUP_CAPACITY_RULE.put(GTYPE_NORMAL, 100);
 		GROUP_CAPACITY_RULE.put(GTYPE_NULL, 50);
 	}
+	
 }

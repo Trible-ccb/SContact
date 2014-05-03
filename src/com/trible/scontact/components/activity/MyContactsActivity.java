@@ -13,12 +13,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
+import com.trible.scontact.components.adpater.ContactTypeSpinnerAdapter;
 import com.trible.scontact.components.adpater.FriendContactsListAdapter;
 import com.trible.scontact.components.widgets.ChooseFriendActionDialog;
 import com.trible.scontact.components.widgets.LoadingDialog;
@@ -35,41 +37,49 @@ import com.trible.scontact.utils.StringUtil;
  * @author Trible Chen
  *here you can see the details of a special friend and do some action;
  */
-public class ViewAndAddMyContactsActivity extends CustomSherlockFragmentActivity 
+public class MyContactsActivity extends CustomSherlockFragmentActivity 
 										implements OnItemClickListener,OnClickListener
 												{
 
 	ListView mContactsListView;
 	FriendContactsListAdapter mAdapter;
 	EditText mContactNameET;
-	Button mAddBtn;
+	Spinner mContactTypeSpinner;
+	ContactTypeSpinnerAdapter mTypeAdapter;
+	View mCreateRootView;
 	
 	LoadingDialog mDialog;
 	
 	List<ContactInfo> mContacts;
 
+	boolean mContactChange;
+	boolean isShowAdd;
+	
 	public static Bundle getInentMyself() {
 		Bundle b = new Bundle();
-		b.putSerializable("clazz", ViewAndAddMyContactsActivity.class);
+		b.putSerializable("clazz", MyContactsActivity.class);
 		return b;
 	}
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
-		setContentView(R.layout.activity_view_my_contacts);
+		setContentView(R.layout.activity_my_contacts);
 		initView();
 		initViewData();
 	}
 
 	void initView(){
 		mDialog = new LoadingDialog(this);
-		mAddBtn = (Button) findViewById(R.id.add_btn);
+		mCreateRootView = findViewById(R.id.create_contact_root);
+		closeAddAction();
+		mContactTypeSpinner = (Spinner) findViewById(R.id.contact_type);
 		mContactNameET = (EditText) findViewById(R.id.contact_name);
 		mContactsListView = (ListView) findViewById(R.id.my_contacts_list_view);
-		mAddBtn.setOnClickListener(this);
 	}
 	void initViewData(){
+		mTypeAdapter = new ContactTypeSpinnerAdapter(this);
+		mContactTypeSpinner.setAdapter(mTypeAdapter);
 		mAdapter = new FriendContactsListAdapter(this);
 		mContactsListView.setAdapter(mAdapter);
 		mContactsListView.setOnItemClickListener(this);
@@ -88,10 +98,21 @@ public class ViewAndAddMyContactsActivity extends CustomSherlockFragmentActivity
 		refreshTitle();
 	}
 	@Override
+	protected void onPause() {
+		super.onPause();
+		if ( mContactChange )
+		ContactInfo.saveToPref(mContacts);
+	}
+	
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.action_add:
-				
+				if ( isShowAdd ){
+					doAddContact();
+				} else {
+					showAddAction();
+				}
 				break;
 			default:
 				break;
@@ -109,15 +130,18 @@ public class ViewAndAddMyContactsActivity extends CustomSherlockFragmentActivity
 
 	@Override
 	public void onClick(View v) {
-		switch (v.getId()) {
-			case R.id.add_btn:
-				doAddContact();
-				break;
-
-		default:
-			break;
-		}
+		
 	}
+	
+	void closeAddAction(){
+		mCreateRootView.setVisibility(View.GONE);
+		isShowAdd = false;
+	}
+	void showAddAction(){
+		mCreateRootView.setVisibility(View.VISIBLE);
+		isShowAdd = true;
+	}
+	
 	void doAddContact(){
 		String name = mContactNameET.getText().toString();
 		if ( !StringUtil.isValidName(name) ){
@@ -140,6 +164,8 @@ public class ViewAndAddMyContactsActivity extends CustomSherlockFragmentActivity
 							mAdapter.setData(mContacts);
 							refreshTitle();
 							mContactNameET.setText("");
+							mContactChange = true;
+							closeAddAction();
 						} else {
 							Bog.toastErrorInfo(arg2);
 						}
@@ -155,5 +181,9 @@ public class ViewAndAddMyContactsActivity extends CustomSherlockFragmentActivity
 						mDialog.getDialog().dismissDialogger();
 					}
 				});
+	}
+	
+	void doEditContact(){
+		
 	}
 }

@@ -21,7 +21,8 @@ import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
-import com.trible.scontact.utils.GlobalValue;
+import com.trible.scontact.utils.IntentUtil;
+import com.trible.scontact.value.GlobalValue;
 
 public class SettingsActivity extends  CustomSherlockFragmentActivity implements OnClickListener{
 	
@@ -148,18 +149,16 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 	}
 	
 	void sendFeedBack(){
-		Intent emailIntent = new Intent(Intent.ACTION_SENDTO,Uri.fromParts("mailto", "chenchuibo@gmail.com", null));
-		emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,"Feedback"+getVersion());
 		String format = "---------\nDevice: %s\nBrand: %s\nOS: %s\nBuild: %s\n---------\n";
-		emailIntent.putExtra(android.content.Intent.EXTRA_TEXT,
-				String.format(format  
-				,Build.MODEL
-				,Build.BRAND
-				,"Android " + Build.VERSION.RELEASE
-				,Build.DISPLAY
-				));
-		emailIntent = Intent.createChooser(emailIntent,"choose email");
-		startActivity(emailIntent);
+		IntentUtil.sendEmail(this,
+				"chenchuibo@gmail.com"
+				, "Feedback"+getVersion()
+				, String.format(format  
+						,Build.MODEL
+						,Build.BRAND
+						,"Android " + Build.VERSION.RELEASE
+						,Build.DISPLAY
+						));
 	}
 	
 	void goToRank(){

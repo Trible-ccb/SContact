@@ -26,6 +26,7 @@
         android:layout_toRightOf="@id/edit_hint_view"
         android:textColorHint="@color/grey_999999"
         android:text=""
+        android:singleLine="true"
         android:layout_marginRight="28dp"
         />
 

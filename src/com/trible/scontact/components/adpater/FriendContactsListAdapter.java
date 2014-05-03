@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -53,7 +54,7 @@ public class FriendContactsListAdapter extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		return mDatas.get(position).getId();
+		return position;
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class FriendContactsListAdapter extends BaseAdapter {
 		final ContactViewHolder mHolder;
 		final int pos = position;
 		if ( convertView == null ){
-			convertView = mInflater.inflate(R.layout.friend_contacts_list_item, null);
+			convertView = mInflater.inflate(R.layout.adapter_view_contacts_list_item, null);
 			mHolder = new ContactViewHolder();
 			mHolder.mContactName = (TextView) convertView.findViewById(R.id.contact_name);
 			mHolder.mContactType = (TextView) convertView.findViewById(R.id.contact_type);
@@ -71,7 +72,11 @@ public class FriendContactsListAdapter extends BaseAdapter {
 		}
 		final ContactInfo info = mDatas.get(pos);
 		mHolder.mContactName.setText(info.getContact());
-		mHolder.mContactType.setText(mContext.getString(R.string.hint_phone));
+		String type = "Unkown Type";
+		if ( !TextUtils.isEmpty(info.getType() )){
+			type = info.getType();
+		}
+		mHolder.mContactType.setText(type);
 		return convertView;
 	}
 

@@ -49,7 +49,7 @@ public class FriendsListAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		UserItemHolder mHolder;
 		if ( convertView == null ){
-			convertView = mInflater.inflate(R.layout.fragment_friends_list_item, null);
+			convertView = mInflater.inflate(R.layout.adapter_friends_list_item, null);
 			mHolder = new UserItemHolder();
 			mHolder.mUserName = (TextView) convertView.findViewById(R.id.users_list_item_name);
 			mHolder.mUserDesc = (TextView) convertView.findViewById(R.id.users_list_item_desc);
@@ -62,11 +62,17 @@ public class FriendsListAdapter extends BaseAdapter {
 		AccountInfo info = mDatas.get(position);
 		mHolder.mUserName.setText(info.getDisplayName());
 		mHolder.mUserDesc.setText(info.getDescription());
+		Long time = info.getCreateTime();
+		if ( time != null ){
+			Calendar cal = Calendar.getInstance(Locale.CHINA);
+			cal.setTimeInMillis(info.getCreateTime());
+			mHolder.mUserUpdateTime.setText(
+					cal.get(cal.YEAR) + "/" + cal.get(cal.MONTH) + "/" + cal.get(cal.DAY_OF_MONTH));
+		} else {
+			mHolder.mUserUpdateTime.setVisibility(View.GONE);
+		}
+
 		
-		Calendar cal = Calendar.getInstance(Locale.CHINA);
-		cal.setTimeInMillis(info.getCreateTime());
-		mHolder.mUserUpdateTime.setText(
-				cal.get(cal.YEAR) + "/" + cal.get(cal.MONTH) + "/" + cal.get(cal.DAY_OF_MONTH));
 		return convertView;
 	}
 

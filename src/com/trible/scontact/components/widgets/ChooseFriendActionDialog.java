@@ -1,84 +1,101 @@
 package com.trible.scontact.components.widgets;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 
 import com.trible.scontact.R;
 import com.trible.scontact.components.activity.CustomSherlockFragmentActivity;
-import com.trible.scontact.pojo.AccountInfo;
-import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.components.adpater.ChooseActionAdapter;
+import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.IntentUtil;
+import com.trible.scontact.utils.ListUtil;
 
-public class ChooseFriendActionDialog implements OnClickListener{
+public class ChooseFriendActionDialog{
 	
+	LoadingDialog mLoadingDialog;
 	PopupDialogger dialogger;
-
+	
+	public static final String CALL = "Call";
+	public static final String MSG = "Message";
+	public static final String INVITE = "Invite";
+	
 	CustomSherlockFragmentActivity mContext;
 	View contentView;
-	TextView call,msg,invite;
-	AccountInfo mAccountInfo;
+	ListView mActionList;
+	ChooseActionAdapter mAdapter;
+	List<String> mActions;
+	
+	String contact;
 	
 	public PopupDialogger getDialog() {
 		return dialogger;
 	}
 
 
-	public  ChooseFriendActionDialog(Context context,AccountInfo fInfo) {
+	public  ChooseFriendActionDialog(Context context,String contact) {
 		mContext = (CustomSherlockFragmentActivity) context;
-		mAccountInfo = fInfo;
+		this.contact = contact;
+		mAdapter = new ChooseActionAdapter(context);
+		mActions = new ArrayList<String>();
 		contentView = createContentView();
 	}
 	
 	public void setMutilVisible(boolean canCall,boolean canMsg,boolean canInvite){
-		call.setVisibility(canCall ? 0 : View.GONE );
-		msg.setVisibility(canMsg ? 0 : View.GONE );
-		invite.setVisibility(canInvite ? 0 : View.GONE );
+		mActions.clear();
+		if ( canCall ){
+			mActions.add(CALL);
+		}
+		if ( canMsg ){
+			mActions.add(MSG);
+		}
+		if ( canInvite ){
+			mActions.add(INVITE);
+		}
+		mAdapter.setDatas( mActions );
 	}
 	private View createContentView(){
 		View view = LayoutInflater.from(mContext).
 				inflate(R.layout.popup_choose_friend_action, null);
-		call = (TextView) view.findViewById(R.id.call_action);
-		msg = (TextView) view.findViewById(R.id.message_action);
-		invite = (TextView) view.findViewById(R.id.invite_action);
-		call.setOnClickListener(this);
-		msg.setOnClickListener(this);
-		invite.setOnClickListener(this);
+		mActionList = (ListView) view.findViewById(R.id.friend_action_list_view);
+		mActionList.setAdapter(mAdapter);
+		mActionList.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				String action = mActions.get(position);
+				if ( CALL.equals(action) ){
+					IntentUtil.call(mContext, contact);
+				} else if ( MSG.equals(action) ){
+					IntentUtil.sendMsg(mContext, contact);
+				} else if ( INVITE.equals(action) ){
+					Bog.toast(R.string.unsupport_type);
+				} else {
+					Bog.toast(R.string.unsupport_type);
+				}
+					
+				dialogger.dismissDialogger();
+			}
+			
+		});
 		dialogger = PopupDialogger.createDialog(mContext);
 		return view;
 	}
 	public void show(){
+		dialogger.setUseNoneScrollRootViewId();
 		dialogger.setTitleText(null);
-		dialogger.showDialog(mContext,contentView);
-	}
-	void actionOnContact(){
-		if ( mAccountInfo != null ){
-			List<ContactInfo> nums = mAccountInfo.getContactsList();
-			if ( nums != null && nums.size() > 0 ){
-				IntentUtil.call(mContext, nums.get(0).getContact());
-			}
+		if ( ListUtil.isNotEmpty(mActions) ){
+			dialogger.showDialog(mContext,contentView);
+		} else {
+			Bog.toast(R.string.unsupport_type);
 		}
-	}
 
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-			case R.id.call_action:
-				actionOnContact();
-				break;
-			case R.id.message_action:
-				actionOnContact();
-				break;
-			case R.id.invite_action:
-				
-				break;
-		default:
-			break;
-		}
-		dialogger.dismissDialogger();
 	}
 }

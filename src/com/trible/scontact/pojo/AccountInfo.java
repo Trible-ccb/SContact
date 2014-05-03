@@ -7,7 +7,8 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.trible.scontact.managers.PrefManager;
-import com.trible.scontact.utils.GlobalValue;
+import com.trible.scontact.value.GlobalValue;
+import com.trible.scontact.value.PrefKeys;
 
  
  
@@ -147,12 +148,12 @@ public class AccountInfo extends BaseInfo implements Serializable{
 		PrefManager pref = PrefManager.getInstance();
 		String v = new Gson().toJson(this);
 		pref.putString(AccountInfo.class.getSimpleName() + id, v);
-		pref.putLong("current_id", id);
+		pref.putLong(PrefKeys.CURRENT_USER_ID, id);
 	}
 	
 	public static AccountInfo getFromPref(){
 		PrefManager pref = PrefManager.getInstance();
-		Long id = pref.getLong("current_id");
+		Long id = pref.getLong(PrefKeys.CURRENT_USER_ID);
 		AccountInfo info = new Gson().fromJson(
 				pref.getString(AccountInfo.class.getSimpleName() + id), AccountInfo.class);
 		return info;

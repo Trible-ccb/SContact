@@ -4,32 +4,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
 		android:orientation="vertical"
-		android:layout_centerInParent="true"
-		android:id="@+id/popup_choose_friend_action_container"
 		android:background="#0000"
         >
-		<TextView 
-		    android:layout_width="match_parent"
-		    android:layout_height="wrap_content"
-		    android:text="@string/call_lable"
-		    android:id="@+id/call_action"
-		    style="@style/ChooseActionItemStyle"
-		    />
-		<include layout="@layout/layout_divider"/>
-		<TextView 
-		    android:layout_width="match_parent"
-		    android:layout_height="wrap_content"
-		    android:text="@string/message_lable"
-		    android:id="@+id/message_action"
-		    style="@style/ChooseActionItemStyle"
-		    />
-		<include layout="@layout/layout_divider"/>
-		<TextView 
-		    android:layout_width="match_parent"
-		    android:layout_height="wrap_content"
-		    android:text="@string/invite_lable"
-		    android:id="@+id/invite_action"
-		    style="@style/ChooseActionItemStyle"
-		    />
+	<ListView
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:id="@+id/friend_action_list_view"
+	    android:listSelector="@drawable/selector_midgreen_trans"
+	    style="@style/ListViewStyle"
+	    />
 </LinearLayout>
-

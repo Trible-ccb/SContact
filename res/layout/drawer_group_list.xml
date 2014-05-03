@@ -32,7 +32,7 @@
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:id="@+id/group_list_view"
-	    android:cacheColorHint="#000000"
 	    android:listSelector="@drawable/selector_midgreen_trans"
+	    style="@style/ListViewStyle"
 	    />
 </LinearLayout>

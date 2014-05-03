@@ -37,6 +37,7 @@ public class ChooseContactsListDialog{
 		View view = LayoutInflater.from(mContext).inflate(R.layout.popup_contact_list, null);
 		ListView mContactsListView = (ListView) view.findViewById(R.id.contacts_list_view);
 		dialogger = PopupDialogger.createDialog(mContext);
+		dialogger.setUseNoneScrollRootViewId();
 		mAdapter = new ContactsListAdapter(mContext);
 		mContactsListView.setAdapter(mAdapter);
 		return view;

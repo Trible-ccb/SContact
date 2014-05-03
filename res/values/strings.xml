@@ -35,6 +35,7 @@
     <string name="success">Success.</string>
     <string name="waiting">Waiting</string>
     <string name="group_name_empty">Please input name.</string>
+    <string name="unsupport_type"> Unsupport Type </string>
     <!-- hint text -->
     <string name="hint_contact">Email or Number etc.</string>
     <string name="hint_action_search">Group Or Friend</string>

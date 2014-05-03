@@ -9,7 +9,7 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Groups;
 
 import com.trible.scontact.controller.IGroupControl;
-import com.trible.scontact.models.Groupsinfo;
+import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.utils.Bog;
 
 public class LocalGroupControlller implements IGroupControl{
@@ -20,21 +20,21 @@ public class LocalGroupControlller implements IGroupControl{
 		mContext = c;
 	}
 	@Override
-	public List<Groupsinfo> getGroupsInfoList(int userid) {
-		List<Groupsinfo> gInfos = new ArrayList<Groupsinfo>();
+	public List<GroupInfo> getGroupInfoList(int userid) {
+		List<GroupInfo> gInfos = new ArrayList<GroupInfo>();
         Cursor cursor = null;  
         try {  
             cursor = mContext.getContentResolver()
             		.query(Groups.CONTENT_URI,  
                     null, null, null, null);  
             while (cursor.moveToNext()) {  
-            	Groupsinfo ge = new Groupsinfo();  
+            	GroupInfo ge = new GroupInfo();  
                 int groupId = cursor.getInt(
                 		cursor.getColumnIndex(Groups._ID)); // 组id  
                 String groupName = cursor.getString(
                 		cursor.getColumnIndex(Groups.TITLE)); // 组名  
-                ge.setGroupId(Long.valueOf(groupId));
-                ge.setmGroupName(groupName);  
+                ge.setId(Long.valueOf(groupId));
+                ge.setDisplayName(groupName);  
                 gInfos.add(ge);  
                 ge = null;  
             }  
@@ -54,13 +54,13 @@ public class LocalGroupControlller implements IGroupControl{
 	}
 
 	@Override
-	public boolean createGroup(Groupsinfo info, int userId) {
+	public boolean createGroup(GroupInfo info, int userId) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean updateGroup(Groupsinfo uInfo, int userId) {
+	public boolean updateGroup(GroupInfo uInfo, int userId) {
 		// TODO Auto-generated method stub
 		return false;
 	}

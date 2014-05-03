@@ -1,5 +1,6 @@
 package com.trible.scontact.components.fragment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.Header;
@@ -47,6 +48,8 @@ public class FriendsListFragment extends SherlockFragment
 	ChooseFriendActionDialog mFriendActionDialog;
 	CustomSherlockFragmentActivity mActivity;
 	
+	boolean isLocalData;
+	
 	public static FriendsListFragment getInstance(){
 		return new FriendsListFragment();
 	}
@@ -82,22 +85,26 @@ public class FriendsListFragment extends SherlockFragment
 	}
 	
 	public void loadLocalFriendsByGroup(final long gid){
-		
+		isLocalData = true;
 		SimpleAsynTask.doTask2(new AsynTaskListner() {
 			
 			@Override
 			public void onTaskDone(NetWorkEvent event) {
-				Bog.toastDebug("members = " + mFriendinfo.size());
+				setTitle("" + mFriendinfo.size() );
 				mFriendsListAdapter.setData(mFriendinfo);
 			}
 			
 			@Override
 			public void doInBackground() {
-//				mFriendinfo = mFriendsController.getFriendsListByGroupId(gid);
+				mFriendinfo = mFriendsController.getFriendsListByGroupId(gid);
+				if ( mFriendinfo == null ){
+					mFriendinfo = new ArrayList<AccountInfo>();
+				}
 			}
 		});
 	}
 	public void loadRomoteFriendsByGroup(Long gid){
+		isLocalData = false;
 		SContactAsyncHttpClient.post(AccountParams.getAccountByGroupIdParams(gid),
 				null, new AsyncHttpResponseHandler(){
 			@Override
@@ -107,8 +114,7 @@ public class FriendsListFragment extends SherlockFragment
 				mFriendsListAdapter.setData(mFriendinfo);
 				if ( mFriendinfo != null ){
 				} else {
-					ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-					Bog.toast( err == null ? ErrorInfo.getUnkownErr().toString() : err.toString());
+					Bog.toastErrorInfo(arg2);
 				}
 			}
 			@Override
@@ -135,11 +141,20 @@ public class FriendsListFragment extends SherlockFragment
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view,
 			int position, long id) {
-		if ( mFriendinfo != null ){
-			mFriendActionDialog = new ChooseFriendActionDialog(getActivity(),
-					mFriendinfo.get(position));
-			mFriendActionDialog.show();
-		}
+//		if ( mFriendinfo != null ){
+//			mFriendActionDialog = new ChooseFriendActionDialog(getActivity(),
+//					mFriendinfo.get(position));
+//			if ( isLocalData ){
+//				mFriendActionDialog.setMutilVisible(true, true, true);
+//			} else {
+//				mFriendActionDialog.setMutilVisible(true, true, false);
+//			}
+//			mFriendActionDialog.show();
+//		}
 		return false;
+	}
+	
+	void setTitle(String title){
+		mActivity.setTitle(title);
 	}
 }

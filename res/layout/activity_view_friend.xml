@@ -44,7 +44,6 @@
    	    android:layout_height="wrap_content"
    	    android:id="@+id/friend_contacts_list_view"
    	    android:cacheColorHint="@color/transparent"
-   	    android:divider="@color/grey_line_cc"
    	    android:listSelector="@drawable/pressor_blue_transparent"
    	    android:layout_marginTop="16dp"
    	    />
