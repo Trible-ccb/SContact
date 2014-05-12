@@ -16,8 +16,8 @@ public class SContactApplication extends Application {
 
 	public static SContactApplication mAppContext;
 	
-	public static String IP = "192.168.1.110";
-	public static String URL = "http://" + IP + ":8888/scontacts/services";
+	private static String IP = "192.168.1.104";
+	private static String URL = "http://" + IP + ":8888/scontacts/services";
 	public static void setIP(String s){
 		IP = s;
 		if ( s.contains(":") ){
@@ -28,6 +28,12 @@ public class SContactApplication extends Application {
 		
 		PrefManager.getInstance().putString("IP", s);
 	}
+	
+	public static String getURL() {
+		setIP(PrefManager.getInstance().getString("IP"));
+		return URL;
+	}
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -40,6 +46,7 @@ public class SContactApplication extends Application {
 
 	void initData(){
 		AccountInfo.setAccountInfo(AccountInfo.getFromPref());
+		setIP(IP);
 	}
 	void initSystem(){
 		String name = "SContact";

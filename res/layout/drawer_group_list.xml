@@ -2,11 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white_f0"
     android:focusable="true"
     android:orientation="vertical"
     android:focusableInTouchMode="true"
     >
+    <!-- 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -26,13 +26,12 @@
             />
    </LinearLayout>
    <include layout="@layout/layout_divider"/>
-   <include layout="@layout/drawer_group_list_header"/>
-   <include layout="@layout/layout_divider"/>
+    -->
 	<ListView
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:id="@+id/group_list_view"
-	    android:listSelector="@drawable/selector_midgreen_trans"
+	    android:listSelector="@null"
 	    style="@style/ListViewStyle"
 	    />
 </LinearLayout>

@@ -7,6 +7,9 @@ import java.util.List;
 import org.apache.http.Header;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.DialogInterface.OnDismissListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,7 +22,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.activity.CreateOrUpdateGroupActivity;
 import com.trible.scontact.components.activity.CustomSherlockFragmentActivity;
-import com.trible.scontact.components.activity.JoinGroupActivity;
+import com.trible.scontact.components.activity.SelectContactsActivity;
 import com.trible.scontact.components.activity.SContactMainActivity;
 import com.trible.scontact.components.activity.ViewGroupDetailsActivity;
 import com.trible.scontact.components.adpater.ChooseActionAdapter;
@@ -33,6 +36,7 @@ import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.utils.MD5FileUtil;
+import com.trible.scontact.value.RequestCode;
 
 public class ChooseGroupActionDialog{
 	
@@ -102,7 +106,9 @@ public class ChooseGroupActionDialog{
 					int position, long id) {
 				String action = mGroupActions.get(position);
 				if ( VIEW.equals(action) ){
-					mContext.simpleDisplayActivity(
+//					mContext.simpleDisplayActivity(
+//							ViewGroupDetailsActivity.getInentMyself(gInfo));
+					mContext.simpleGetResultFromActivityWithData(RequestCode.VIEW_GROUP,
 							ViewGroupDetailsActivity.getInentMyself(gInfo));
 				} else if ( APART.equals(action) ){
 					apartGroup();
@@ -116,8 +122,8 @@ public class ChooseGroupActionDialog{
 				} else if ( EXIT.equals(action) ){
 					exitGroup();
 				} else if ( JOIN.equals(action) ){
-					mContext.simpleDisplayActivity(
-							JoinGroupActivity.getIntentMyself(gInfo));
+//					mContext.simpleDisplayActivity(
+//							SelectContactsActivity.getIntentMyself(gInfo));
 				}
 				dialogger.dismissDialogger();
 			}
@@ -137,9 +143,16 @@ public class ChooseGroupActionDialog{
 		
 	}
 	
-	void apartGroup(){
+	public void apartGroup(){
 		mLoadingDialog = new LoadingDialog(mContext);
 		mLoadingDialog.setTipText(R.string.waiting);
+		mLoadingDialog.getDialog().setmDismisslistener(new OnDismissListener() {
+			
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				SContactAsyncHttpClient.cancel(mContext, true);
+			}
+		});
 		mLoadingDialog.show();
 		SContactAsyncHttpClient.post(
 				GroupParams.getDeleteGroupParams(gInfo.getId()),
@@ -152,10 +165,12 @@ public class ChooseGroupActionDialog{
 							if ( mGroupActionListener != null ){
 								mGroupActionListener.onAparted(result);
 							}
+							Intent intent = new Intent();
+							intent.putExtra(APART, gInfo);
+							mContext.setResult(mContext.RESULT_OK, intent);
+							mContext.finish();
 						} else {
-							ErrorInfo msg = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-							Bog.toast(msg == null ? 
-									ErrorInfo.getUnkownErr().toString() : msg.toString());
+							Bog.toastErrorInfo(arg2);
 						}
 					}
 					@Override
@@ -172,7 +187,7 @@ public class ChooseGroupActionDialog{
 				});
 	}
 	
-	void exitGroup(){
+	public void exitGroup(){
 		mLoadingDialog = new LoadingDialog(mContext);
 		mLoadingDialog.setTipText(R.string.waiting);
 		AccountInfo user = AccountInfo.getInstance();
@@ -188,10 +203,12 @@ public class ChooseGroupActionDialog{
 							if ( mGroupActionListener != null ){
 								mGroupActionListener.onExited(result);
 							}
+							Intent intent = new Intent();
+							intent.putExtra(EXIT, gInfo);
+							mContext.setResult(mContext.RESULT_OK, intent);
+							mContext.finish();
 						} else {
-							ErrorInfo msg = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-							Bog.toast(msg == null ? 
-									ErrorInfo.getUnkownErr().toString() : msg.toString());
+							Bog.toastErrorInfo(arg2);
 						}
 					}
 					@Override

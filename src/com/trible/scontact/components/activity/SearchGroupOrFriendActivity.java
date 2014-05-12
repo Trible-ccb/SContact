@@ -37,6 +37,7 @@ import com.trible.scontact.networks.NetWorkEvent;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.SimpleAsynTask;
 import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
+import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.networks.params.GroupParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ErrorInfo;
@@ -145,6 +146,8 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 			mQueryTextView.setOnKeyListener(mTextKeyListener);
 			sItem.expandActionView();
 			mSearchable.setIconifiedByDefault(false);
+			mQueryTextView.requestFocus();
+		
 		}
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -168,14 +171,10 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 				GroupInfo tmp = (GroupInfo) tgt;
 				simpleDisplayActivity(
 						ViewGroupDetailsActivity.getInentMyself(tmp));
-//				mGroupActionDialog = new ChooseGroupActionDialog(this, tmp);
-//				AccountInfo uInfo = AccountInfo.getInstance();
-//				if ( uInfo.getId().equals(tmp.getOwnerId())){
-//					mGroupActionDialog.setMutilVisible(true, false, true, false, false);
-//				} else {
-//					mGroupActionDialog.setMutilVisible(true, false, false, false, true);
-//				}
-//				mGroupActionDialog.show();
+			} else if ( tgt instanceof AccountInfo){
+				AccountInfo tmp = (AccountInfo) tgt;
+				simpleDisplayActivity(
+						ViewFriendDetailsActivity.getInentMyself(tmp,null));
 			}
 		}
 	}
@@ -186,7 +185,7 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 		mAdapter.clear();
 		mSearchLocalTask.doTask(new AsynTaskListner() {
 			List<GroupInfo> glocal;
-			List<Friendinfo> flocal;
+			List<AccountInfo> flocal;
 			@Override
 			public void onTaskDone(NetWorkEvent event) {
 				mAdapter.addFriendSection(
@@ -213,6 +212,30 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 						if ( results == null ){
 							ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
 							Bog.toast(err == null ? ErrorInfo.getUnkownErr().toString() : err.toString());
+						}
+					}
+					@Override
+					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+							Throwable arg3) {
+						super.onFailure(arg0, arg1, arg2, arg3);
+						Bog.toast(R.string.connect_server_err);
+					}
+					@Override
+					public void onFinish() {
+						super.onFinish();
+						mLoadingDialog.getDialog().dismissDialogger();
+					}
+				});
+		SContactAsyncHttpClient.post(
+				AccountParams.getSearchAccountInfosParams(mQueryString),
+				null, new AsyncHttpResponseHandler(){
+					@Override
+					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+						super.onSuccess(arg0, arg1, arg2);
+						List<AccountInfo> results = GsonHelper.getInfosFromJson(arg2,new AccountInfo().listType());
+						mAdapter.addFriendSection(new SectionData(getString(R.string.remote_contacts)), results);
+						if ( results == null ){
+							Bog.toastErrorInfo(arg2);
 						}
 					}
 					@Override

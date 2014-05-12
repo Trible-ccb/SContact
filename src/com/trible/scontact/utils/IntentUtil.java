@@ -21,24 +21,24 @@ public class IntentUtil {
 		c.startActivity(intent);
 	}
 	
-	public static void sendMsg(Context c,String phoneNum){
+	public static void sendMsg(Context c,String phoneNum,String content){
 		if ( TextUtils.isEmpty(phoneNum)) {  
 			Bog.toast(StringUtil.catStringFromResId(
 					c, R.string.phone_number_lable,R.string.invalid));
 			return ;
 		}
 		Intent msg = new Intent(Intent.ACTION_SENDTO,Uri.parse("smsto:"+phoneNum));
-		msg = Intent.createChooser(msg, "");
+		msg.putExtra("sms_body",content);
+		msg = Intent.createChooser(msg, c.getString(R.string.choose_app));
 		c.startActivity(msg);
 		
 	}
 	public static void sendEmail(Context c,String email,String tilte,String content){
 		if ( !StringUtil.isValidEmail(email) )return;
 		Intent emailIntent = new Intent(Intent.ACTION_SENDTO,Uri.fromParts("mailto", email, null));
-		emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,tilte);
-		emailIntent.putExtra(android.content.Intent.EXTRA_TEXT,
-				content);
-		emailIntent = Intent.createChooser(emailIntent,"choose email");
+		emailIntent.putExtra(Intent.EXTRA_SUBJECT,tilte);
+		emailIntent.putExtra(Intent.EXTRA_TEXT,content);
+		emailIntent = Intent.createChooser(emailIntent,c.getString(R.string.choose_email));
 		c.startActivity(emailIntent);
 		
 	}

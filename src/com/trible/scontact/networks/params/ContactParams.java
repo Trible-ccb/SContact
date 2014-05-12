@@ -6,21 +6,20 @@ import com.google.gson.Gson;
 import com.trible.scontact.components.activity.SContactApplication;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.utils.Bog;
+import com.trible.scontact.utils.StringUtil;
 
 public class ContactParams {
 
-	static String mAccountPath = "/contact";
-	public static String FullAccountPath = SContactApplication.URL + mAccountPath;
+	static String mPath = "/contact";
 	
 	public static String getContactByIdParams(Long cid){
 		ContactInfo info = new ContactInfo();
 		info.setId(cid);
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPath 
 				+ "/get_contact"
 				+ "?json=" 
-				+ URLEncoder.encode(v);
-		Bog.v("getContactByIdParams url = " + url);
+				+ StringUtil.getEncodeURLParams(v);
 		return url;
 	}
 	
@@ -28,30 +27,30 @@ public class ContactParams {
 		ContactInfo info = new ContactInfo();
 		info.setContact(query);
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPath 
 				+ "/search_contact"
 				+ "?json=" 
-				+ URLEncoder.encode(v);
+				+ StringUtil.getEncodeURLParams(v);
 		Bog.v("getSearchContactParams url = " + url);
 		return url;
 	}
 	
 	public static String getAddContactParams(ContactInfo info){
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPath 
 				+ "/add_contact"
 				+ "?json=" 
-				+ URLEncoder.encode(v);
+				+ StringUtil.getEncodeURLParams(v);
 		Bog.v("getAddContactParams url = " + url);
 		return url;
 	}
 	
 	public static String getUpdateContactParams(ContactInfo info){
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPath 
 				+ "/update_contact"
 				+ "?json=" 
-				+ URLEncoder.encode(v);
+				+ StringUtil.getEncodeURLParams(v);
 		Bog.v("getAddContactParams url = " + url);
 		return url;
 	}
@@ -60,10 +59,10 @@ public class ContactParams {
 		ContactInfo info = new ContactInfo();
 		info.setId(cid);
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
-				+ "/add_contact"
+		String url = SContactApplication.getURL() + mPath 
+				+ "/delete_contact"
 				+ "?json=" 
-				+ URLEncoder.encode(v);
+				+ StringUtil.getEncodeURLParams(v);
 		Bog.v("getDeleteContactParams url = " + url);
 		return url;
 	}
@@ -72,16 +71,16 @@ public class ContactParams {
 		ContactInfo info = new ContactInfo();
 		info.setUserId(uid);
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPath 
 				+ "/get_user_contacts"
 				+ "?json=" 
-				+ URLEncoder.encode(v);
+				+ StringUtil.getEncodeURLParams(v);
 		Bog.v("getDeleteContactParams url = " + url);
 		return url;
 	}
 	
 	public static String getAllContactParams( ){
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPath 
 				+ "/get_all_contacts"
 				;
 		Bog.v("getAllContactParams url = " + url);

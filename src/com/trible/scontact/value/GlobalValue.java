@@ -110,9 +110,14 @@ public class GlobalValue {
 	public static final String CTYPE_QQ = "QQ";
 	public static final String CTYPE_WEIXIN = "WeiXin";
 	public static final String CTYPE_ZUOJI = "Home Phone";
+	public static final String CTYPE_FB = "Facebook";
+	public static final String CTYPE_TWITTER = "Twitter";
+	public static final String CTYPE_WHATAPP = "WhatsApp";
 	
-
-	public static String[] CONTACT_TYPES = {CTYPE_PHONE,CTYPE_EMAIL,CTYPE_QQ,CTYPE_WEIXIN,CTYPE_ZUOJI};
+	public static String[] CONTACT_TYPES = {
+		CTYPE_PHONE,CTYPE_EMAIL,CTYPE_QQ,
+		CTYPE_WEIXIN,CTYPE_ZUOJI,CTYPE_FB,
+		CTYPE_TWITTER,CTYPE_WHATAPP};
 	/** ===Contact Static Value End=== */
 	
 	/** ===Group Static Value Start=== */
@@ -156,4 +161,5 @@ public class GlobalValue {
 		GROUP_CAPACITY_RULE.put(GTYPE_NULL, 50);
 	}
 	
+	public static final String CONTACT_EMAIL = "chenchuibo@gmail.com";
 }

@@ -56,4 +56,16 @@ public class RemoteFriendsController implements IFriendsControl {
 		return null;
 	}
 
+	@Override
+	public List<AccountInfo> getPhoneFriendsList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<AccountInfo> getSIMFriendsList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

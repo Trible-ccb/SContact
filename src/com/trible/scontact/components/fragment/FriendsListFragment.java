@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.http.Header;
 
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,24 +17,22 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.activity.CustomSherlockFragmentActivity;
+import com.trible.scontact.components.activity.SContactMainActivity;
 import com.trible.scontact.components.activity.ViewFriendDetailsActivity;
 import com.trible.scontact.components.adpater.FriendsListAdapter;
 import com.trible.scontact.components.widgets.ChooseFriendActionDialog;
+import com.trible.scontact.components.widgets.LoadingDialog;
 import com.trible.scontact.controller.impl.LocalFriendsController;
-import com.trible.scontact.models.Friendinfo;
 import com.trible.scontact.networks.NetWorkEvent;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.SimpleAsynTask;
 import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.pojo.AccountInfo;
-import com.trible.scontact.pojo.ContactInfo;
-import com.trible.scontact.pojo.ErrorInfo;
+import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
 
@@ -45,19 +45,25 @@ public class FriendsListFragment extends SherlockFragment
 	
 	LocalFriendsController mFriendsController;
 	
+	LoadingDialog mLoadingDialog;
 	ChooseFriendActionDialog mFriendActionDialog;
 	CustomSherlockFragmentActivity mActivity;
 	
 	boolean isLocalData;
+	GroupInfo mFriendBelongToGroup;
+	OnFragmentListener mFragmentListener;
 	
 	public static FriendsListFragment getInstance(){
 		return new FriendsListFragment();
 	}
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		super.onCreateOptionsMenu(menu, inflater);
-	}
 
+	public interface OnFragmentListener{
+		void onFragmentCreated();
+	}
+	
+	public void setOnFragmentListener(OnFragmentListener l){
+		mFragmentListener = l;
+	}
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -73,6 +79,10 @@ public class FriendsListFragment extends SherlockFragment
 		mFriendListView.setOnItemLongClickListener(this);
 		mFriendsController = new LocalFriendsController(getActivity());
 		mActivity = (CustomSherlockFragmentActivity) getActivity();
+		if ( mFragmentListener != null ){
+			mFragmentListener.onFragmentCreated();
+		}
+		mLoadingDialog = new LoadingDialog(mActivity);
 	}
 
 	@Override
@@ -81,31 +91,86 @@ public class FriendsListFragment extends SherlockFragment
 		View v = inflater.inflate(R.layout.fragment_friends_list, null);
 		mFriendListView = (ListView) v.findViewById(R.id.users_list_view);
 		mFriendListView.setItemsCanFocus(true);
+
 		return v;
 	}
 	
-	public void loadLocalFriendsByGroup(final long gid){
+	void updateUIBeforeLoadFriend(){
+		setTitle("0");
+		mFriendsListAdapter.setData(null);
+		if ( mLoadingDialog == null )return;
+		mLoadingDialog.getDialog().setmDismisslistener(new OnDismissListener() {
+			
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				SContactAsyncHttpClient.cancel(mActivity, true);
+			}
+		});
+//		mLoadingDialog.show();
+		if ( mActivity instanceof SContactMainActivity ){
+			((SContactMainActivity)mActivity).showTip(getString(R.string.loading));
+		}
+	}
+	void updateUIAfterLoadFriend(){
+		setTitle(mFriendsListAdapter.getCount() + "");
+		mLoadingDialog.getDialog().dismissDialogger();
+		if ( mActivity instanceof SContactMainActivity ){
+			((SContactMainActivity)mActivity).hideTip();
+		}
+	}
+	public void loadLocalFriendsByGroup(final GroupInfo info){
 		isLocalData = true;
+		mFriendBelongToGroup = info;
+		updateUIBeforeLoadFriend();
 		SimpleAsynTask.doTask2(new AsynTaskListner() {
 			
 			@Override
 			public void onTaskDone(NetWorkEvent event) {
-				setTitle("" + mFriendinfo.size() );
 				mFriendsListAdapter.setData(mFriendinfo);
+				updateUIAfterLoadFriend();
 			}
 			
 			@Override
 			public void doInBackground() {
-				mFriendinfo = mFriendsController.getFriendsListByGroupId(gid);
+				mFriendinfo = mFriendsController.getPhoneFriendsList();
 				if ( mFriendinfo == null ){
 					mFriendinfo = new ArrayList<AccountInfo>();
 				}
 			}
 		});
 	}
-	public void loadRomoteFriendsByGroup(Long gid){
+	public void loadRomoteFriendsByGroup(GroupInfo info){
+		mFriendBelongToGroup = info;
 		isLocalData = false;
-		SContactAsyncHttpClient.post(AccountParams.getAccountByGroupIdParams(gid),
+		updateUIBeforeLoadFriend();
+		SContactAsyncHttpClient.post(AccountParams.getAccountByGroupIdParams(info.getId()),
+				null, new AsyncHttpResponseHandler(){
+			@Override
+			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+				mFriendinfo = GsonHelper.getInfosFromJson(arg2, new AccountInfo().listType());
+				mFriendsListAdapter.setData(mFriendinfo);
+				if ( mFriendinfo != null ){
+				} else {
+					Bog.toastErrorInfo(arg2);
+				}
+			}
+			@Override
+			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+					Throwable arg3) {
+				Bog.toast( R.string.connect_server_err );
+			}
+			@Override
+			public void onFinish() {
+				updateUIAfterLoadFriend();
+			}
+		});
+	}
+	public void loadRomoteFriendsByUserId(GroupInfo info){
+		mFriendBelongToGroup = info;
+		isLocalData = false;
+		updateUIBeforeLoadFriend();
+		SContactAsyncHttpClient.post(
+				AccountParams.getFriendsByUserIdParams(AccountInfo.getInstance().getId()),
 				null, new AsyncHttpResponseHandler(){
 			@Override
 			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
@@ -126,6 +191,7 @@ public class FriendsListFragment extends SherlockFragment
 			@Override
 			public void onFinish() {
 				super.onFinish();
+				updateUIAfterLoadFriend();
 			}
 		});
 	}
@@ -133,28 +199,19 @@ public class FriendsListFragment extends SherlockFragment
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		if( mFriendinfo != null && mFriendinfo.get(position) != null ){
-			mActivity.simpleDisplayActivity(ViewFriendDetailsActivity.getInentMyself(
-					mFriendinfo.get(position)));
+			mActivity.simpleDisplayActivity(
+					ViewFriendDetailsActivity.getInentMyself(
+					mFriendinfo.get(position),mFriendBelongToGroup));
 		}
 
 	}
 	@Override
 	public boolean onItemLongClick(AdapterView<?> parent, View view,
 			int position, long id) {
-//		if ( mFriendinfo != null ){
-//			mFriendActionDialog = new ChooseFriendActionDialog(getActivity(),
-//					mFriendinfo.get(position));
-//			if ( isLocalData ){
-//				mFriendActionDialog.setMutilVisible(true, true, true);
-//			} else {
-//				mFriendActionDialog.setMutilVisible(true, true, false);
-//			}
-//			mFriendActionDialog.show();
-//		}
-		return false;
+		return true;
 	}
 	
-	void setTitle(String title){
-		mActivity.setTitle(title);
+	void setTitle(String size){
+		mActivity.setTitle(mFriendBelongToGroup.getDisplayName()+"("+size +")", R.color.blue_qq);
 	}
 }

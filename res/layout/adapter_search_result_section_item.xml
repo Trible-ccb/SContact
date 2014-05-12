@@ -8,6 +8,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/section_name"
         android:text="Section"
+        style="@style/SecondTextAppeare"
+        android:padding="6dp"
         />
 
 </LinearLayout>

@@ -34,14 +34,14 @@
         		    android:id="@+id/popup_dialog_title"
         		    android:text="@string/abs__action_bar_home_description"
         		    android:padding="10dp"
-        		    android:textColor="@color/green_middle"
+        		    android:textColor="@color/blue_white"
         		    android:gravity="center_vertical"
         		    android:textSize="16sp"
         		    />
         		<View
         		    android:layout_width="match_parent"
         		    android:layout_height="2dp"
-        		    android:background="@color/green_middle"
+        		    android:background="@color/blue_white"
         		    />
     			<LinearLayout 
     			        android:layout_width="fill_parent"

@@ -16,6 +16,8 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 
+import android.content.Context;
+
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -67,10 +69,12 @@ public class SContactAsyncHttpClient {
 
 	public static void post(String url, RequestParams params,
 			AsyncHttpResponseHandler responseHandler) {
-
 		client.post(url, params, responseHandler);
 	}
 
+	public static void cancel(Context c,boolean flg){
+		client.cancelRequests(c, flg);
+	}
 	public static void setCookies() {
 //		DefaultHttpClient dhc = (DefaultHttpClient) client.getHttpClient();
 //		dhc.getCookieStore().clear();

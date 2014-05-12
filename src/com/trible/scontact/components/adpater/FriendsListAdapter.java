@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import com.trible.scontact.R;
 import com.trible.scontact.pojo.AccountInfo;
+import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.utils.TimeUtil;
 
 public class FriendsListAdapter extends BaseAdapter {
 
@@ -61,13 +63,16 @@ public class FriendsListAdapter extends BaseAdapter {
 		}
 		AccountInfo info = mDatas.get(position);
 		mHolder.mUserName.setText(info.getDisplayName());
-		mHolder.mUserDesc.setText(info.getDescription());
+		String desc = info.getDescription();
+		if ( desc == null ){
+//			desc = ContactInfo.arrayToString(info.getContactsList());
+		}
+		mHolder.mUserDesc.setText(desc);
 		Long time = info.getCreateTime();
 		if ( time != null ){
-			Calendar cal = Calendar.getInstance(Locale.CHINA);
-			cal.setTimeInMillis(info.getCreateTime());
+			mHolder.mUserUpdateTime.setVisibility(View.VISIBLE);
 			mHolder.mUserUpdateTime.setText(
-					cal.get(cal.YEAR) + "/" + cal.get(cal.MONTH) + "/" + cal.get(cal.DAY_OF_MONTH));
+					TimeUtil.toTimeString(info.getCreateTime()));
 		} else {
 			mHolder.mUserUpdateTime.setVisibility(View.GONE);
 		}

@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.trible.scontact.R;
 import com.trible.scontact.models.Friendinfo;
+import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.utils.TimeUtil;
@@ -43,7 +44,7 @@ public class SearchResultAdapter extends BaseAdapter {
 		}
 	}
 	
-	public void addFriendSection(SectionData sdata,List<Friendinfo> belongToSectionData){
+	public void addFriendSection(SectionData sdata,List<AccountInfo> belongToSectionData){
 		if ( ListUtil.isEmpty(belongToSectionData) ){
 			sdata.visiable = false;
 		} else {
@@ -89,8 +90,8 @@ public class SearchResultAdapter extends BaseAdapter {
 		Object obj = getItem(position);
 		if ( obj instanceof SectionData ){
 			return getSectionView(position, convertView, parent, (SectionData)obj);
-		} else if ( obj instanceof Friendinfo ){
-			return getFriendView(position, convertView, parent, (Friendinfo)obj);
+		} else if ( obj instanceof AccountInfo ){
+			return getFriendView(position, convertView, parent, (AccountInfo)obj);
 		} else if ( obj instanceof GroupInfo ){
 			return getGroupView(position, convertView, parent, (GroupInfo)obj);
 		} else {
@@ -105,16 +106,19 @@ public class SearchResultAdapter extends BaseAdapter {
 		return convertView;
 	}
 	
-	public View getFriendView(int position, View convertView, ViewGroup parent,Friendinfo obj){
+	public View getFriendView(int position, View convertView, ViewGroup parent,AccountInfo obj){
 		FriendViewHolder holder;
 		if ( convertView == null 
 				|| !(convertView.getTag() instanceof FriendViewHolder) ){
-			holder = new FriendViewHolder();
-			convertView = mInflater.inflate(R.layout.adapter_search_result_friend_item, null);
+			convertView = mInflater.inflate(R.layout.adapter_friends_list_item, null);
+			holder = new FriendViewHolder(convertView);
 			convertView.setTag(holder);
 		} else {
 			holder = (FriendViewHolder) convertView.getTag();
 		}
+		holder.desp.setText(obj.getDescription());
+		holder.title.setText(obj.getDisplayName());
+		holder.time.setText(TimeUtil.toTimeString(obj.getCreateTime()));
 		return convertView;
 	}
 	
@@ -122,13 +126,9 @@ public class SearchResultAdapter extends BaseAdapter {
 		GroupViewHolder holder;
 		if ( convertView == null 
 				|| !(convertView.getTag() instanceof GroupViewHolder) ){
-			holder = new GroupViewHolder();
-			convertView = mInflater.inflate(R.layout.adapter_search_result_group_item, null);
+			convertView = mInflater.inflate(R.layout.adapter_friends_list_item, null);
+			holder = new GroupViewHolder(convertView);
 			convertView.setTag(holder);
-			holder.img = (ImageView) convertView.findViewById(R.id.image_item_img);
-			holder.title = (TextView) convertView.findViewById(R.id.text_item_title);
-			holder.time = (TextView) convertView.findViewById(R.id.text_item_time);
-			holder.desp = (TextView) convertView.findViewById(R.id.text_item_desc_text);
 		} else {
 			holder = (GroupViewHolder) convertView.getTag();
 		}
@@ -138,12 +138,25 @@ public class SearchResultAdapter extends BaseAdapter {
 		return convertView;
 	}
 	
-	class FriendViewHolder{
-		
+	public static class FriendViewHolder{
+		public ImageView img;
+		public TextView title,time,desp;
+		public FriendViewHolder(View convertView){
+			img = (ImageView) convertView.findViewById(R.id.users_list_item_image);
+			title = (TextView) convertView.findViewById(R.id.users_list_item_name);
+			time = (TextView) convertView.findViewById(R.id.users_list_item_time);
+			desp = (TextView) convertView.findViewById(R.id.users_list_item_desc);
+		}
 	}
-	class GroupViewHolder{
-		ImageView img;
-		TextView title,time,desp;
+	public static class GroupViewHolder{
+		public ImageView img;
+		public TextView title,time,desp;
+		public GroupViewHolder(View convertView){
+			img = (ImageView) convertView.findViewById(R.id.users_list_item_image);
+			title = (TextView) convertView.findViewById(R.id.users_list_item_name);
+			time = (TextView) convertView.findViewById(R.id.users_list_item_time);
+			desp = (TextView) convertView.findViewById(R.id.users_list_item_desc);
+		}
 	}
 	public static class SectionData{
 		public String sectionName;

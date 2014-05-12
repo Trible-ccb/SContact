@@ -1,9 +1,11 @@
 <resources>
 
-    <color name="green">#ff00ff00</color>
     <color name="white_f0">#f0f0f0</color>
+    <color name="white_f9">#f9f9f9</color>
     <color name="transparent">#0000</color>
-    <color name="white">#ffff</color>
+    <color name="white">#ffffff</color>
+    <color name="white_a07">#b4ffffff</color>
+    <color name="black_a07">#b4000000</color>
     <color name="black">#f000</color>
     
     <color name="purple_light">#a276eb</color>
@@ -11,11 +13,9 @@
     <color name="purple_dark">#6a3ab2</color>
     <color name="grey_line">#eeeeee</color>
     <color name="grey_line_cc">#ccc</color>
-    <color name="green_light">#38CDFE</color>
-    <color name="green_middle">#33CCFF</color>
-    <color name="green_little">#d7f2ff</color>
-    <color name="green_note_cheked">#bae8fd</color>
-    <color name="gree_dark">#00BFFF</color>
+    <color name="grey_a6">#A6A6A6</color>
+    <color name="grey_e">#EFEFF4</color>
+    <color name="grey_hint">#C8C7CC</color>
     
     <color name="black">#ff000000</color>
     <color name="black_25">#40000000</color>
@@ -27,4 +27,7 @@
     <color name="grey_999999">#999999</color>
     <color name="grey_666666">#266666</color>
     <color name="blue_deep">#0072d6</color>
+    <color name="blue_white">#00A7F8</color>
+    <color name="blue_qq">#0079FF</color>
+    <color name="red">#ff00</color>
 </resources>

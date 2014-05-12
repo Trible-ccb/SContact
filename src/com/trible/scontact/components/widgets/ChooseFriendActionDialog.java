@@ -16,6 +16,8 @@ import com.trible.scontact.components.adpater.ChooseActionAdapter;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.IntentUtil;
 import com.trible.scontact.utils.ListUtil;
+import com.trible.scontact.utils.StringUtil;
+import com.trible.scontact.value.GlobalValue;
 
 public class ChooseFriendActionDialog{
 	
@@ -74,9 +76,15 @@ public class ChooseFriendActionDialog{
 				if ( CALL.equals(action) ){
 					IntentUtil.call(mContext, contact);
 				} else if ( MSG.equals(action) ){
-					IntentUtil.sendMsg(mContext, contact);
+					IntentUtil.sendMsg(mContext, contact,"");
 				} else if ( INVITE.equals(action) ){
-					Bog.toast(R.string.unsupport_type);
+					if ( StringUtil.isValidEmail(contact) ){
+						IntentUtil.sendEmail(
+								mContext, GlobalValue.CONTACT_EMAIL
+								, "", mContext.getString(R.string.promote_email));
+					} else if ( StringUtil.isValidPhoneNumber(contact) ){
+						IntentUtil.sendMsg(mContext, contact,mContext.getString(R.string.promote_msg));
+					}
 				} else {
 					Bog.toast(R.string.unsupport_type);
 				}

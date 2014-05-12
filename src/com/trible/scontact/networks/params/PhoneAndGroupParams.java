@@ -10,7 +10,6 @@ import com.trible.scontact.utils.StringUtil;
 public class PhoneAndGroupParams {
 
 	static String mPhoneAndGroupPath = "/phone_and_group";
-	public static String FullAccountPath = SContactApplication.URL + mPhoneAndGroupPath;
 	
 	/**
 	 * @param gid the special group want to join in
@@ -23,7 +22,7 @@ public class PhoneAndGroupParams {
 		info.setGroupId(gid);
 		info.setUserId(AccountInfo.getInstance().getId());
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPhoneAndGroupPath 
 				+ "/join_or_update_in_group"
 				+ "?json=" 
 				+ StringUtil.getEncodeURLParams(v);
@@ -41,7 +40,7 @@ public class PhoneAndGroupParams {
 		info.setGroupId(gid);
 		info.setUserId(uid);
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPhoneAndGroupPath 
 				+ "/exit_group"
 				+ "?json=" 
 				+ StringUtil.getEncodeURLParams(v);
@@ -54,7 +53,7 @@ public class PhoneAndGroupParams {
 		info.setGroupId(gid);
 		info.setUserId(uid);
 		String v = new Gson().toJson(info);
-		String url = FullAccountPath 
+		String url = SContactApplication.getURL() + mPhoneAndGroupPath 
 				+ "/check_phoneandgroupInfo"
 				+ "?json=" 
 				+ StringUtil.getEncodeURLParams(v);

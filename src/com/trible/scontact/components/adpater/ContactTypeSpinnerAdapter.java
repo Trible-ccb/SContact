@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
@@ -15,9 +16,11 @@ public class ContactTypeSpinnerAdapter extends BaseAdapter{
 	String[] mTypes;
 	Context mContext;
 	LayoutInflater mInflater;
+	Spinner mSpinner;
 	
-	public ContactTypeSpinnerAdapter(Context c) {
-		mContext = c;
+	public ContactTypeSpinnerAdapter(Spinner s) {
+		mContext = s.getContext();
+		mSpinner = s;
 		mTypes = GlobalValue.CONTACT_TYPES;
 		mInflater = LayoutInflater.from(mContext);
 	}
@@ -46,4 +49,19 @@ public class ContactTypeSpinnerAdapter extends BaseAdapter{
 		return convertView;
 	}
 
+	public String getSelected(){
+		return mTypes[mSpinner.getSelectedItemPosition()];
+	}
+	public void setSelected(int pos){
+		mSpinner.setSelection(pos);
+	}
+	public void setSelectedType(String type){
+		for ( int i = 0 ; i < getCount() ; i++ ){
+			if ( mTypes[i].equals(type) ){
+				mSpinner.setSelection(i);
+				break;
+			}
+		}
+		
+	}
 }

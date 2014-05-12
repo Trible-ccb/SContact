@@ -11,10 +11,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
@@ -22,10 +20,12 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.adpater.ContactTypeSpinnerAdapter;
 import com.trible.scontact.components.adpater.FriendContactsListAdapter;
-import com.trible.scontact.components.widgets.ChooseFriendActionDialog;
+import com.trible.scontact.components.widgets.AddUpdateContactDialog;
+import com.trible.scontact.components.widgets.AddUpdateContactDialog.OnSubmitContactListener;
 import com.trible.scontact.components.widgets.LoadingDialog;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.ContactParams;
+import com.trible.scontact.networks.params.GroupParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GsonHelper;
@@ -46,14 +46,16 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 	EditText mContactNameET;
 	Spinner mContactTypeSpinner;
 	ContactTypeSpinnerAdapter mTypeAdapter;
+	AddUpdateContactDialog mContactDialog;
 	View mCreateRootView;
+	Button mAddContactBtn;
 	
 	LoadingDialog mDialog;
 	
 	List<ContactInfo> mContacts;
 
 	boolean mContactChange;
-	boolean isShowAdd;
+	boolean isShowInput;
 	
 	public static Bundle getInentMyself() {
 		Bundle b = new Bundle();
@@ -70,26 +72,36 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 	}
 
 	void initView(){
+		mContactDialog = new AddUpdateContactDialog(this);
 		mDialog = new LoadingDialog(this);
 		mCreateRootView = findViewById(R.id.create_contact_root);
-		closeAddAction();
 		mContactTypeSpinner = (Spinner) findViewById(R.id.contact_type);
 		mContactNameET = (EditText) findViewById(R.id.contact_name);
 		mContactsListView = (ListView) findViewById(R.id.my_contacts_list_view);
+		mAddContactBtn = (Button) findViewById(R.id.add_contact_btn);
+		mAddContactBtn.setOnClickListener(this);
 	}
 	void initViewData(){
-		mTypeAdapter = new ContactTypeSpinnerAdapter(this);
+		mTypeAdapter = new ContactTypeSpinnerAdapter(mContactTypeSpinner);
 		mContactTypeSpinner.setAdapter(mTypeAdapter);
 		mAdapter = new FriendContactsListAdapter(this);
 		mContactsListView.setAdapter(mAdapter);
 		mContactsListView.setOnItemClickListener(this);
 		mContacts = SContactMainActivity.myAllContacts;
 		mAdapter.setData(mContacts);
-		
+		closeAddAction();
+		mContactDialog.setmListener(new OnSubmitContactListener() {
+			
+			@Override
+			public void onSubmit(ContactInfo info) {
+				doAddContact(info);
+				mContactDialog.getDialog().dismissDialogger();
+			}
+		});
 	}
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_my_contacts_menu, menu);
+	public boolean onCreateOptionsMenu(Menu menu) { 
+//		getSupportMenuInflater().inflate(R.menu.activity_my_contacts_menu, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
 	@Override
@@ -107,13 +119,6 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case R.id.action_add:
-				if ( isShowAdd ){
-					doAddContact();
-				} else {
-					showAddAction();
-				}
-				break;
 			default:
 				break;
 		}
@@ -122,46 +127,49 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
+		simpleDisplayActivity(
+				ViewContactDetailsActivity.getInentMyself(
+						mAdapter.getContact(position)));
+
 	}
 	void refreshTitle(){
-		setTitle(String.format(getString(R.string.title_contacts),
-				mContacts == null ? 0 : mContacts.size()));
+		setTitle(String.format(getString(R.string.format_title_contacts),
+				mAdapter.getCount()));
 	}
 
 	@Override
 	public void onClick(View v) {
-		
+		switch (v.getId()) {
+		case R.id.add_contact_btn:
+			mContactDialog.show();
+			break;
+
+		default:
+			break;
+		}
 	}
 	
 	void closeAddAction(){
 		mCreateRootView.setVisibility(View.GONE);
-		isShowAdd = false;
+		mAddContactBtn.setText(R.string.add_contact);
+		isShowInput = false;
 	}
 	void showAddAction(){
 		mCreateRootView.setVisibility(View.VISIBLE);
-		isShowAdd = true;
+		mAddContactBtn.setText(R.string.submit);
+		isShowInput = true;
 	}
 	
-	void doAddContact(){
-		String name = mContactNameET.getText().toString();
-		if ( !StringUtil.isValidName(name) ){
-			Bog.toast(R.string.empty);
-			return;
-		}
+	void doAddContact(ContactInfo info){
 		mDialog.show();
-		ContactInfo info = new ContactInfo();
-		info.setUserId(AccountInfo.getInstance().getId());
-		info.setContact(name);
 		SContactAsyncHttpClient.post(
 				ContactParams.getAddContactParams(info),
 				null, new AsyncHttpResponseHandler(){
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
 						ContactInfo result = GsonHelper.getInfoFromJson(arg2, ContactInfo.class);
 						if ( result != null && result.getId() != null ){
-							mContacts.add(result);
-							mAdapter.setData(mContacts);
+							mAdapter.addData(result);
 							refreshTitle();
 							mContactNameET.setText("");
 							mContactChange = true;
@@ -173,17 +181,12 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
+						Bog.toast(R.string.connect_server_err);
 					}
 					@Override
 					public void onFinish() {
-						super.onFinish();
 						mDialog.getDialog().dismissDialogger();
 					}
 				});
-	}
-	
-	void doEditContact(){
-		
 	}
 }

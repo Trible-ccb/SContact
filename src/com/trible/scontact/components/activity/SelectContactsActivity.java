@@ -5,7 +5,10 @@ import java.util.List;
 
 import org.apache.http.Header;
 
+import android.content.Intent;
+import android.media.audiofx.AcousticEchoCanceler;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -24,19 +27,21 @@ import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.networks.params.ContactParams;
 import com.trible.scontact.networks.params.PhoneAndGroupParams;
+import com.trible.scontact.networks.params.ValidationParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GroupInfo;
+import com.trible.scontact.pojo.ValidateInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.pojo.PhoneAndGroupInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
 
-public class JoinGroupActivity extends CustomSherlockFragmentActivity implements
-										OnItemClickListener{
+public class SelectContactsActivity extends CustomSherlockFragmentActivity 
+										{
 
-	GroupInfo mGroupInfo;
+//	GroupInfo mGroupInfo;
 	
 	ListView mContactsListView;
 	List<ContactInfo> myAllContacts;
@@ -46,10 +51,11 @@ public class JoinGroupActivity extends CustomSherlockFragmentActivity implements
 	
 	LoadingDialog mLoadingDialog;
 	
-	public static Bundle getIntentMyself(GroupInfo info){
+	public static final String SELECTED_CONTACT = "selected_contacts";
+	
+	public static Bundle getIntentMyself(){
 		Bundle b = new Bundle();
-		b.putSerializable("clazz", JoinGroupActivity.class);
-		b.putSerializable("JoinGroup", info);
+		b.putSerializable("clazz", SelectContactsActivity.class);
 		return b;
 	}
 	
@@ -58,14 +64,13 @@ public class JoinGroupActivity extends CustomSherlockFragmentActivity implements
 		super.onCreate(arg0);
 		setContentView(R.layout.popup_contact_list);
 		mUserInfo = AccountInfo.getInstance();
-		mGroupInfo = (GroupInfo) getIntent().getSerializableExtra("JoinGroup");
 		initView();
 		initData();
 	}
 	
 	void initView(){
 		mLoadingDialog = new LoadingDialog(this);
-		mContactsListView = (ListView) findViewById(R.id.friend_contacts_list_view);
+		mContactsListView = (ListView) findViewById(R.id.contacts_list_view);
 	}
 	void initData(){
 		mAdapter = new ContactsListAdapter(this);
@@ -84,7 +89,14 @@ public class JoinGroupActivity extends CustomSherlockFragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.action_join:
-				onSureToJoin();
+				chooseContacts = mAdapter.getCheckedContactInfos();
+				String contactids = ContactInfo.arrayToString(chooseContacts);
+				Intent intent = new Intent();
+				intent.putExtra(SELECTED_CONTACT, contactids);
+				if ( getIntent().getExtras() != null )
+				intent.putExtras(getIntent().getExtras());
+				setResult(RESULT_OK, intent);
+				finish();
 				break;
 
 			default:
@@ -124,53 +136,47 @@ public class JoinGroupActivity extends CustomSherlockFragmentActivity implements
 		});
 	}
 	
-	void onSureToJoin(){
-		chooseContacts = mAdapter.getCheckedContactInfos();
-		StringBuilder sb = new StringBuilder();
-		if ( ListUtil.isEmpty(chooseContacts) ){
-			Bog.toast(R.string.selected_empty);
-		} else {
-			sb.append("[");
-			for ( ContactInfo c : chooseContacts ){
-//				cids.add(c.getId());
-				sb.append(c.getId() + ",");
-			}
-			int idx = sb.lastIndexOf(",");
-			sb.replace(idx, sb.length(), "]");
-			mLoadingDialog.show();
-			SContactAsyncHttpClient.post(
-					PhoneAndGroupParams.getJoinGroupParams(mGroupInfo.getId(), sb.toString())
-					, null
-					, new AsyncHttpResponseHandler(){
-						@Override
-						public void onSuccess(int arg0, Header[] arg1,
-								byte[] arg2) {
-							super.onSuccess(arg0, arg1, arg2);
-							PhoneAndGroupInfo result = GsonHelper.getInfoFromJson(arg2, PhoneAndGroupInfo.class);
-							if ( result != null && result.getId() != null){
-								Bog.toast(R.string.success);
-								finish();
-							} else {
-								Bog.toastErrorInfo(arg2);
-							}
-						}
-						@Override
-						public void onFailure(int arg0, Header[] arg1,
-								byte[] arg2, Throwable arg3) {
-							super.onFailure(arg0, arg1, arg2, arg3);
-							Bog.toast(R.string.connect_server_err);
-						}
-						@Override
-						public void onFinish() {
-							super.onFinish();
-							mLoadingDialog.getDialog().dismissDialogger();
-						}
-					});
-		}
-	}
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position,
-			long id) {
-		
-	}
+//	void onSureToJoin(){
+//		chooseContacts = mAdapter.getCheckedContactInfos();
+//		String contactids = ContactInfo.arrayToString(chooseContacts);
+//		if ( TextUtils.isEmpty(contactids) ){
+//			Bog.toast(R.string.selected_empty);
+//		} else {
+//			mLoadingDialog.show();
+//			GroupValidateInfo info = new GroupValidateInfo();
+//			info.setContact_ids(contactids);
+//			info.setGroupId(mGroupInfo.getId());
+//			info.setIs_group_to_user("0");
+//			info.setStart_user_id(AccountInfo.getInstance().getId());
+//			info.setEnd_user_id(mGroupInfo.getOwnerId());
+//			SContactAsyncHttpClient.post(
+//					ValidationParams.getAddRelationshipParams(info)
+//					, null
+//					, new AsyncHttpResponseHandler(){
+//						@Override
+//						public void onSuccess(int arg0, Header[] arg1,
+//								byte[] arg2) {
+//							super.onSuccess(arg0, arg1, arg2);
+//							PhoneAndGroupInfo result = GsonHelper.getInfoFromJson(arg2, PhoneAndGroupInfo.class);
+//							if ( result != null && result.getId() != null){
+//								Bog.toast(R.string.success);
+//								finish();
+//							} else {
+//								Bog.toastErrorInfo(arg2);
+//							}
+//						}
+//						@Override
+//						public void onFailure(int arg0, Header[] arg1,
+//								byte[] arg2, Throwable arg3) {
+//							super.onFailure(arg0, arg1, arg2, arg3);
+//							Bog.toast(R.string.connect_server_err);
+//						}
+//						@Override
+//						public void onFinish() {
+//							super.onFinish();
+//							mLoadingDialog.getDialog().dismissDialogger();
+//						}
+//					});
+//		}
+//	}
 }

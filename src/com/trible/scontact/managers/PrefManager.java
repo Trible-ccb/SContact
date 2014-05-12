@@ -18,11 +18,16 @@ public class PrefManager {
 
 	}
 
-	public static PrefManager getInstance() {
+	public static PrefManager getInstance(String... name) {
 
 		if (mPrefManager == null) {
 			mPrefManager = new PrefManager(null);
 
+		}
+		if ( name == null || name.length == 0 ){
+			mPrefManager.useDefaultSPF();
+		} else {
+			mPrefManager.useSPFByName(name[0]);
 		}
 		return mPrefManager;
 	}

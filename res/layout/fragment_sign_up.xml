@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-	    android:layout_width="match_parent"
-	    android:layout_height="match_parent"
-	    xmlns:android="http://schemas.android.com/apk/res/android"    
-     >
-	<ScrollView 
+	<ScrollView
+	    xmlns:android="http://schemas.android.com/apk/res/android"     
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:layout_centerInParent="true"
 	    android:fillViewport="true"
-    >
+	    android:scrollbarThumbVertical="@color/white_f0"
+	    android:scrollbarSize="3dp"
+    	>
     <RelativeLayout
         android:layout_width="@dimen/edit_input_width"
         android:layout_height="wrap_content"
@@ -23,12 +21,14 @@
 			    android:scaleType="centerInside"
 			    android:src="@drawable/ic_launcher"
 			    android:layout_centerHorizontal="true"
-			    android:id="@+id/logo" />
+			    android:id="@+id/logo"
+			    android:visibility="invisible"
+			     />
 		<LinearLayout 
 		    android:layout_width="wrap_content"
         	android:layout_height="wrap_content"
         	android:orientation="vertical"
-        	android:background="@drawable/sign_in_bg"
+        	android:background="@drawable/bg_white_border"
         	android:layout_below="@id/logo"
         	android:id="@+id/sign_up_btns"
 		    >
@@ -49,14 +49,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:background="@drawable/bg_blue_btn_rect"
-            android:text="sign_up"
-            style="@style/BlueButtonTextAppeare"
+            android:background="@drawable/presser_bg_white_border"
+            android:text="@string/sign_up"
+            style="@style/ButtonFull.BlueText"
             android:layout_below="@id/sign_up_btns"
             android:layout_marginBottom="12dp"
              />
     </RelativeLayout>
-    
-    </ScrollView>
+</ScrollView>
 
-</RelativeLayout>

@@ -7,12 +7,11 @@
 		android:layout_centerInParent="true"
 		android:id="@+id/popup_create_list_container"
 		android:background="#0000"
-		android:padding="15dp"
         >
         <TextView 
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp"
+            android:padding="6dp"
             android:textSize="16sp"
             android:layout_marginBottom="10dp"
             android:id="@+id/tips_text"
@@ -21,25 +20,24 @@
 		    android:layout_width="match_parent"
 		    android:layout_height="wrap_content"
 		    >
-		    
 		    <Button 
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
-		        android:background="@drawable/pressor_green_trans"
+		        android:background="@drawable/pressor_blue_transparent"
 		        android:text="NO"
 		        android:layout_weight="1"
 		        android:layout_marginRight="10dp"
 		        android:id="@+id/btn_no"
-		        style="@style/WhiteButtonTextAppeare"
+		        style="@style/ButtonFull.RedText"
 		        />
 		   <Button 
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
-		        android:background="@drawable/pressor_green_trans"
+		        android:background="@drawable/pressor_blue_transparent"
 		        android:text="YES"
 		        android:layout_weight="1"
 		        android:id="@+id/btn_yes"
-		        style="@style/WhiteButtonTextAppeare"
+		        style="@style/ButtonFull.BlueText"
 		        />
 		</LinearLayout>    			    
 </LinearLayout>

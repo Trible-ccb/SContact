@@ -22,7 +22,6 @@ public class IntroActivity extends CustomSherlockFragmentActivity implements Ani
 	@Override
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
-		
 		setContentView(R.layout.activity_intro);
 		mAnimIn = AnimationUtils.loadAnimation(this, R.anim.zoom_enter);
 		mAnimIn.setAnimationListener(this);

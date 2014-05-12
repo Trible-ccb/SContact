@@ -26,6 +26,7 @@ public class StringUtil {
 	private static UniversalDetector detector = new UniversalDetector(null);
 
 	public static String getStringForByte(byte[] bs){
+		if ( bs == null )return "";
 		try {
 			return new String(bs,"UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -51,9 +52,10 @@ public class StringUtil {
 	}
 
 	public static boolean isValidPhoneNumber(String phone) {
-		String ps = "^1\\d{10}$";
+		if ( phone == null )return false;
+		String ps = "^\\d{3,15}$";
 		Pattern p = Pattern.compile(ps);
-		Matcher m = p.matcher(phone);
+		Matcher m = p.matcher(phone.replaceAll("[\\+\\-\\(\\)\\s]+", ""));
 		if (m.matches()) {
 			return true;
 		} else {
@@ -94,9 +96,6 @@ public class StringUtil {
 		return pwd == null ? false : pwd.matches("[^\"']+");
 	}	
 	
-	public static boolean isValidPhone(String phone){
-		return phone == null ? false : phone.matches("[^\"'%*]+");
-	}
 	public static String MD5(String str) {
 		MessageDigest md5 = null;
 		try {
@@ -316,7 +315,7 @@ public class StringUtil {
 		try {
 			ev = URLEncoder.encode(v, "UTF-8");
 			Bog.v("after encode v = " + ev);
-		} catch (UnsupportedEncodingException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return ev;
@@ -325,6 +324,7 @@ public class StringUtil {
 
 		String s = "12345678900";
 		Bog.v("s is home number:" + isValidHomeNumber(s));
+		Bog.v("s is number:" + isValidPhoneNumber(s));
 //		System.out.println(s);
 //		System.out.println(Arrays.toString((spliterAll(s, "\\s+", ",", "\""))));
 ////		String ss = replaceAll(s, "\\s+", ",", "\"");

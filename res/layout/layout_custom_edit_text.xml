@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="@dimen/edite_input_height"
-    android:paddingLeft="6dp"
-    android:paddingRight="6dp"
+    android:layout_height="wrap_content"
+    android:paddingLeft="2dp"
+    android:paddingRight="2dp"
     android:id="@+id/custom_edittext_root_view"
     >
     <TextView
@@ -11,20 +11,20 @@
         android:layout_height="wrap_content"
         android:id="@+id/edit_hint_view"
         android:paddingRight="4dp"
-        android:textColor="@color/grey_999999"
+        android:textColor="@color/grey_hint"
         android:layout_centerVertical="true"
         android:text=""
         />
     <AutoCompleteTextView 
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/edite_input_height"
         android:id="@+id/edt_input_box"
         android:layout_centerVertical="true"
         android:background="@color/transparent"
         android:saveEnabled="true"
         android:textColor="@color/black"
         android:layout_toRightOf="@id/edit_hint_view"
-        android:textColorHint="@color/grey_999999"
+        android:textColorHint="@color/grey_hint"
         android:text=""
         android:singleLine="true"
         android:layout_marginRight="28dp"
@@ -39,12 +39,11 @@
 	    android:src="@drawable/ic_action_about"
 	    android:background="@color/transparent"
 	    />
-	    <View 
+	<View 
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#878787"
+        android:layout_height="1px"
+        android:background="@color/grey_a6"
         android:layout_below="@id/edt_input_box"
-        android:layout_marginTop="6dp"
         android:id="@+id/edt_input_line"
         />
 </RelativeLayout>

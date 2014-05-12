@@ -151,7 +151,7 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 	void sendFeedBack(){
 		String format = "---------\nDevice: %s\nBrand: %s\nOS: %s\nBuild: %s\n---------\n";
 		IntentUtil.sendEmail(this,
-				"chenchuibo@gmail.com"
+				GlobalValue.CONTACT_EMAIL
 				, "Feedback"+getVersion()
 				, String.format(format  
 						,Build.MODEL

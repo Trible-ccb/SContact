@@ -8,5 +8,5 @@
      android:gravity="center"
      android:paddingTop="@dimen/contact_tab_padding"
      android:paddingBottom="@dimen/contact_tab_padding"
-     android:background="@drawable/selector_midgreen_trans"
+     android:background="@drawable/selector_blue_trans"
      />

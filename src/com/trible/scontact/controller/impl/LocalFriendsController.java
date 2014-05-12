@@ -1,12 +1,16 @@
 package com.trible.scontact.controller.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.TextUtils;
 
 import com.trible.scontact.controller.IFriendsControl;
@@ -134,6 +138,103 @@ public class LocalFriendsController implements IFriendsControl {
 	@Override
 	public List<AccountInfo> searchFriends(String fName) {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<AccountInfo> getPhoneFriendsList() {
+		ContentResolver resolver = mContext.getContentResolver();  
+	    // 获取手机联系人  
+	    Cursor phoneCursor = resolver.query(
+	    		Phone.CONTENT_URI,null, null, null, " sort_key asc ");  
+	    List<AccountInfo> contactList = new ArrayList<AccountInfo>();   
+	    Set<String> unique = new HashSet<String>();
+	    
+	    if (phoneCursor != null) {  
+	        while (phoneCursor.moveToNext()) {
+//	        	[data_version, phonetic_name, data_set, phonetic_name_style, contact_id, lookup,
+//	        	 data12, data11, data10, mimetype, data15, data14, data13,
+//	        	 display_name_source, photo_uri, data_sync1, data_sync3,
+//	        	 data_sync2, contact_chat_capability, data_sync4,
+//	        	 account_type, account_type_and_data_set, custom_ringtone,
+//	        	 photo_file_id, has_phone_number, nickname, status, data1,
+//	        	 chat_capability, data4, data5, data2, data3, data8, data9, data6,
+//	        	 group_sourceid, times_used, account_name, data7, display_name,
+//	        	 raw_contact_is_user_profile, in_visible_group, display_name_alt,
+//	        	 company, contact_account_type, contact_status_res_package, is_primary,
+//	        	 contact_status_ts, raw_contact_id, times_contacted, contact_status, 
+//	        	 status_res_package, status_icon, contact_status_icon, version, mode, 
+//	        	 last_time_contacted, contact_last_updated_timestamp, res_package, _id,
+//	        	 name_verified, dirty, status_ts, is_super_primary, photo_thumb_uri, 
+//	        	 photo_id, send_to_voicemail, name_raw_contact_id, contact_status_label,
+//	        	 status_label, sort_key_alt, starred, sort_key, contact_presence, sourceid, last_time_used]
+	        //得到手机号码  
+	        String phoneNumber = phoneCursor.getString(
+	        		phoneCursor.getColumnIndex("data1"));  
+	        //当手机号码为空的或者为空字段 跳过当前循环  
+	        if (TextUtils.isEmpty(phoneNumber) || unique.contains(phoneNumber) )  
+	            continue;
+	        unique.add(phoneNumber);
+	        AccountInfo tmp = new AccountInfo();
+	        List<ContactInfo> contacts = new ArrayList<ContactInfo>();
+	        ContactInfo ci = new ContactInfo();
+	        //得到联系人名称  
+	        String displayName = phoneCursor.getString(
+	        		phoneCursor.getColumnIndex("display_name"));  
+	        //得到联系人ID  
+	        Long contactid = phoneCursor.getLong(
+	        		phoneCursor.getColumnIndex("raw_contact_id"));  
+	      
+	        //得到联系人头像ID  
+	        Long photoid = phoneCursor.getLong(
+	        		phoneCursor.getColumnIndex("photo_id"));  
+	        Long lasttime = phoneCursor.getLong(
+	        		phoneCursor.getColumnIndex("last_time_contacted"));  
+	        String mime = phoneCursor.getString(phoneCursor  
+                    .getColumnIndex("mimetype"));
+	        if( mime != null ){
+            	int idx = mime.lastIndexOf("/");
+            	if ( idx != -1 ){
+            		mime = mime.substring(idx);
+            	}
+            }
+            if ( mime != null ){
+            	if (mime.toLowerCase().contains("phone")) {
+                	ci.setType(GlobalValue.CTYPE_PHONE);
+                } else if (mime.toLowerCase().contains("email")) {
+                	ci.setType(GlobalValue.CTYPE_EMAIL);
+                } else if (mime.toLowerCase().contains("im")) {
+                	ci.setType(GlobalValue.CTYPE_IM);
+                }
+            }
+	        //得到联系人头像Bitamp  
+//	        Bitmap contactPhoto = null;  
+//	      
+//	        //photoid 大于0 表示联系人有头像 如果没有给此人设置头像则给他一个默认的  
+//	        if(photoid > 0 ) {  
+//	            Uri uri =ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI,contactid);  
+//	            InputStream input = ContactsContract.Contacts.openContactPhotoInputStream(resolver, uri);  
+//	            contactPhoto = BitmapFactory.decodeStream(input);  
+//	        }else {  
+//	            contactPhoto = BitmapFactory.decodeResource(getResources(), R.drawable.contact_photo);  
+//	        }  
+	          ci.setId(contactid);
+	          ci.setContact(phoneNumber);
+	          ci.setLastestUsedTime(lasttime);
+	          contacts.add(ci);
+	          tmp.setDisplayName(displayName);
+	          tmp.setId(contactid);
+	          tmp.setContactsList(contacts);
+	          tmp.setPhoneNumber(phoneNumber);
+	          contactList.add(tmp);
+	        }
+	    }
+	        phoneCursor.close();
+		return contactList;
+	}
+
+	@Override
+	public List<AccountInfo> getSIMFriendsList() {
 		return null;
 	}
 

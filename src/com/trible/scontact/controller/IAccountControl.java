@@ -1,6 +1,6 @@
 package com.trible.scontact.controller;
 
-import com.trible.scontact.models.AccountInfo;
+import com.trible.scontact.pojo.AccountInfo;
 
 
 public interface IAccountControl {

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Groups;
+import android.text.TextUtils;
 
 import com.trible.scontact.controller.IGroupControl;
 import com.trible.scontact.pojo.GroupInfo;
@@ -34,8 +35,11 @@ public class LocalGroupControlller implements IGroupControl{
                 String groupName = cursor.getString(
                 		cursor.getColumnIndex(Groups.TITLE)); // 组名  
                 ge.setId(Long.valueOf(groupId));
-                ge.setDisplayName(groupName);  
-                gInfos.add(ge);  
+                ge.setDisplayName(groupName);
+                if ( !TextUtils.isEmpty(groupName) ){
+                	gInfos.add(ge);
+                }
+                
                 ge = null;  
             }  
             return gInfos;  

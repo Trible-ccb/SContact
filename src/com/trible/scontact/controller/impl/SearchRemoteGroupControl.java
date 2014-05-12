@@ -3,12 +3,12 @@ package com.trible.scontact.controller.impl;
 import java.util.List;
 
 import com.trible.scontact.controller.ISearchControl;
-import com.trible.scontact.models.Groupsinfo;
+import com.trible.scontact.pojo.GroupInfo;
 
-public class SearchRemoteGroupControl implements ISearchControl<Groupsinfo> {
+public class SearchRemoteGroupControl implements ISearchControl<GroupInfo> {
 
 	@Override
-	public List<Groupsinfo> searchByName(String qStr) {
+	public List<GroupInfo> searchByName(String qStr) {
 		return null;
 	}
 

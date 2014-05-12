@@ -7,6 +7,7 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.trible.scontact.managers.PrefManager;
+import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.value.PrefKeys;
 
 
@@ -80,15 +81,28 @@ public class ContactInfo extends BaseInfo implements Serializable{
 	}
 	
 	public static void saveToPref(List<ContactInfo> contacts){
-		PrefManager pref = PrefManager.getInstance();
-		pref.useSPFByName(PrefKeys.ALL_CONTACTS);
+		PrefManager pref = PrefManager.getInstance(PrefKeys.ALL_CONTACTS);
+//		pref.useSPFByName(PrefKeys.ALL_CONTACTS);
 		String v = new Gson().toJson(contacts);
 		pref.putString(PrefKeys.ALL_CONTACTS + AccountInfo.getInstance().getId(), v);
 	}
 	public static List<ContactInfo> getFromPref(){
-		PrefManager.getInstance().useSPFByName(PrefKeys.ALL_CONTACTS);
+		PrefManager.getInstance(PrefKeys.ALL_CONTACTS);
 		return GsonHelper.getInfosFromJson(
 				PrefManager.getInstance().getString(PrefKeys.ALL_CONTACTS + AccountInfo.getInstance().getId()),
 				new ContactInfo().listType());
+	}
+	
+	public static String arrayToString(List<ContactInfo> infos){
+		if (ListUtil.isEmpty(infos))return null;
+		StringBuffer sb = new StringBuffer();
+		sb.append("[");
+		for ( ContactInfo c : infos ){
+//			cids.add(c.getId());
+			sb.append(c.getId() + ",");
+		}
+		int idx = sb.lastIndexOf(",");
+		sb.replace(idx, sb.length(), "]");
+		return sb.toString();
 	}
 }

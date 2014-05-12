@@ -10,7 +10,7 @@
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:id="@+id/friend_action_list_view"
-	    android:listSelector="@drawable/selector_midgreen_trans"
+	    android:listSelector="@drawable/selector_blue_trans"
 	    style="@style/ListViewStyle"
 	    />
 </LinearLayout>

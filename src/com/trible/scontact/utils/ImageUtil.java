@@ -291,7 +291,7 @@ public class ImageUtil {
 	    bmOptions.inJustDecodeBounds = false;
 	    bmOptions.inSampleSize = scaleFactor;
 	    bmOptions.inPurgeable = true;
-	  
+	    
 	    Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath(), bmOptions);
 	    
 	    return bitmap;

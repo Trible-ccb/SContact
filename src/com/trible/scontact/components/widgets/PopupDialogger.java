@@ -31,7 +31,10 @@ public class PopupDialogger extends Dialog implements AnimationListener{
 //	LinearLayout popupAnim;
 	TextView mTitleTextView;
 	Animation outerAnim,innerAnim;
+	OnDismissListener mDismisslistener;//also be a cancel listener
 	
+
+
 	PopupStatus popupStatus;
 	String mTitle;
 	
@@ -41,6 +44,15 @@ public class PopupDialogger extends Dialog implements AnimationListener{
 		this.rootViewId = R.layout.popup_base;
 	}
 
+	
+	public OnDismissListener getmDismisslistener() {
+		return mDismisslistener;
+	}
+
+	public void setmDismisslistener(OnDismissListener mDismisslistener) {
+		this.mDismisslistener = mDismisslistener;
+	}
+	
 	public enum PopupStatus{
 		kPopup_showing,
 		kPopup_dismiss,
@@ -128,10 +140,10 @@ public class PopupDialogger extends Dialog implements AnimationListener{
 		showDialog(c, null);
 	}
 	public void showDialog(Context c,View v){
-		showDialog(c, v, null);
+		showDialog(c, v, mDismisslistener);
 	}
 	public void showDialog(Context c,int resid){
-		showDialog(c, LayoutInflater.from(c).inflate(resid, null), null);
+		showDialog(c, LayoutInflater.from(c).inflate(resid, null), mDismisslistener);
 	}
 	public void showDialog(Context c,int resid,OnDismissListener withDismiss){
 		showDialog(c, LayoutInflater.from(c).inflate(resid, null), withDismiss);
@@ -149,6 +161,7 @@ public class PopupDialogger extends Dialog implements AnimationListener{
 		} else {
 			mTitleTextView.setVisibility(View.VISIBLE);
 		}
+		mDismisslistener = withDismiss;
 		setOnDismissListener(withDismiss);
 
 	}

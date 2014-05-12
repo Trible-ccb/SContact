@@ -20,6 +20,23 @@ public class YesOrNoTipDialog {
 	String mTitleString;
 	String mTipString;
 	
+	TextView mTipTextView;
+	
+	public String getmTitleString() {
+		return mTitleString;
+	}
+
+	public void setmTitleString(String mTitleString) {
+		this.mTitleString = mTitleString;
+	}
+
+	public String getmTipString() {
+		return mTipString;
+	}
+
+	public void setmTipString(String mTipString) {
+		this.mTipString = mTipString;
+	}
 	View view;
 	
 	OnButtonClickListner btnListner;
@@ -50,13 +67,8 @@ public class YesOrNoTipDialog {
 		View view = LayoutInflater.from(mContext).inflate(R.layout.popup_yes_or_no_tip, null);
 		Button cancelButton = (Button) view.findViewById(R.id.btn_no);
 		Button yesButton = (Button) view.findViewById(R.id.btn_yes);
-		TextView tips = (TextView) view.findViewById(R.id.tips_text);
-		tips.setText(mTipString);
-		if ( TextUtils.isEmpty(mTipString) ){
-			tips.setVisibility(View.GONE);
-		} else {
-			tips.setVisibility(View.VISIBLE);
-		}
+		mTipTextView = (TextView) view.findViewById(R.id.tips_text);
+		
 		OnClickListener listener = new OnClickListener() {
 			
 			@Override
@@ -87,6 +99,12 @@ public class YesOrNoTipDialog {
 	}
 	public void show(){
 		dialogger.setTitleText(mTitleString);
+		mTipTextView.setText(mTipString);
+		if ( TextUtils.isEmpty(mTipString) ){
+			mTipTextView.setVisibility(View.GONE);
+		} else {
+			mTipTextView.setVisibility(View.VISIBLE);
+		}
 		dialogger.showDialog(mContext,view);
 	}
 }

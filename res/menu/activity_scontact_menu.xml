@@ -6,24 +6,39 @@
         android:title="@string/action_search"
         />
      <item
-        android:id="@+id/action_add"
+        android:id="@+id/action_add_group"
         android:icon="@drawable/ic_action_add_group"
-        android:showAsAction="ifRoom"
+        android:showAsAction="always"
         android:title="@string/action_add"/>
      <item
-        android:id="@+id/action_refresh"
-        android:icon="@drawable/ic_action_refresh"
-        android:showAsAction="ifRoom"
-        android:title="@string/action_refresh"/>
-     <item
-        android:id="@+id/action_my_contacts"
-        android:icon="@drawable/ic_action_view_as_list"
-        android:showAsAction="ifRoom"
-        android:title="@string/action_my_contacts"/>
-    <item
-        android:id="@+id/action_settings"
-        android:icon="@drawable/ic_action_settings"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:id="@+id/action_overflow"
+        android:icon="@drawable/ic_action_overflow"
+        android:showAsAction="always"
+        android:title="@string/abs__action_menu_overflow_description"
+        >
+         <menu >
+             <item
+		        android:id="@+id/action_refresh"
+		        android:icon="@drawable/ic_action_refresh"
+		        android:showAsAction="ifRoom"
+		        android:title="@string/action_refresh"/>
+		     <item
+		        android:id="@+id/action_my_profile"
+		        android:icon="@drawable/ic_action_person"
+		        android:showAsAction="ifRoom"
+		        android:title="@string/action_my_profile"/>
+		     <item 
+		        android:id="@+id/action_my_msg"
+		        android:title="@string/action_my_messages"
+		        android:icon="@drawable/ic_action_email"
+		        android:showAsAction="ifRoom"/>
+		     <item
+		        android:id="@+id/action_settings"
+		        android:icon="@drawable/ic_action_settings"
+		        android:showAsAction="never"
+		        android:title="@string/action_settings"/>
+         </menu>
+     </item>
+     
 
 </menu>

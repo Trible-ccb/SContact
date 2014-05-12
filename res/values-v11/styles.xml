@@ -7,5 +7,17 @@
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!-- API 11 theme customizations can go here. -->
     </style>
+    <style name="AppTheme.Dark" parent="Theme.Sherlock">
+        <item name="windowContentOverlay">@drawable/bg_window_overlay</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="popupMenuStyle">@style/MyPopupMenuStyle</item>
+        <item name="android:popupMenuStyle">@style/MyPopupMenuStyle</item>
+    </style>
 
+    <style name="AppTheme.Light" parent="Theme.Sherlock.Light">
+        <item name="windowContentOverlay">@drawable/bg_window_overlay</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="popupMenuStyle">@style/MyPopupMenuStyle</item>
+        <item name="android:popupMenuStyle">@style/MyPopupMenuStyle</item>
+    </style>
 </resources>

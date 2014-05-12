@@ -2,14 +2,24 @@ package com.trible.scontact.components.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.MotionEvent;
+import android.view.GestureDetector.OnGestureListener;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.trible.scontact.R;
 
-public class CustomSherlockFragmentActivity extends SherlockFragmentActivity {
+public class CustomSherlockFragmentActivity extends SherlockFragmentActivity
+												{
 
+	ActionBar mBar;
+	OnGestureListener mGestureListener;
+	GestureDetector mGestureDetector;
+	public static final int FLINGSLOP = 100;
 	
 	public void simpleDisplayActivity(Class<?> clazz){
 		Intent intent = new Intent(this, clazz);
@@ -56,17 +66,21 @@ public class CustomSherlockFragmentActivity extends SherlockFragmentActivity {
 	}
 	@Override
 	protected void onCreate(Bundle arg0) {
+		
 		super.onCreate(arg0);
-		ActionBar bar = getSupportActionBar();
-		if ( bar != null ){
+		mGestureListener = new MymGestureListener();
+		mGestureDetector = new GestureDetector(this, mGestureListener);
+		mBar = getSupportActionBar();
+		if ( mBar != null ){
 			if ( this instanceof SContactMainActivity ){
-				bar.setDisplayShowHomeEnabled(true);
-				bar.setHomeButtonEnabled(true);
+				mBar.setDisplayShowHomeEnabled(true);
+				mBar.setHomeButtonEnabled(true);
 			} else if ( !(this instanceof SignInUpActivity) ){
-				bar.setDisplayHomeAsUpEnabled(true);
+				mBar.setDisplayHomeAsUpEnabled(true);
 			}
-
-			bar.setBackgroundDrawable(getResources().getDrawable(R.color.white_f0));
+			mBar.setDisplayShowHomeEnabled(true);
+			mBar.setBackgroundDrawable(getResources().getDrawable(R.color.white_f9));
+			setTitle("");
 		}
 	}
 
@@ -88,4 +102,53 @@ public class CustomSherlockFragmentActivity extends SherlockFragmentActivity {
 		super.onBackPressed();
 		overridePendingTransition(R.anim.in_from_left,R.anim.out_to_right);
 	}
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+	
+	public void setTitle(int titleId,int color){
+		setTitle(getText(titleId).toString(),color);
+	}
+	
+	public void setTitle(String s,int color){
+		StringBuffer sb = new StringBuffer("<font color=\"" + getResources().getColor(color) +"\">");
+		sb.append(s);
+		sb.append("</font>");
+		setTitle(Html.fromHtml(sb.toString()));
+	}
+	
+	public void setLogo(int rid){
+		if ( mBar != null )
+		mBar.setLogo(rid);
+	}
+	public void setBarBackgroup(int rid){
+		if ( mBar != null )
+			mBar.setBackgroundDrawable(getResources().getDrawable(rid));
+	}
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		return mGestureDetector.onTouchEvent(event);
+	}
+	class MymGestureListener extends SimpleOnGestureListener{
+		@Override
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+				float velocityY) {
+			if ( e2.getX() - e1.getX() > FLINGSLOP ){
+				onFlingToRight();
+			} else if (e1.getX() - e2.getX() > FLINGSLOP){
+				onFlingToLeft();
+			} else {
+				return false;
+			}
+			return true;
+		}
+	}
+	
+	protected void onFlingToRight(){
+		onBackPressed();
+	};
+	protected void onFlingToLeft(){
+		
+	};
 }

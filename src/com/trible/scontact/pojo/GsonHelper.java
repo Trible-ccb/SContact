@@ -20,8 +20,9 @@ public class GsonHelper {
 			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
-		return null;
+		
 	}
 	public static <T> T getInfosFromJson(byte[] arg2 , Type t){
 		String content = StringUtil.getStringForByte(arg2);
@@ -35,7 +36,8 @@ public class GsonHelper {
 			return tmp;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
-		return null;
+		
 	}
 }

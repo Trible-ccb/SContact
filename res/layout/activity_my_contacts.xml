@@ -3,8 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="10dp"
-    android:background="@color/white_f0"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:background="@drawable/common_activity_bg"
     >
     <LinearLayout
         android:orientation="horizontal"
@@ -28,13 +29,19 @@
             android:layout_weight="1"
             />
     </LinearLayout>
-        
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/add_contact_btn"
+        style="@style/ButtonFull.BlueText"
+        android:layout_marginTop="6dp"
+        />    
    	<ListView
    	    android:layout_width="match_parent"
    	    android:layout_height="wrap_content"
    	    android:id="@+id/my_contacts_list_view"
-   	    android:cacheColorHint="@color/transparent"
-   	    android:listSelector="@drawable/pressor_blue_transparent"
-   	    android:layout_marginTop="16dp"
+   	    android:layout_marginTop="10dp"
+   	    style="@style/ListViewStyle"
+   	    android:background="@drawable/bg_white_border"
    	    />
 </LinearLayout>

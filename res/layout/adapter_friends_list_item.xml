@@ -1,11 +1,19 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout 
+	xmlns:android="http://schemas.android.com/apk/res/android"    
     android:layout_width="match_parent"
-    android:layout_height="@dimen/list_item_height"
-    android:gravity="center_vertical"
-    android:padding="10dp"
-     >
-
+    android:layout_height="wrap_content"
+    android:background="@color/grey_e"
+    android:paddingLeft="6dp"
+    android:paddingRight="6dp"
+    android:paddingTop="6dp"	    
+    >
+	<RelativeLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="@dimen/list_item_height"
+	    android:gravity="center_vertical"
+		android:padding="6dp"
+	    android:background="@drawable/presser_bg_white_border"
+	    >
     <ImageView
         android:layout_width="@dimen/list_item_image_height_width"
         android:layout_height="@dimen/list_item_image_height_width"
@@ -29,6 +37,7 @@
             android:singleLine="true"
             android:id="@+id/users_list_item_name"
             android:text="@string/app_name"
+            style="@style/PrimaryTextAppeare"
             />
         <TextView
             android:layout_width="wrap_content"
@@ -36,9 +45,10 @@
             android:singleLine="true"
             android:id="@+id/users_list_item_desc"
             android:text="@string/app_name"
+            style="@style/SecondTextAppeare"
             />
       </LinearLayout>
-        <TextView
+      <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
@@ -46,5 +56,7 @@
             android:layout_alignParentRight="true"
             android:text="@string/app_name"
             android:gravity="right"
+            android:textColor="@color/grey_a6"
             />        
+</RelativeLayout>
 </RelativeLayout>
