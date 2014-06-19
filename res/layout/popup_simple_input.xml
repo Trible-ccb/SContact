@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    >
+	<LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/create_contact_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        >
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/contact_name"
+            android:maxLines="3"
+            android:hint="@string/hint_contact"
+            android:layout_weight="1"
+            />
+    </LinearLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/add_contact_btn"
+        style="@style/ButtonFull.BlueText"
+        android:layout_marginTop="6dp"
+        android:text="@string/submit"
+        />
+        
+</LinearLayout>

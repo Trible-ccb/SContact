@@ -1,7 +1,9 @@
 package com.trible.scontact.components.adpater;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -18,12 +20,12 @@ import com.trible.scontact.R;
 import com.trible.scontact.components.activity.SContactMainActivity;
 import com.trible.scontact.pojo.ContactInfo;
 
-public class ContactsListAdapter extends BaseAdapter {
+public class ChooseContactsListAdapter extends BaseAdapter {
 
 	Context mContext;
 	LayoutInflater mInflater;
 	List<ContactInfo> mDatas;
-	List<ContactInfo> mCheckedData;
+	Set<ContactInfo> mCheckedData;
 	
 	boolean selectAll;
 	
@@ -33,14 +35,26 @@ public class ContactsListAdapter extends BaseAdapter {
 	public void setSelectAll(boolean selectAll) {
 		this.selectAll = selectAll;
 	}
-	public ContactsListAdapter(Context c){
+	public ChooseContactsListAdapter(Context c){
 		mContext = c;
-		mCheckedData = new ArrayList<ContactInfo>();
+		mCheckedData = new HashSet<ContactInfo>();
 		mInflater = LayoutInflater.from(mContext);
 		selectAll = true;
 	}
 	public void setData(List<ContactInfo> data){
 		mDatas = data;
+		notifyDataSetChanged();
+	}
+	public void setSelectedData(List<ContactInfo> datas){
+		if ( datas == null || mDatas == null )return;
+		for ( ContactInfo info : datas ){
+			for ( ContactInfo da : mDatas ){
+				if ( da.getId().equals(info.getId()) ){
+					mCheckedData.add(da);
+					continue;
+				}
+			}
+		}
 		notifyDataSetChanged();
 	}
 	@Override
@@ -88,10 +102,16 @@ public class ContactsListAdapter extends BaseAdapter {
 					mCheckedData.remove(info);
 				}
 				selectAll = false;
+				notifyDataSetChanged();
 			}
 		});
 		if ( selectAll ){
 			mHolder.check.setChecked(true);
+		}
+		if ( mCheckedData.contains(info) ){
+			mHolder.check.setChecked(true);
+		} else {
+			mHolder.check.setChecked(false);
 		}
 		return convertView;
 	}
@@ -102,6 +122,10 @@ public class ContactsListAdapter extends BaseAdapter {
 	}
 	
 	public List<ContactInfo> getCheckedContactInfos(){
-		return mCheckedData;
+		List<ContactInfo> ret = new ArrayList<ContactInfo>();
+		for ( ContactInfo i : mCheckedData ){
+			ret.add(i);
+		}
+		return ret;
 	}
 }

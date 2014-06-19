@@ -63,6 +63,6 @@ public class Bog {
 	
 	public static void toastErrorInfo(byte[] arg2){
 		ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-		Bog.toast(err == null ? ErrorInfo.getUnkownErr().toString() : err.toString());
+		Bog.toast(err == null ? ErrorInfo.getUnkownErr().getMessgae().toLowerCase() : err.getMessgae().toLowerCase());
 	}
 }

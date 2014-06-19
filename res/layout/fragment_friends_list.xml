@@ -12,4 +12,16 @@
 	    android:divider="@color/transparent"
 	    android:scrollbarStyle="outsideOverlay"
 	    />
+	<GridView
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:id="@+id/users_grid_view"
+	    android:stretchMode="columnWidth"
+	    android:numColumns="2"
+	    android:divider="@color/transparent"
+	    style="@style/ListViewStyle"
+	    android:horizontalSpacing="10dp"
+	    android:verticalSpacing="10dp"
+	    android:padding="10dp"
+	    />
 </RelativeLayout>

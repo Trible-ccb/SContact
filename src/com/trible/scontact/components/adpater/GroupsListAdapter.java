@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
+import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.GroupInfo;
 
 public class GroupsListAdapter extends BaseAdapter {
@@ -46,6 +47,17 @@ public class GroupsListAdapter extends BaseAdapter {
 		mDatas.add(info);
 		notifyDataSetChanged();
 	}
+	public boolean editedGroupBy(GroupInfo info){
+		if ( info == null )return false;
+		for ( int i = 0 ; i < getCount() ; i++){
+			if ( info.getId().equals(getGroupInfoInPosition(i).getId()) ){
+				mDatas.set(i, info);
+				notifyDataSetChanged();
+				return true;
+			}
+		}
+		return false;
+	}
 	@Override
 	public int getCount() {
 		int size = mDatas == null ? 0 : mDatas.size();
@@ -75,6 +87,7 @@ public class GroupsListAdapter extends BaseAdapter {
 			mHolder = new GroupItemHolder();
 			mHolder.mGroupName = (TextView) convertView.findViewById(R.id.drawer_group_name);
 			mHolder.mGroupNum = (TextView) convertView.findViewById(R.id.drawer_group_number);
+			mHolder.mGroupColor = (TextView) convertView.findViewById(R.id.drawer_group_color);
 			convertView.setTag(mHolder);
 		} else {
 			mHolder = (GroupItemHolder) convertView.getTag();
@@ -82,12 +95,14 @@ public class GroupsListAdapter extends BaseAdapter {
 		
 		GroupInfo info = (GroupInfo) getItem(position);
 		mHolder.mGroupName.setText(info.getDisplayName());
-		if ( info.getCapacity() == null ){
-			mHolder.mGroupNum.setVisibility(View.GONE);
+		mHolder.mGroupNum.setVisibility(View.GONE);
+		if ( getItemId(position) <= 0 ){
+			mHolder.mGroupColor.setBackgroundResource(R.color.yellow);
+		} else if ( AccountInfo.getInstance().getId().equals(info.getOwnerId()) ){
+			mHolder.mGroupColor.setBackgroundResource(R.color.pink);
 		} else {
-			mHolder.mGroupNum.setText(info.getCapacity() + "");
+			mHolder.mGroupColor.setBackgroundResource(R.color.green);
 		}
-		
 		if ( selectedPos == position ){
 			convertView.setSelected(true);
 			convertView.setBackgroundResource(R.color.blue_qq);
@@ -101,6 +116,6 @@ public class GroupsListAdapter extends BaseAdapter {
 	}
 
 	class GroupItemHolder {
-		TextView mGroupName,mGroupNum;
+		TextView mGroupName,mGroupNum,mGroupColor;
 	}
 }

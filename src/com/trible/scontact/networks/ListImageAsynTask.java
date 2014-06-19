@@ -4,14 +4,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.content.ClipData.Item;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -19,8 +25,10 @@ import android.support.v4.util.LruCache;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.loopj.android.http.AsyncHttpClient;
 import com.trible.scontact.R;
 import com.trible.scontact.managers.SDCardManager;
+import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
 import com.trible.scontact.utils.ImageUtil;
 import com.trible.scontact.utils.StringUtil;
@@ -29,7 +37,7 @@ public class ListImageAsynTask{
 	
 	String realLoadedPath;
 	ListImageTask mAsyncTask;
-	public LruCache<Long, Bitmap> mCache;
+	public LruCache<String, Bitmap> mCache;
 	ItemImageLoadingListner mLoadingListner;
 	
 	public String getRealLoadedPath(){
@@ -56,19 +64,19 @@ public class ListImageAsynTask{
 
 		WeakReference<ImageView> mImageViewReference;
 //		LruCache<Integer, Bitmap> bitmapCache = new LruCache<Integer, Bitmap>(4);
-		Item mItem;
-		long workId = 0;
+//		long workId = 0;
+		String url;
 		int preImgWidth;
 		int preImgHeight;
 		int fullScreenWidth;
 		int fullScreenHeight;
-		
-		public Item getmItem() {
-			return mItem;
+
+		public String getUrl() {
+			return url;
 		}
 
-		public void setmItem(Item mItem) {
-			this.mItem = mItem;
+		public void setUrl(String url) {
+			this.url = url;
 		}
 
 		public WeakReference<ImageView> getmImageViewReference() {
@@ -99,7 +107,6 @@ public class ListImageAsynTask{
 
 		@Override
 		protected void onCancelled() {
-			// TODO Auto-generated method stub
 			super.onCancelled();
 		}
 
@@ -111,66 +118,61 @@ public class ListImageAsynTask{
 			File imgFile;
 			Bitmap bitmap = null;
 
-			if ( mItem == null ){
-				return null;
+			if ( mCache != null ){
+				bitmap = mCache.get(url);
 			}
-//			Item tmp = ItemHelper.getItemById(mItem.getId());
-//			workId = mItem.getId();
-//			ImageFileUrl fileUrl = ItemHelper.getItemOneImageFileUrl(tmp);
-//			if ( mCache != null ){
-//				bitmap = mCache.get(workId);
-//			}
-//			if ( bitmap != null ){
-//				return bitmap;
-//			}
-//			if ( fileUrl == null )return null;
-			
-//			imgFile = SDCardManager.getInstance().getImageCachePath(fileUrl.getImageName());//load from local
-//		    bitmap = ImageUtil.getOptionBitmap(imgFile,preImgWidth,preImgHeight);
-//		    if (bitmap == null) {// load from net
-//				String imgUrl = null;
-//				if ( fileUrl.getUrl() != null ){
-//					imgUrl = fileUrl.getUrl().trim().replace(" ", "+");
-//				}
-//				if ( !StringUtil.isValidURL(imgUrl) ){
-//					return null;
-//				}
-//				InputStream inputStream = null;
-//				try {
-////					imgUrl = imgUrl.replaceFirst("image_size=[0-9]+&?", "");
-//	                HttpResponse ret = DiigoHttpClient.post(imgUrl, null);
-//	                inputStream = ret.getEntity().getContent();
-//	                String sufFix = "tmp";
-//	                SDCardManager.getInstance().setImageCache(fileUrl.getImageName() + sufFix, inputStream);
-//	                File tmpFile = SDCardManager.getInstance().getImageCachePath(fileUrl.getImageName() + sufFix);
-//	                imgFile = SDCardManager.getInstance().getImageCachePath(fileUrl.getImageName());
-//	                if ( tmpFile.length() > CropperActivity.MAX_SIZE_IMAGE * 1024 ){
-//		                Bitmap tmpmap = ImageUtil.getOptionBitmap(tmpFile, fullScreenWidth, fullScreenHeight);
-//		                SDCardManager.getInstance().deleteFile(tmpFile);
-//		                //store to local 
-//		                SDCardManager.compressImage(tmpmap, CropperActivity.MAX_SIZE_IMAGE, new FileOutputStream(imgFile));
-//		                tmpmap.recycle();
-//	                } else {
-//	                	tmpFile.renameTo(imgFile);
-//	                }
-//	                bitmap = ImageUtil.getOptionBitmap(imgFile,preImgWidth,preImgHeight);
-//	                
-//				} catch (OutOfMemoryError e){
-//					Dog.toast(R.string.image_is_too_big);
-//					Log.e(e.getLocalizedMessage());
-//				}	catch (Exception e) {
-//					e.printStackTrace();
-//					Log.e(e);
-//				} finally {
-//					IOUtils.closeQuietly(inputStream);
-//				}
-//			}
-//		    if ( mCache != null && bitmap != null ){
-//		    	mCache.put(workId, bitmap);
-//		    }
-//		    if ( bitmap != null ){
-//		    	realLoadedPath = fileUrl.getImageName();
-//		    }
+			if ( bitmap != null ){
+				return bitmap;
+			}
+			imgFile = SDCardManager.getInstance().getFileOf(SDCardManager.PATH_IMAGECACHE, url);//load from local
+		    bitmap = ImageUtil.getOptionBitmap(imgFile,preImgWidth,preImgHeight);
+		    if (bitmap == null) {// load from net
+				String imgUrl = url;
+				if ( !StringUtil.isValidURL(imgUrl) ){
+					return null;
+				}
+				InputStream inputStream = null;
+				try {
+					URL myFileUrl = new URL(imgUrl);
+					HttpURLConnection conn = (HttpURLConnection) myFileUrl
+							.openConnection();
+					conn.setDoInput(true);
+					conn.connect();
+					InputStream is = conn.getInputStream();
+	                inputStream = is;
+//	                bitmap = BitmapFactory.decodeStream(is);
+	                String sufFix = "tmp";
+	                SDCardManager.getInstance().createFileTo(SDCardManager.PATH_IMAGECACHE,imgUrl + sufFix, inputStream);
+	                File tmpFile = SDCardManager.getInstance().getFileOf(SDCardManager.PATH_IMAGECACHE, imgUrl + sufFix);
+	                imgFile = SDCardManager.getInstance().getFileOf(SDCardManager.PATH_IMAGECACHE, imgUrl);
+	                if ( tmpFile.length() > 500 * 1024 ){
+		                Bitmap tmpmap = ImageUtil.getOptionBitmap(tmpFile, fullScreenWidth, fullScreenHeight);
+		                SDCardManager.getInstance().deleteFile(tmpFile);
+		                //store to local 
+		                SDCardManager.compressImage(tmpmap, 500, new FileOutputStream(imgFile));
+		                tmpmap.recycle();
+	                } else {
+	                	tmpFile.renameTo(imgFile);
+	                }
+	                bitmap = ImageUtil.getOptionBitmap(tmpFile,preImgWidth,preImgHeight);
+	                
+	                
+				} catch (OutOfMemoryError e){
+					Bog.toast(e.getLocalizedMessage());
+				}	catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					IOUtils.closeQuietly(inputStream);
+				}
+			}
+		    if ( mCache != null && bitmap != null ){
+		    	mCache.put(url, bitmap);
+		    }
+		    if ( bitmap != null ){
+		    	realLoadedPath = url;
+		    } else {
+		    	imgFile.deleteOnExit();
+		    }
 			return bitmap;
 		}
 
@@ -210,12 +212,12 @@ public class ListImageAsynTask{
 	        return ListImageTaskReference.get();
 	    }
 	}
-	public static boolean cancelPotentialWork(long workId, ImageView imageView) {
+	public static boolean cancelPotentialWork(String url, ImageView imageView) {
 	    final ListImageTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
 
 	    if (bitmapWorkerTask != null) {
-	        final long bitmapData = bitmapWorkerTask.workId;
-	        if (bitmapData != workId) {
+	        final String bitmapData = bitmapWorkerTask.url;
+	        if (bitmapData != url) {
 	            // Cancel previous task
 	            bitmapWorkerTask.cancel(true);
 	        } else {
@@ -236,46 +238,46 @@ public class ListImageAsynTask{
 		    }
 		    return null;
 		}
-	public void loadBitmap(Item item, ImageView imageView,int defaultResId) {
-//	    if (cancelPotentialWork(item.getId(), imageView)) {
-//	        final ListImageTask task = new ListImageTask(imageView);
-//	        task.setmItem(item);
-//	        Bitmap defaultRes = ImageUtil.convertDrawable2BitmapByCanvas(imageView.getResources().getDrawable(defaultResId));
-//	        task.preImgHeight = defaultRes.getHeight();
-//	        task.preImgWidth = defaultRes.getWidth();
-//	        final AsyncDrawable asyncDrawable =
-//	                new AsyncDrawable(imageView.getResources(), defaultRes, task);
-//	        imageView.setImageDrawable(asyncDrawable);
-//	        
-//	        task.execute("");
-//	    }
+	public void loadBitmap(String url, ImageView imageView,int defaultResId) {
+	    if (cancelPotentialWork(url, imageView)) {
+	        final ListImageTask task = new ListImageTask(imageView);
+	        task.setUrl(url);
+	        Bitmap defaultRes = ImageUtil.convertDrawable2BitmapByCanvas(imageView.getResources().getDrawable(defaultResId));
+	        task.preImgHeight = defaultRes.getHeight();
+	        task.preImgWidth = defaultRes.getWidth();
+	        final AsyncDrawable asyncDrawable =
+	                new AsyncDrawable(imageView.getResources(), defaultRes, task);
+	        imageView.setImageDrawable(asyncDrawable);
+	        
+	        task.execute("");
+	    }
 	}
-	public void loadBitmapByScaleOfWinWidth(Item item, ImageView imageView,int defaultResId,float scale) {
-//	    if (cancelPotentialWork(item.getId(), imageView)) {
-//	        final ListImageTask task = new ListImageTask(imageView);
-//	        task.setmItem(item);
-//	        Bitmap defaultRes = ImageUtil.convertDrawable2BitmapByCanvas(imageView.getResources().getDrawable(defaultResId));
-//	        int th = (int) (DeviceUtil.getDeviceHeight(imageView.getContext()));
-//	        int tw = (int) (DeviceUtil.getDeviceWidth(imageView.getContext()));
-//	        task.fullScreenHeight = th;
-//	        task.fullScreenWidth = tw;
-//	        if ( tw > th ){
-//	        	task.preImgHeight = (int) (tw * scale);
-//	        	task.preImgWidth = (int) (th * scale);
-//	        } else {
-//	        	task.preImgHeight = (int) (th * scale);
-//	        	task.preImgWidth = (int) (tw * scale);
-//	        }
-//	        final AsyncDrawable asyncDrawable =
-//	                new AsyncDrawable(imageView.getResources(), defaultRes, task);
-//	        imageView.setImageDrawable(asyncDrawable);
-//	        
-//	        task.execute("");
-//	    }
+	public void loadBitmapByScaleOfWinWidth(String url, ImageView imageView,int defaultResId,float scale) {
+	    if (cancelPotentialWork(url, imageView)) {
+	        final ListImageTask task = new ListImageTask(imageView);
+	        task.setUrl(url);
+	        Bitmap defaultRes = ImageUtil.convertDrawable2BitmapByCanvas(imageView.getResources().getDrawable(defaultResId));
+	        int th = (int) (DeviceUtil.getDeviceHeight(imageView.getContext()));
+	        int tw = (int) (DeviceUtil.getDeviceWidth(imageView.getContext()));
+	        task.fullScreenHeight = th;
+	        task.fullScreenWidth = tw;
+	        if ( tw > th ){
+	        	task.preImgHeight = (int) (tw * scale);
+	        	task.preImgWidth = (int) (th * scale);
+	        } else {
+	        	task.preImgHeight = (int) (th * scale);
+	        	task.preImgWidth = (int) (tw * scale);
+	        }
+	        final AsyncDrawable asyncDrawable =
+	                new AsyncDrawable(imageView.getResources(), defaultRes, task);
+	        imageView.setImageDrawable(asyncDrawable);
+	        
+	        task.execute("");
+	    }
 	}
-	public void loadBitmapByScaleOfWinWidthForWidget(Context c,Item item,float scale) {
+	public void loadBitmapByScaleOfWinWidthForWidget(Context c,String url,float scale) {
 	        final ListImageTask task = new ListImageTask();
-	        task.setmItem(item);
+	        task.setUrl(url);
 	        int th = (int) (DeviceUtil.getDeviceHeight(c));
 	        int tw = (int) (DeviceUtil.getDeviceWidth(c));
 	        task.fullScreenHeight =  (th);

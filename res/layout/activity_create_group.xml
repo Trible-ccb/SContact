@@ -17,16 +17,8 @@
         <include 
             layout="@layout/layout_custom_edit_text"
             android:id="@+id/layout_custom_edit_text_desc"
-            android:visibility="gone"
              />
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/choose_contacts_btn"
-            android:text="@string/choose_contacts"
-            android:gravity="center"
-            style="@style/ButtonFull.BlueText"
-            />
+
         <TextView 
            	    android:layout_width="wrap_content"
            	    android:layout_height="wrap_content"
@@ -73,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/group_verify_root"
-            android:orientation="vertical"
+            android:orientation="horizontal"
              >
             <RadioButton
                 android:layout_width="wrap_content"
@@ -93,6 +85,15 @@
         	    android:id="@+id/group_is_public"
         	    android:text="@string/public_lable"
         	    />
+       	<Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/choose_contacts_btn"
+            android:text="@string/select_contacts"
+            android:gravity="center"
+            style="@style/ButtonFull.BlueText"
+            android:layout_marginTop="10dp"
+            />
     </LinearLayout>
 
 </ScrollView>

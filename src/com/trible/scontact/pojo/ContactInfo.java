@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import ccb.java.android.utils.encoder.SecurityMethod;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.trible.scontact.managers.PrefManager;
@@ -20,13 +22,8 @@ public class ContactInfo extends BaseInfo implements Serializable{
 	private Long userId;
 	private String contact;
 	private Integer status;
-	private Long lastestUsedTime;
+	private long lastestUsedTime;
 	private String type;
-	
-
-	
-	
-	
 	
 	public String getType() {
 		return type;
@@ -49,14 +46,12 @@ public class ContactInfo extends BaseInfo implements Serializable{
 		this.userId = userId;
 	}
 	
-	
 	public String getContact() {
-		return contact;
+		return SecurityMethod.getAESInstance().Decryptor(contact);
 	}
 	public void setContact(String contact) {
-		this.contact = contact;
+		this.contact = SecurityMethod.getAESInstance().Encrytor(contact);
 	}
-	
 	
 	public Integer getStatus() {
 		return status;
@@ -68,13 +63,22 @@ public class ContactInfo extends BaseInfo implements Serializable{
 		this.status = status;
 	}
 	
-	public Long getLastestUsedTime() {
+	public long getLastestUsedTime() {
 		return lastestUsedTime;
 	}
-	public void setLastestUsedTime(Long lastestUsedTime) {
+	public void setLastestUsedTime(long lastestUsedTime) {
 		this.lastestUsedTime = lastestUsedTime;
 	}
-	
+	public ContactInfo copy(){
+		ContactInfo n = new ContactInfo();
+		n.setContact(getContact());
+		n.setId(getId());
+		n.setLastestUsedTime(getLastestUsedTime());
+		n.setStatus(getStatus());
+		n.setType(getType());
+		n.setUserId(getUserId());
+		return n;
+	}
 	@Override
 	public Type listType() {
 		return new TypeToken<List<ContactInfo>>(){}.getType();
@@ -82,14 +86,16 @@ public class ContactInfo extends BaseInfo implements Serializable{
 	
 	public static void saveToPref(List<ContactInfo> contacts){
 		PrefManager pref = PrefManager.getInstance(PrefKeys.ALL_CONTACTS);
-//		pref.useSPFByName(PrefKeys.ALL_CONTACTS);
 		String v = new Gson().toJson(contacts);
 		pref.putString(PrefKeys.ALL_CONTACTS + AccountInfo.getInstance().getId(), v);
 	}
+	public static void clear(){
+		PrefManager pref = PrefManager.getInstance(PrefKeys.ALL_CONTACTS);
+		pref.putString(PrefKeys.ALL_CONTACTS + AccountInfo.getInstance().getId(), null);
+	}
 	public static List<ContactInfo> getFromPref(){
-		PrefManager.getInstance(PrefKeys.ALL_CONTACTS);
 		return GsonHelper.getInfosFromJson(
-				PrefManager.getInstance().getString(PrefKeys.ALL_CONTACTS + AccountInfo.getInstance().getId()),
+				PrefManager.getInstance(PrefKeys.ALL_CONTACTS).getString(PrefKeys.ALL_CONTACTS + AccountInfo.getInstance().getId()),
 				new ContactInfo().listType());
 	}
 	

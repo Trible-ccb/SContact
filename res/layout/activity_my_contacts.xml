@@ -7,28 +7,6 @@
     android:paddingRight="10dp"
     android:background="@drawable/common_activity_bg"
     >
-    <LinearLayout
-        android:orientation="horizontal"
-        android:id="@+id/create_contact_root"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        >
-        <Spinner
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/contact_type"
-            android:layout_weight="0.618"
-            />
-        <EditText
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:id="@+id/contact_name"
-            android:hint="@string/hint_contact"
-            android:layout_weight="1"
-            />
-    </LinearLayout>
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

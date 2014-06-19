@@ -6,27 +6,35 @@ import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import ccb.java.android.utils.encoder.SecurityMethod;
 
 import com.actionbarsherlock.view.Window;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.tencent.tauth.Tencent;
 import com.trible.scontact.BuildConfig;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.CustomPasswordInput;
 import com.trible.scontact.components.widgets.CustomTextInput;
 import com.trible.scontact.components.widgets.LoadingDialog;
+import com.trible.scontact.components.widgets.NotifyHelper;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.pojo.AccountInfo;
+import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GsonHelper;
+import com.trible.scontact.thirdparty.QQLoginListener;
+import com.trible.scontact.thirdparty.TencentHelper;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
 import com.trible.scontact.utils.StringUtil;
@@ -39,12 +47,15 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	SignInUpAdapter mViewPagerAdapter;
 	SignInHandler mSignInHandler;
 	SignUpHandler mSignUpHandler;
+	LoginByThirdParty mThirdParty;
+	
 	LoadingDialog mDialog;
 	RadioGroup mIndicator;
+	TextView mTipText;
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
-		requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_sign_in_out_layout);
 		setBarBackgroup(R.color.transparent);
@@ -54,11 +65,26 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 		mIndicator = (RadioGroup) findViewById(R.id.indicators);
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPagerAdapter = new SignInUpAdapter();
-		mViewPager.setAdapter(mViewPagerAdapter);
 		mViewPager.setOnPageChangeListener(this);
+		mViewPager.setAdapter(mViewPagerAdapter);
 		setTitle(R.string.sign_in,R.color.white_f0);
+		mTipText = (TextView) findViewById(R.id.tip);
+		mTipText.setOnClickListener(this);
+		hideTip();
+//		if ( PrefManager.getInstance("").getIsFirstOpen() ){
+//			mViewPager.setCurrentItem(1);
+//		} else {
+//			mViewPager.setCurrentItem(0);
+//		}
+
 	}
-	
+	private void showTip(String tip){
+		mTipText.setText(tip);
+		mTipText.setVisibility(View.VISIBLE);
+	}
+	private void hideTip(){
+		mTipText.setVisibility(View.GONE);
+	}
 	class SignInUpAdapter extends PagerAdapter{
 
 		@Override
@@ -73,7 +99,7 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 
 		@Override
 		public void destroyItem(ViewGroup container, int position, Object object) {
-			super.destroyItem(container, position, object);
+//			super.destroyItem(container, position, object);
 		}
 
 		@Override
@@ -93,6 +119,10 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 				case 1:
 					v = mInflater.inflate(R.layout.fragment_sign_up, null);
 					mSignUpHandler = new SignUpHandler(v);
+					break;
+				case 2:
+//					v = mInflater.inflate(R.layout.fragment_thirdparty, null);
+//					mThirdParty =  new LoginByThirdParty(v);
 					break;
 				default:
 					break;
@@ -138,10 +168,12 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 				}
 			});
 			mForget.setOnClickListener(SignInUpActivity.this);
+			mForget.setVisibility(View.GONE);
 		}
 		public void signIn(){
 			String s = mNameInput.getmEditText().getText().toString();
 			String p = mPwdInput.getmEditText().getText().toString();
+			
 			if ( !StringUtil.isValidName(s) ){
 				Bog.toast(StringUtil.catStringFromResId(
 						SignInUpActivity.this, R.string.username_lable,R.string.invalid));
@@ -152,44 +184,50 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 						SignInUpActivity.this, R.string.password_lable,R.string.invalid));
 				return;
 			}
+			
+			String uuid = NotifyHelper.getUserNotifyID();
+			if ( TextUtils.isEmpty(uuid) ){
+				Bog.toast(
+						StringUtil.catStringFromResId(
+								SignInUpActivity.this,
+								R.string.notify_register,R.string.failed));
+			}
 			mDialog = new LoadingDialog(SignInUpActivity.this);
 			mDialog.setTipText(R.string.waiting);
+			hideTip();
 			SContactAsyncHttpClient.post(
-					AccountParams.getLoginParams(s, StringUtil.MD5(p)),
+					AccountParams.getLoginParams(s, SecurityMethod.encryptSHA(p+s),uuid),
 					null, 
 					new AsyncHttpResponseHandler(){
 						@Override
 						public void onStart() {
-							super.onStart();
 							mDialog.show();
 						}
 						@Override
 						public void onFinish() {
-							super.onFinish();
 							mDialog.getDialog().dismissDialogger();
-							if ( AccountInfo.getInstance().getId() == null
-									|| AccountInfo.getInstance().isSignOut()){
-								Bog.toast(R.string.invalid);
-							} else {
-								simpleDisplayActivity(SContactMainActivity.class);
-								finish();
-							}
 						}
 						@Override
 						public void onSuccess(int arg0, Header[] arg1,
 								byte[] arg2) {
-							super.onSuccess(arg0, arg1, arg2);
 							try {
 								AccountInfo result = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
 								if (result != null ) {
 									Long id = result.getId();
 									if ( id != null ){
+										NotifyHelper.register(SignInUpActivity.this);
 										AccountInfo.setAccountInfo(result);
 										result.saveToPref();
+										ContactInfo.clear();
+										if ( !AccountInfo.getInstance().isSignOut() ){
+											simpleDisplayActivity(SContactMainActivity.class);
+											finish();
+										}
 									} else {
-										ErrorInfo msg = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-										Bog.toast("failed!\n" + msg);
+										showTip(getString(R.string.invalid_account));
 									}
+								} else {
+									Bog.toastErrorInfo(arg2);
 								}
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -198,8 +236,7 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 						@Override
 						public void onFailure(int arg0, Header[] arg1,
 								byte[] arg2, Throwable arg3) {
-							super.onFailure(arg0, arg1, arg2, arg3);
-							Bog.toast(getString(R.string.connect_server_err));
+							showTip(getString(R.string.connect_server_err));
 						}
 					});
 		}
@@ -251,24 +288,23 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 			}
 			mDialog = new LoadingDialog(SignInUpActivity.this);
 			mDialog.setTipText(R.string.waiting);
+			hideTip();
 			SContactAsyncHttpClient.post(
-					AccountParams.getRegisterParams(s, StringUtil.MD5(p), e), 
+					AccountParams.getRegisterParams(
+							s,SecurityMethod.encryptSHA(p+s), e), 
 					null, 
 					new AsyncHttpResponseHandler(){
 						@Override
 						public void onStart() {
-							super.onStart();
 							mDialog.show();
 						}
 						@Override
 						public void onFinish() {
-							super.onFinish();
 							mDialog.getDialog().dismissDialogger();
 						}
 						@Override
 						public void onSuccess(int arg0, Header[] arg1,
 								byte[] arg2) {
-							super.onSuccess(arg0, arg1, arg2);
 							try {
 								AccountInfo result = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
 								if (result != null ) {
@@ -276,10 +312,26 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 									if ( id != null ){
 										AccountInfo.setAccountInfo(result);
 										mViewPager.setCurrentItem(0,true);
+										Bog.toast(StringUtil.catStringFromResId(
+												SignInUpActivity.this, R.string.sign_up,R.string.success));
+//										result.saveToPref();
+//										ContactInfo.clear();
+//										if ( !AccountInfo.getInstance().isSignOut() ){
+//											simpleDisplayActivity(SContactMainActivity.class);
+//											simpleDisplayActivity(MyProfileActivity.class);
+//											finish();
+//										}
 									} else {
-										ErrorInfo msg = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-										Bog.toast("failed!\n" + msg);
+//										showTip(StringUtil.catStringFromResId(
+//												SignInUpActivity.this, 
+//												R.string.sign_up,
+//												R.string.failed));
+										ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
+										showTip(err.getMessgae().toLowerCase());
+										
 									}
+								} else {
+									Bog.toastErrorInfo(arg2);
 								}
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -288,26 +340,44 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 						@Override
 						public void onFailure(int arg0, Header[] arg1,
 								byte[] arg2, Throwable arg3) {
-							super.onFailure(arg0, arg1, arg2, arg3);
-							Bog.toast(getString(R.string.connect_server_err));
+//							Bog.toast(getString(R.string.connect_server_err));
+							showTip(getString(R.string.connect_server_err));
 						}
 					});
 		}
 	}
 
+	class LoginByThirdParty{
+		
+		ImageView mLoginView;
+		
+		public LoginByThirdParty(View root){
+			mLoginView = (ImageView) root.findViewById(R.id.login_qq);
+			mLoginView.setOnClickListener(SignInUpActivity.this);
+		}
+	}
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.btn_sign_up:
-			mSignUpHandler.signUp();
-			break;
-		case R.id.btn_sign_in:
-			mSignInHandler.signIn();
-			break;
-		case R.id.forget_password:
-			break;
-		default:
-			break;
+			case R.id.login_qq:
+				Tencent t = TencentHelper.getTencent();
+				if ( !t.isSessionValid() ){
+					t.login(this, "get_user_info", new QQLoginListener());
+				}
+				break;
+			case R.id.btn_sign_up:
+				mSignUpHandler.signUp();
+				break;
+			case R.id.btn_sign_in:
+				mSignInHandler.signIn();
+				break;
+			case R.id.forget_password:
+				break;
+			case R.id.tip:
+				hideTip();
+				break;
+			default:
+				break;
 		}
 
 	}

@@ -43,7 +43,7 @@
 	            android:layout_width="match_parent"
 	            android:layout_height="wrap_content"
 	            android:layout_below="@id/sign_input_layout"
-	            android:background="@drawable/presser_bg_white_border"
+	            android:background="@drawable/pressor_bg_white_border"
 	            android:text="@string/sign_in"
 	            android:layout_marginTop="16dp"
 	            style="@style/ButtonFull.BlueText"

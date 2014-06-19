@@ -5,13 +5,17 @@ import java.util.List;
 
 import org.apache.http.Header;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
@@ -22,8 +26,9 @@ import com.trible.scontact.R;
 import com.trible.scontact.components.activity.CustomSherlockFragmentActivity;
 import com.trible.scontact.components.activity.SContactMainActivity;
 import com.trible.scontact.components.activity.ViewFriendDetailsActivity;
+import com.trible.scontact.components.adpater.FriendsGridAdapter;
 import com.trible.scontact.components.adpater.FriendsListAdapter;
-import com.trible.scontact.components.widgets.ChooseFriendActionDialog;
+import com.trible.scontact.components.widgets.ChooseContactActionDialog;
 import com.trible.scontact.components.widgets.LoadingDialog;
 import com.trible.scontact.controller.impl.LocalFriendsController;
 import com.trible.scontact.networks.NetWorkEvent;
@@ -40,15 +45,19 @@ public class FriendsListFragment extends SherlockFragment
 						implements OnItemLongClickListener,OnItemClickListener{
 
 	FriendsListAdapter mFriendsListAdapter;
+//	FriendsListAdapter mFriendsGridAdapter;
+	
 	ListView mFriendListView;
+	GridView mFrindGridView;
 	List<AccountInfo> mFriendinfo;
 	
 	LocalFriendsController mFriendsController;
 	
 	LoadingDialog mLoadingDialog;
-	ChooseFriendActionDialog mFriendActionDialog;
+	ChooseContactActionDialog mFriendActionDialog;
 	CustomSherlockFragmentActivity mActivity;
 	
+	int mLoadFlag = 1;
 	boolean isLocalData;
 	GroupInfo mFriendBelongToGroup;
 	OnFragmentListener mFragmentListener;
@@ -70,10 +79,14 @@ public class FriendsListFragment extends SherlockFragment
 		setRetainInstance(true);
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mFriendsListAdapter = new FriendsListAdapter(getSherlockActivity());
+//		mFriendsGridAdapter = new FriendsGridAdapter(getSherlockActivity());
+//		mFriendsListAdapter = mFriendsGridAdapter;
+//		GridView mFriendListView = mFrindGridView;
 		mFriendListView.setAdapter(mFriendsListAdapter);
 		mFriendListView.setOnItemClickListener(this);
 		mFriendListView.setOnItemLongClickListener(this);
@@ -90,14 +103,21 @@ public class FriendsListFragment extends SherlockFragment
 			Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_friends_list, null);
 		mFriendListView = (ListView) v.findViewById(R.id.users_list_view);
-		mFriendListView.setItemsCanFocus(true);
-
+		mFrindGridView = (GridView) v.findViewById(R.id.users_grid_view);
+		mFrindGridView.setVisibility(View.GONE);
 		return v;
 	}
 	
 	void updateUIBeforeLoadFriend(){
+		if ( !isAdded() )return;
 		setTitle("0");
+		if ( isLocalData ){
+			mFriendsListAdapter.mUsePhoto = false;
+		} else {
+			mFriendsListAdapter.mUsePhoto = true;
+		}
 		mFriendsListAdapter.setData(null);
+		mFriendsListAdapter.showEmptyView(false);
 		if ( mLoadingDialog == null )return;
 		mLoadingDialog.getDialog().setmDismisslistener(new OnDismissListener() {
 			
@@ -112,13 +132,24 @@ public class FriendsListFragment extends SherlockFragment
 		}
 	}
 	void updateUIAfterLoadFriend(){
+		if ( !isAdded() )return;
 		setTitle(mFriendsListAdapter.getCount() + "");
+		mFriendsListAdapter.mEmptyData.mListener = new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				refreshList();
+			}
+		};
+		mFriendsListAdapter.mEmptyData.mBtnText = getString(R.string.re_try);
+		mFriendsListAdapter.mEmptyData.mText = getString(R.string.empty_friend_list);
+		mFriendsListAdapter.showEmptyView(true);
 		mLoadingDialog.getDialog().dismissDialogger();
 		if ( mActivity instanceof SContactMainActivity ){
 			((SContactMainActivity)mActivity).hideTip();
 		}
 	}
 	public void loadLocalFriendsByGroup(final GroupInfo info){
+		mLoadFlag = 1;
 		isLocalData = true;
 		mFriendBelongToGroup = info;
 		updateUIBeforeLoadFriend();
@@ -140,6 +171,7 @@ public class FriendsListFragment extends SherlockFragment
 		});
 	}
 	public void loadRomoteFriendsByGroup(GroupInfo info){
+		mLoadFlag = 2;
 		mFriendBelongToGroup = info;
 		isLocalData = false;
 		updateUIBeforeLoadFriend();
@@ -166,6 +198,7 @@ public class FriendsListFragment extends SherlockFragment
 		});
 	}
 	public void loadRomoteFriendsByUserId(GroupInfo info){
+		mLoadFlag = 3;
 		mFriendBelongToGroup = info;
 		isLocalData = false;
 		updateUIBeforeLoadFriend();
@@ -212,6 +245,29 @@ public class FriendsListFragment extends SherlockFragment
 	}
 	
 	void setTitle(String size){
-		mActivity.setTitle(mFriendBelongToGroup.getDisplayName()+"("+size +")", R.color.blue_qq);
+		
+		String sub = null;
+		if ( mFriendBelongToGroup.getCapacity() != null ){
+			sub = "(" +size + "/" + mFriendBelongToGroup.getCapacity() +")";
+		} else {
+			sub = "(" +size +")";
+		}
+		if (getSherlockActivity() != null )
+			getSherlockActivity().getSupportActionBar().setSubtitle(sub);
+	}
+	public void refreshList(){
+		switch (mLoadFlag) {
+		case 1:
+			loadLocalFriendsByGroup(mFriendBelongToGroup);
+			break;
+		case 2:
+			loadRomoteFriendsByGroup(mFriendBelongToGroup);
+			break;
+		case 3:
+			loadRomoteFriendsByUserId(mFriendBelongToGroup);
+			break;
+		default:
+			break;
+		}
 	}
 }

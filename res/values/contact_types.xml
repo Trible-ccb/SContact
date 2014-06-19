@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cellphone">Cellphone</string>
+    <string name="email">Email</string>
+    <string name="telephone">Telephone</string>
+    <string name="custom">Custom</string>
+</resources>

@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.http.Header;
 
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,7 +17,6 @@ import android.widget.RadioGroup;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.ChooseContactsListDialog;
@@ -29,11 +30,10 @@ import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.GroupParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
-import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GroupInfo;
+import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
-import com.trible.scontact.utils.StringUtil;
 import com.trible.scontact.value.GlobalValue;
 
 public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
@@ -45,7 +45,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 	LoadingDialog mLoadingDialog;
 	
 	ChooseContactsListDialog mChooseContactsListDialog;
-	CustomTextInput mGroupNameInput;
+	CustomTextInput mGroupNameInput,mGroupDespInput;
 	RadioGroup mCapatityRadio;
 	RadioGroup mVerifyRadio;
 	CheckBox isPublic;
@@ -66,6 +66,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_create_group);
+		setTitle(R.string.action_create_group, R.color.blue_qq);
 		mGroupInfo = (GroupInfo) getIntent().getSerializableExtra("EditGroup");
 		mDiscardDialog = new YesOrNoTipDialog(this, getString(R.string.discard_title), "");
 		mGroupControl = new RemoteGroupControlller(this);
@@ -76,20 +77,40 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 	
 	void initView(){
 		mChooseContactsListDialog = new ChooseContactsListDialog(this);
+		mChooseContactsListDialog.getDialog().setmDismisslistener(new OnDismissListener() {
+			
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				mChooseContacts.setText(getString(R.string.selected_contacts, mChooseContactsListDialog.getSelectedContacts().size()));
+			}
+		});
 		mLoadingDialog = new LoadingDialog(this);
 		mLoadingDialog.setTipText(R.string.waiting);
 		mGroupNameInput = new CustomTextInput(findViewById(R.id.custom_edittext_root_view));
+		mGroupDespInput = new CustomTextInput(findViewById(R.id.layout_custom_edit_text_desc));
 		mCapatityRadio = (RadioGroup) findViewById(R.id.group_capatity_root);
 		mVerifyRadio = (RadioGroup) findViewById(R.id.group_verify_root);
 		isPublic = (CheckBox) findViewById(R.id.group_is_public);
 		isPublic.setVisibility(View.GONE);//all group can be search now
 		mChooseContacts = (Button) findViewById(R.id.choose_contacts_btn);
 		mChooseContacts.setOnClickListener(this);
+		mGroupNameInput.getImageButton().setVisibility(View.GONE);
+		mGroupDespInput.getImageButton().setVisibility(View.GONE);
+		mGroupNameInput.getmEditText().setHint(R.string.hint_group_name);
+		mGroupDespInput.getmEditText().setHint(R.string.hint_description);
 	}
 	
 	void initViewData(){
-		if ( mGroupInfo != null ){
+		if ( mGroupInfo != null ){//edit
 			mGroupNameInput.getmEditText().setText(mGroupInfo.getDisplayName());
+			mGroupDespInput.getmEditText().setText(mGroupInfo.getDescription());
+//			for ( int i = 0 ; i < mCapatityRadio.getChildCount(); i++ ){
+//				mCapatityRadio.getChildAt(i).setEnabled(false);
+//			}
+//			for ( int i = 0 ; i < mVerifyRadio.getChildCount(); i++ ){
+//				mVerifyRadio.getChildAt(i).setEnabled(false);
+//			}
+			mChooseContacts.setVisibility(View.GONE);
 			if ( mGroupInfo.getCapacity() == null ){
 				mCapatityRadio.check(R.id.capatity_normal);
 			} else {
@@ -103,17 +124,19 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 					mCapatityRadio.check(R.id.capatity_dev);
 				}
 			}
-			if ( mGroupInfo.getIdentify() == GlobalValue.GIDENTIFY_NONE ){
+			if ( GlobalValue.GIDENTIFY_NONE.equals(mGroupInfo.getIdentify()) ){
 				mVerifyRadio.check(R.id.verify_by_anyone);
-			} else if ( mGroupInfo.getIdentify() == GlobalValue.GIDENTIFY_NEEDED){
+			} else if ( GlobalValue.GIDENTIFY_NEEDED.equals(mGroupInfo.getIdentify())){
 				mVerifyRadio.check(R.id.verify_by_identify);
-			} else if ( mGroupInfo.getIdentify() == GlobalValue.GIDENTIFY_NULL){
+			} else if ( GlobalValue.GIDENTIFY_NULL.equals(mGroupInfo.getIdentify())){
 				mVerifyRadio.check(R.id.verify_by_anyone);
 			}
-		} else {
+		} else {//add
+			
 			isPublic.setChecked(true);
 			mCapatityRadio.check(R.id.capatity_normal);
 			mVerifyRadio.check(R.id.verify_by_identify);
+			mChooseContacts.performClick();
 		}
 		
 	}
@@ -156,7 +179,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 			return false;
 		}
 		List<ContactInfo> chooseContacts = mChooseContactsListDialog.getSelectedContacts();
-		if (ListUtil.isEmpty(chooseContacts)){
+		if (ListUtil.isEmpty(chooseContacts) && mGroupInfo == null ){
 			Bog.toast(R.string.selected_empty);
 			return false;
 		}
@@ -166,6 +189,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 		mUserInfo = AccountInfo.getInstance();
 		GroupInfo gInfo = new GroupInfo();
 		gInfo.setDisplayName(mGroupNameInput.getmEditText().getText().toString());
+		gInfo.setDescription(mGroupDespInput.getmEditText().getText().toString());
 		gInfo.setOwnerId(mUserInfo.getId());
 		int capatity = 50;
 		switch (mCapatityRadio.getCheckedRadioButtonId()) {
@@ -199,6 +223,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 		gInfo.setIdentify(verifyType);
 		return gInfo;
 	}
+	//add or edit group info
 	void onSave(){
 		if (!verifyInput()){
 			return;
@@ -207,31 +232,26 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 		mLoadingDialog.show();
 		GroupInfo tmp = getGroupInfoFromInput();
 		List<ContactInfo> chooseContacts = mChooseContactsListDialog.getSelectedContacts();
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		for ( ContactInfo c : chooseContacts ){
-			sb.append(c.getId() + ",");
+		if ( mGroupInfo != null ){
+			mGroupInfo.setCapacity(tmp.getCapacity());
+			mGroupInfo.setDescription(tmp.getDescription());
+			mGroupInfo.setDisplayName(tmp.getDisplayName());
+			mGroupInfo.setIdentify(tmp.getIdentify());
 		}
-		int idx = sb.lastIndexOf(",");
-		sb.replace(idx, sb.length(), "]");
 		String url = mGroupInfo == null 
-				? GroupParams.getAddParams(tmp,sb.toString()) 
-						: GroupParams.getUpdateParams(tmp);
+				? GroupParams.getAddParams(tmp,ContactInfo.arrayToString(chooseContacts)) 
+						: GroupParams.getUpdateParams(mGroupInfo);
 		SContactAsyncHttpClient.post(
 				url,
 				null, new AsyncHttpResponseHandler(){
 					@Override
 					public void onFinish() {
-						super.onFinish();
 						mLoadingDialog.getDialog().dismissDialogger();
 					}
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
 						GroupInfo result = null;
-						String content = StringUtil.getStringForByte(arg2);
-						
-						result = new Gson().fromJson(content, GroupInfo.class);
+						result = GsonHelper.getInfoFromJson(arg2, GroupInfo.class);
 						if ( result != null && result.getId() != null ){
 							Bog.toast(R.string.done);
 							Intent intent = new Intent();
@@ -239,14 +259,12 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 							setResult(RESULT_OK, intent);
 							finish();
 						} else {
-							ErrorInfo info = new Gson().fromJson(content, ErrorInfo.class);
-							Bog.toast(info.toString());
+							Bog.toastErrorInfo(arg2);
 						}
 					}
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
 						Bog.toast(getString(R.string.connect_server_err));
 					}
 				});
@@ -256,6 +274,16 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.choose_contacts_btn:
+			if ( mGroupInfo != null ){
+				mChooseContactsListDialog.setTileText( 
+						getString(
+								R.string.format_select_contact,
+								mGroupInfo.getDisplayName()));
+			} else {
+				mChooseContactsListDialog.setTileText( 
+						getString(R.string.format_select_contact,
+								getString(R.string.group_lable)));
+			}
 			mChooseContactsListDialog.show();
 			break;
 

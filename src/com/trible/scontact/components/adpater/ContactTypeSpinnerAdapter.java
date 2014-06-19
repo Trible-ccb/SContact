@@ -9,6 +9,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
+import com.trible.scontact.components.activity.MyInboxActivity;
+import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.pojo.ContactTypes;
+import com.trible.scontact.utils.IntentUtil;
 import com.trible.scontact.value.GlobalValue;
 
 public class ContactTypeSpinnerAdapter extends BaseAdapter{
@@ -21,8 +25,12 @@ public class ContactTypeSpinnerAdapter extends BaseAdapter{
 	public ContactTypeSpinnerAdapter(Spinner s) {
 		mContext = s.getContext();
 		mSpinner = s;
-		mTypes = GlobalValue.CONTACT_TYPES;
 		mInflater = LayoutInflater.from(mContext);
+		refresh();
+	}
+	public void refresh(){
+		mTypes = ContactTypes.getInstance().getTypesValue();
+		notifyDataSetChanged();
 	}
 	@Override
 	public int getCount() {

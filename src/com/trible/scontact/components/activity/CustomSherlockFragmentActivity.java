@@ -79,7 +79,7 @@ public class CustomSherlockFragmentActivity extends SherlockFragmentActivity
 				mBar.setDisplayHomeAsUpEnabled(true);
 			}
 			mBar.setDisplayShowHomeEnabled(true);
-			mBar.setBackgroundDrawable(getResources().getDrawable(R.color.white_f9));
+			mBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.bg_white_title));
 			setTitle("");
 		}
 	}

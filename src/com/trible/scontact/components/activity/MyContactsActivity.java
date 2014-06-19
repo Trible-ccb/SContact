@@ -10,7 +10,6 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 
@@ -22,32 +21,33 @@ import com.trible.scontact.components.adpater.ContactTypeSpinnerAdapter;
 import com.trible.scontact.components.adpater.FriendContactsListAdapter;
 import com.trible.scontact.components.widgets.AddUpdateContactDialog;
 import com.trible.scontact.components.widgets.AddUpdateContactDialog.OnSubmitContactListener;
+import com.trible.scontact.components.widgets.ChooseContactActionDialog;
+import com.trible.scontact.components.widgets.ChooseContactActionDialog.OnContactActionClickListener;
 import com.trible.scontact.components.widgets.LoadingDialog;
+import com.trible.scontact.components.widgets.YesOrNoTipDialog;
+import com.trible.scontact.components.widgets.YesOrNoTipDialog.OnButtonClickListner;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.ContactParams;
-import com.trible.scontact.networks.params.GroupParams;
-import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
-import com.trible.scontact.utils.StringUtil;
+import com.trible.scontact.value.GlobalValue;
 
 
 /**
  * @author Trible Chen
- *here you can see the details of a special friend and do some action;
+ *here you can manager your contacts
  */
 public class MyContactsActivity extends CustomSherlockFragmentActivity 
-										implements OnItemClickListener,OnClickListener
+										implements OnItemClickListener,
+										OnClickListener,
+										OnContactActionClickListener
 												{
 
 	ListView mContactsListView;
 	FriendContactsListAdapter mAdapter;
-	EditText mContactNameET;
-	Spinner mContactTypeSpinner;
 	ContactTypeSpinnerAdapter mTypeAdapter;
 	AddUpdateContactDialog mContactDialog;
-	View mCreateRootView;
 	Button mAddContactBtn;
 	
 	LoadingDialog mDialog;
@@ -73,17 +73,13 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 
 	void initView(){
 		mContactDialog = new AddUpdateContactDialog(this);
+		mContactDialog.getDialog().setTitleText(getString(R.string.add_contact));
 		mDialog = new LoadingDialog(this);
-		mCreateRootView = findViewById(R.id.create_contact_root);
-		mContactTypeSpinner = (Spinner) findViewById(R.id.contact_type);
-		mContactNameET = (EditText) findViewById(R.id.contact_name);
 		mContactsListView = (ListView) findViewById(R.id.my_contacts_list_view);
 		mAddContactBtn = (Button) findViewById(R.id.add_contact_btn);
 		mAddContactBtn.setOnClickListener(this);
 	}
 	void initViewData(){
-		mTypeAdapter = new ContactTypeSpinnerAdapter(mContactTypeSpinner);
-		mContactTypeSpinner.setAdapter(mTypeAdapter);
 		mAdapter = new FriendContactsListAdapter(this);
 		mContactsListView.setAdapter(mAdapter);
 		mContactsListView.setOnItemClickListener(this);
@@ -127,14 +123,24 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		simpleDisplayActivity(
-				ViewContactDetailsActivity.getInentMyself(
-						mAdapter.getContact(position)));
-
+		ContactInfo info = mAdapter.getContact(position);
+		ChooseContactActionDialog actionDialog =
+				new ChooseContactActionDialog(this, info);
+		actionDialog.addAction(getString(R.string.action_edit));
+		if ( GlobalValue.CSTATUS_USED.equals(info.getStatus()) ){
+			actionDialog.addAction(getString(R.string.action_disable));
+		} else {
+			actionDialog.addAction(getString(R.string.action_enable));
+		}
+		actionDialog.addAction(getString(R.string.action_delete));
+		actionDialog.addAction(getString(R.string.copy_lable));
+		
+		actionDialog.setmListener(this);
+		actionDialog.show();
 	}
 	void refreshTitle(){
 		setTitle(String.format(getString(R.string.format_title_contacts),
-				mAdapter.getCount()));
+				mAdapter.getCount()),R.color.blue_qq);
 	}
 
 	@Override
@@ -150,17 +156,16 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 	}
 	
 	void closeAddAction(){
-		mCreateRootView.setVisibility(View.GONE);
 		mAddContactBtn.setText(R.string.add_contact);
 		isShowInput = false;
 	}
 	void showAddAction(){
-		mCreateRootView.setVisibility(View.VISIBLE);
 		mAddContactBtn.setText(R.string.submit);
 		isShowInput = true;
 	}
 	
 	void doAddContact(ContactInfo info){
+		mDialog.setTipText(R.string.processing);
 		mDialog.show();
 		SContactAsyncHttpClient.post(
 				ContactParams.getAddContactParams(info),
@@ -171,7 +176,39 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 						if ( result != null && result.getId() != null ){
 							mAdapter.addData(result);
 							refreshTitle();
-							mContactNameET.setText("");
+							mContactChange = true;
+							closeAddAction();
+							mContactDialog.clear();
+						} else {
+							Bog.toastErrorInfo(arg2);
+						}
+					}
+					@Override
+					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+							Throwable arg3) {
+						Bog.toast(R.string.connect_server_err);
+					}
+					@Override
+					public void onFinish() {
+						mDialog.getDialog().dismissDialogger();
+					}
+				});
+	}
+	void doUpdateContact(ContactInfo info){
+		mDialog.setTipText(R.string.processing);
+		mDialog.show();
+		SContactAsyncHttpClient.post(
+				ContactParams.getUpdateContactParams(info),
+				null, new AsyncHttpResponseHandler(){
+					@Override
+					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+						ContactInfo result = GsonHelper.getInfoFromJson(arg2, ContactInfo.class);
+						if ( result != null && result.getId() != null ){
+							int idx = mAdapter.indexOfContact(result);
+							if ( idx != -1 ){
+								mContacts.set(idx, result);
+							}
+							mAdapter.notifyDataSetChanged();
 							mContactChange = true;
 							closeAddAction();
 						} else {
@@ -189,4 +226,72 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 					}
 				});
 	}
+	void doDeleteContact(final ContactInfo info){
+		final YesOrNoTipDialog dialog = new YesOrNoTipDialog(
+				this, getString(R.string.promote_remove_contact), null);
+		dialog.setOnButtonClickListner(new OnButtonClickListner() {
+			
+			@Override
+			public void onYesButton() {
+				dialog.getDialog().dismissDialogger();
+				mDialog.setTipText(R.string.processing);
+				mDialog.show();
+				SContactAsyncHttpClient.post(
+						ContactParams.getDeleteContactParams(info.getId()),
+						null,
+						new AsyncHttpResponseHandler(){
+							@Override
+							public void onSuccess(int arg0, Header[] arg1,
+									byte[] arg2) {
+								mContacts.remove(info);
+								mAdapter.setData(mContacts);
+								refreshTitle();
+							}
+							@Override
+							public void onFailure(int arg0, Header[] arg1,
+									byte[] arg2, Throwable arg3) {
+								Bog.toast(R.string.connect_server_err);
+							}
+							@Override
+							public void onFinish() {
+								mDialog.getDialog().dismissDialogger();
+							}
+						});
+			}
+			@Override
+			public void onNoButton() {
+			}
+		});
+		dialog.show();
+	}
+	@Override
+	public void onActionClick(final ContactInfo c,String action) {
+		if ( getString(R.string.action_edit).equals(action) ){
+			final AddUpdateContactDialog contactDialog = new AddUpdateContactDialog(this);
+			contactDialog.setSelectType(c.getType(), c.getContact());
+			contactDialog.setmListener(new OnSubmitContactListener() {
+				@Override
+				public void onSubmit(ContactInfo info) {
+					info.setId(c.getId());
+					info.setStatus(c.getStatus());
+					info.setUserId(c.getUserId());
+					info.setLastestUsedTime(System.currentTimeMillis());
+					doUpdateContact(info);
+					contactDialog.getDialog().dismissDialogger();
+				}
+			});
+			contactDialog.show();
+		} else if ( getString(R.string.action_delete).equals(action) ){
+			doDeleteContact(c);
+		} else if ( getString(R.string.action_disable).equals(action) ){
+			ContactInfo copy = c.copy();
+			copy.setStatus(GlobalValue.CSTATUS_UNUSED);
+			doUpdateContact(copy);
+		} else if ( getString(R.string.action_enable).equals(action) ){
+			ContactInfo copy = c.copy();
+			copy.setStatus(GlobalValue.CSTATUS_USED);
+			doUpdateContact(copy);
+		}
+	}
+	
 }

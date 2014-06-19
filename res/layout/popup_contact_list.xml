@@ -7,10 +7,31 @@
     android:orientation="vertical"
     android:focusableInTouchMode="true"
     >
+    <!-- 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/format_select_contact"
+        android:textColor="@color/blue_qq"
+        android:textSize="16sp"
+        android:id="@+id/select_contacts_hint_text"
+        android:padding="6dp"
+        />
+   	<include layout="@layout/layout_divider"/>
+   	 -->
 	<ListView
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:id="@+id/contacts_list_view"
 	    android:cacheColorHint="#000000"
+	    android:layout_weight="8"
 	    />
+	<Button
+    	android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/sure_btn"
+        android:text="@string/ok"
+        style="@style/ButtonFull"
+        />
 </LinearLayout>

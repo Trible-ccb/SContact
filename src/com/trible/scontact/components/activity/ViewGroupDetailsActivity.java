@@ -1,11 +1,15 @@
 package com.trible.scontact.components.activity;
 
+import java.util.List;
+
 import org.apache.http.Header;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.ContextMenu;
 import android.view.View;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -15,6 +19,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
+import com.trible.scontact.components.widgets.ChooseContactsListDialog;
 import com.trible.scontact.components.widgets.ChooseGroupActionDialog;
 import com.trible.scontact.components.widgets.LoadingDialog;
 import com.trible.scontact.components.widgets.YesOrNoTipDialog;
@@ -24,12 +29,14 @@ import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.networks.params.PhoneAndGroupParams;
 import com.trible.scontact.networks.params.ValidationParams;
 import com.trible.scontact.pojo.AccountInfo;
+import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.ValidateInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.pojo.PhoneAndGroupInfo;
 import com.trible.scontact.pojo.UserRelationInfo;
 import com.trible.scontact.utils.Bog;
+import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.utils.StringUtil;
 import com.trible.scontact.value.GlobalValue;
 import com.trible.scontact.value.RequestCode;
@@ -49,10 +56,12 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 	GroupInfo mGroupInfo;
 	AccountInfo mOwnerInfo;
 	Boolean mUserInGroup;
-	
+	ChooseContactsListDialog mContactsListDialog;
 	ChooseGroupActionDialog mGroupActionDialog;
 	LoadingDialog mLoadingDialog;
 	YesOrNoTipDialog mAskDialog;
+	
+	boolean isGroupInfoChange;
 	
 	public static Bundle getInentMyself(GroupInfo info) {
 		Bundle b = new Bundle();
@@ -67,6 +76,7 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 		mGroupInfo = (GroupInfo) getIntent().getSerializableExtra("ViewGroup");
 		if ( mGroupInfo == null )finish();
 		setContentView(R.layout.activity_view_group);
+		setTitle(R.string.action_group_profile, R.color.blue_qq);
 		initView();
 	}
 
@@ -82,30 +92,26 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 		mOwnerName = (TextView) findViewById(R.id.owner_name);
 		mLoadingDialog = new LoadingDialog(this);
 		mAskDialog = new YesOrNoTipDialog(this, "", "");
+		mContactsListDialog = new ChooseContactsListDialog(this);
 		initViewData();
 		
 	}
 	void initViewData(){
-		mGroupDesc.setText(mGroupInfo.getDescription());
-		mGroupName.setText(mGroupInfo.getDisplayName());
-		mOwnerName.setText(String.format(getString(R.string.format_creator),""));
+
+		refreshGroupInfo();
 		loadOwnerData();
 		checkAccountInGroup();
 	}
+	
 	void loadOwnerData(){
 		SContactAsyncHttpClient.post(
 				AccountParams.getAccountByIdParams(mGroupInfo.getOwnerId()),
 				null, new AsyncHttpResponseHandler(){
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
 						mOwnerInfo = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
 						if ( mOwnerInfo != null && mOwnerInfo.getId() != null ){
-							
-							mOwnerName.setText(
-									String.format(getString(R.string.format_creator),
-											mOwnerInfo.getDisplayName()));
-							mOwnerDesc.setText(mOwnerInfo.getDescription());
+							refreshGroupInfo();
 						} else {
 							Bog.toastErrorInfo(arg2);
 						}
@@ -113,7 +119,6 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
 						Bog.toast(R.string.connect_server_err);
 					}
 		});
@@ -125,7 +130,6 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 				null, new AsyncHttpResponseHandler(){
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
 						PhoneAndGroupInfo result = GsonHelper.getInfoFromJson(arg2, PhoneAndGroupInfo.class);
 						if ( result != null && result.getId() != null){
 							mUserInGroup = true;
@@ -152,7 +156,6 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
 						Bog.toast(R.string.connect_server_err);
 						
 					}
@@ -160,13 +163,21 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-//		getSupportMenuInflater().inflate(R.menu.activity_view_group_menu, menu);
+		getSupportMenuInflater().inflate(R.menu.activity_view_group_menu, menu);
+		if ( AccountInfo.getInstance().getId().equals(mGroupInfo.getOwnerId()) ){
+			menu.findItem(R.id.action_edit).setVisible(true);
+		} else {
+			menu.findItem(R.id.action_edit).setVisible(false);
+		}
 		return super.onCreateOptionsMenu(menu);
 	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case R.id.action_on_view_group:
+			case R.id.action_edit:
+				simpleGetResultFromActivityWithData(RequestCode.EDIT_GROUP,
+						CreateOrUpdateGroupActivity.getIntentMyself(mGroupInfo));
+				
 				break;
 		default:
 			break;
@@ -174,6 +185,20 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 		return super.onOptionsItemSelected(item);
 	}
 
+	void refreshGroupInfo(){
+		mGroupDesc.setText(mGroupInfo.getDescription());
+		mGroupName.setText(mGroupInfo.getDisplayName());
+		String name = "";
+		String desp = "";
+		if ( mOwnerInfo != null ){
+			name = mOwnerInfo.getDisplayName();
+			desp = mOwnerInfo.getDescription();
+		}
+		mOwnerName.setText(
+				String.format(getString(R.string.format_creator),
+						name));
+		mOwnerDesc.setText(desp);
+	}
 	void onSureToJoin(String contactids){
 		if ( TextUtils.isEmpty(contactids) ){
 			Bog.toast(R.string.selected_empty);
@@ -182,7 +207,7 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 			ValidateInfo info = new ValidateInfo();
 			info.setContact_ids(contactids);
 			info.setGroupId(mGroupInfo.getId());
-			info.setIs_group_to_user("0");
+			info.setIs_group_to_user(0);
 			info.setStart_user_id(AccountInfo.getInstance().getId());
 			info.setEnd_user_id(mGroupInfo.getOwnerId());
 			SContactAsyncHttpClient.post(
@@ -225,7 +250,33 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 					});
 		}
 	}
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if ( resultCode !=  RESULT_OK )return;
+		switch (requestCode) {
+			case RequestCode.EDIT_GROUP:
+				mGroupInfo = (GroupInfo) data.getSerializableExtra(CreateOrUpdateGroupActivity.RESULT_GROUP);
+				refreshGroupInfo();
+				isGroupInfoChange = true;
+				break;
 	
+			default:
+				break;
+		}
+	}
+	@Override
+	public void onBackPressed() {
+		if ( isGroupInfoChange ){
+			Intent intent = new Intent();
+			intent.putExtra(CreateOrUpdateGroupActivity.RESULT_GROUP, mGroupInfo);
+			setResult(RESULT_OK, intent);
+			finish();
+		} else {
+			super.onBackPressed();	
+		}
+		
+	}
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -234,8 +285,21 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 				mGroupActionDialog = new ChooseGroupActionDialog(this,mGroupInfo);
 				String tmptitle = tmp.getText().toString();
 				if (getString(R.string.join_group_lable).equals(tmptitle)){
-					simpleGetResultFormActivity(
-							SelectContactsActivity.class, RequestCode.SELECT_CONTACTS);
+					mContactsListDialog.setTileText(
+							getString(R.string.format_select_contact, mGroupInfo.getDisplayName()));
+					mContactsListDialog.sureBtn.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							List<ContactInfo> c = mContactsListDialog.getSelectedContacts();
+							if ( ListUtil.isEmpty(c) ){
+								Bog.toast(R.string.selected_empty);
+							} else {
+								onSureToJoin(ContactInfo.arrayToString(c));
+								mContactsListDialog.getDialog().dismissDialogger();
+							}
+						}
+					});
+					mContactsListDialog.show();
 				} else if (getString(R.string.exit_group_lable).equals(tmptitle)){
 					mAskDialog.setmTipString(getString(R.string.promote_exit_group));
 					mAskDialog.setmTitleString(tmptitle);
@@ -270,16 +334,6 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 
 		default:
 			break;
-		}
-	}
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if ( resultCode == RESULT_OK ){
-			if ( requestCode == RequestCode.SELECT_CONTACTS ){
-				String contactids = data.getStringExtra(SelectContactsActivity.SELECTED_CONTACT);
-				onSureToJoin(contactids);
-			}
 		}
 	}
 }

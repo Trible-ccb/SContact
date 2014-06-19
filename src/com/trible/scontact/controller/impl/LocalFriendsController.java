@@ -1,8 +1,11 @@
 package com.trible.scontact.controller.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import android.content.ContentResolver;
@@ -16,6 +19,7 @@ import android.text.TextUtils;
 import com.trible.scontact.controller.IFriendsControl;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.pojo.ContactTypes;
 import com.trible.scontact.value.GlobalValue;
 
 public class LocalFriendsController implements IFriendsControl {
@@ -87,7 +91,7 @@ public class LocalFriendsController implements IFriendsControl {
                     	ContactInfo ci = new ContactInfo();
                     	ci.setContact(data1);
                     	contacts.add(ci);
-                    	ci.setType(GlobalValue.CTYPE_PHONE);
+                    	ci.setType(ContactTypes.getInstance().getCellPhoneType());
                     	ci.setId((long) id);
                     } else if (mime.toLowerCase().contains("name")) {
                     	ce.setDisplayName(data1); 
@@ -96,14 +100,12 @@ public class LocalFriendsController implements IFriendsControl {
                     	ci.setContact(data1);
                     	contacts.add(ci);
                     	ci.setId((long) id);
-                    	ci.setType(GlobalValue.CTYPE_EMAIL);
+                    	ci.setType(ContactTypes.getInstance().getEmailType());
                     } else if (mime.toLowerCase().contains("im")) {
                     	ContactInfo ci = new ContactInfo();
                     	ci.setContact(data1);
                     	contacts.add(ci);
                     	ci.setId((long) id);
-                    	ci.setType("IM");
-                    	ci.setType(GlobalValue.CTYPE_IM);
                     }
                 }
             }
@@ -147,7 +149,9 @@ public class LocalFriendsController implements IFriendsControl {
 	    // 获取手机联系人  
 	    Cursor phoneCursor = resolver.query(
 	    		Phone.CONTENT_URI,null, null, null, " sort_key asc ");  
-	    List<AccountInfo> contactList = new ArrayList<AccountInfo>();   
+	    List<AccountInfo> contactList = new ArrayList<AccountInfo>();
+	    Map<String, AccountInfo> mAccountsMapper = new LinkedHashMap<String, AccountInfo>();
+	    
 	    Set<String> unique = new HashSet<String>();
 	    
 	    if (phoneCursor != null) {  
@@ -175,12 +179,17 @@ public class LocalFriendsController implements IFriendsControl {
 	        if (TextUtils.isEmpty(phoneNumber) || unique.contains(phoneNumber) )  
 	            continue;
 	        unique.add(phoneNumber);
-	        AccountInfo tmp = new AccountInfo();
-	        List<ContactInfo> contacts = new ArrayList<ContactInfo>();
+	        AccountInfo tmp;
+	        List<ContactInfo> contacts;
 	        ContactInfo ci = new ContactInfo();
 	        //得到联系人名称  
 	        String displayName = phoneCursor.getString(
-	        		phoneCursor.getColumnIndex("display_name"));  
+	        		phoneCursor.getColumnIndex("display_name"));
+	        tmp = mAccountsMapper.get(displayName);
+	        if ( tmp == null )tmp = new AccountInfo();
+	        contacts = tmp.getContactsList();
+	        if ( contacts == null ) contacts = new ArrayList<ContactInfo>();
+	        mAccountsMapper.put(displayName, tmp);
 	        //得到联系人ID  
 	        Long contactid = phoneCursor.getLong(
 	        		phoneCursor.getColumnIndex("raw_contact_id"));  
@@ -200,11 +209,10 @@ public class LocalFriendsController implements IFriendsControl {
             }
             if ( mime != null ){
             	if (mime.toLowerCase().contains("phone")) {
-                	ci.setType(GlobalValue.CTYPE_PHONE);
+                	ci.setType(ContactTypes.getInstance().getCellPhoneType());
                 } else if (mime.toLowerCase().contains("email")) {
-                	ci.setType(GlobalValue.CTYPE_EMAIL);
+                	ci.setType(ContactTypes.getInstance().getEmailType());
                 } else if (mime.toLowerCase().contains("im")) {
-                	ci.setType(GlobalValue.CTYPE_IM);
                 }
             }
 	        //得到联系人头像Bitamp  
@@ -226,10 +234,11 @@ public class LocalFriendsController implements IFriendsControl {
 	          tmp.setId(contactid);
 	          tmp.setContactsList(contacts);
 	          tmp.setPhoneNumber(phoneNumber);
-	          contactList.add(tmp);
+//	          contactList.add(tmp);
 	        }
 	    }
 	        phoneCursor.close();
+	        contactList.addAll(mAccountsMapper.values());
 		return contactList;
 	}
 

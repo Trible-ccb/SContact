@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import ccb.java.android.utils.encoder.SecurityMethod;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.trible.scontact.managers.PrefManager;
@@ -19,7 +21,7 @@ public class AccountInfo extends BaseInfo implements Serializable{
 	private Integer status,gender;
 	Long birthday,createTime,id;
 	private String displayName,phoneNumber,photoUrl,
-	email,realName,description,type,password,cookie;
+	email,realName,description,type,password,cookie,notifyId;
 
 	private List<ContactInfo> contactsList;
 	
@@ -30,7 +32,6 @@ public class AccountInfo extends BaseInfo implements Serializable{
 		this.id = id;
 	}
 	
-	 
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -76,13 +77,13 @@ public class AccountInfo extends BaseInfo implements Serializable{
 	
 	 
 	public String getPhoneNumber() {
-		return phoneNumber;
+		return SecurityMethod.getAESInstance().Decryptor(phoneNumber);
 	}
 	/**
 	 *  
 	 */
 	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
+		this.phoneNumber = SecurityMethod.getAESInstance().Encrytor(phoneNumber);
 	}
 	
 	 
@@ -127,7 +128,12 @@ public class AccountInfo extends BaseInfo implements Serializable{
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
+	public String getNotifyId() {
+		return notifyId;
+	}
+	public void setNotifyId(String notifyId) {
+		this.notifyId = notifyId;
+	}
 	 
 	public String getCookie() {
 		return cookie;
@@ -147,6 +153,25 @@ public class AccountInfo extends BaseInfo implements Serializable{
 		if (sInstance == null)
 		sInstance = new AccountInfo();
 		return sInstance;
+	}
+	public AccountInfo copy(){
+		AccountInfo tmp = new AccountInfo();
+		tmp.setBirthday(birthday);
+		tmp.setContactsList(contactsList);
+		tmp.setCookie(cookie);
+		tmp.setCreateTime(createTime);
+		tmp.setDescription(description);
+		tmp.setDisplayName(displayName);
+		tmp.setEmail(email);
+		tmp.setGender(gender);
+		tmp.setStatus(status);
+		tmp.setId(id);
+		tmp.setPassword(password);
+		tmp.setPhoneNumber(phoneNumber);
+		tmp.setPhotoUrl(photoUrl);
+		tmp.setRealName(realName);
+		tmp.setType(type);
+		return tmp;
 	}
 	public static void setAccountInfo(AccountInfo info){
 		sInstance = info;

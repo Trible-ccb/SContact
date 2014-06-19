@@ -106,8 +106,6 @@ public class ChooseGroupActionDialog{
 					int position, long id) {
 				String action = mGroupActions.get(position);
 				if ( VIEW.equals(action) ){
-//					mContext.simpleDisplayActivity(
-//							ViewGroupDetailsActivity.getInentMyself(gInfo));
 					mContext.simpleGetResultFromActivityWithData(RequestCode.VIEW_GROUP,
 							ViewGroupDetailsActivity.getInentMyself(gInfo));
 				} else if ( APART.equals(action) ){

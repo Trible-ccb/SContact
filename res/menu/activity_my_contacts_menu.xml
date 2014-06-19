@@ -3,6 +3,6 @@
         android:id="@+id/action_add"
         android:showAsAction="always"
         android:icon="@drawable/ic_action_new"
-        android:title="@string/action_add"
+        android:title="@string/action_create_group"
         />
 </menu>

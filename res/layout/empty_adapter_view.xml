@@ -1,0 +1,34 @@
+<RelativeLayout 
+	xmlns:android="http://schemas.android.com/apk/res/android"    
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="6dp"
+    android:paddingRight="6dp"
+    android:paddingTop="6dp"	    
+    >
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        >
+	    <Button
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:id="@+id/empty_btn"
+	        android:text="@string/app_name"
+	        style="@style/ButtonFull.BlueText"
+	        android:layout_margin="10dp"
+	        />
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:id="@+id/empty_text"
+	        android:text="@string/empty"
+	        android:textSize="20sp"
+	        android:gravity="center"
+	        android:padding="10dp"
+	        />
+    </LinearLayout>
+</RelativeLayout>

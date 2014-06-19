@@ -8,12 +8,11 @@ import com.trible.scontact.pojo.ErrorInfo;
  * @author Trible Chen
  *
  */
-/**
- * @author Trible Chen
- *
- */
 public class GlobalValue {
 
+	public static final String QQAPPID = "101122109";
+	public static final String QQAPPKEY = "9b9efb8a71e54af99e138f0b40031d2a";
+	
 	public static final int CODE_UNKOWN_ERROR = -1;
 	public static final String STR_UNKOWN_ERROR = "Unkown Err";
 	
@@ -102,22 +101,23 @@ public class GlobalValue {
 	public static final Integer CSTATUS_USED = 0;
 	public static final Integer CSTATUS_DELETED = 1;
 	public static final Integer CSTATUS_NULL = CSTATUS_USED;
+	public static final Integer CSTATUS_UNUSED = 2;
 	
 //	contact types values;
-	public static final String CTYPE_PHONE = "Phone";
-	public static final String CTYPE_EMAIL = "Email";
-	public static final String CTYPE_IM = "IM";
-	public static final String CTYPE_QQ = "QQ";
-	public static final String CTYPE_WEIXIN = "WeiXin";
-	public static final String CTYPE_ZUOJI = "Home Phone";
-	public static final String CTYPE_FB = "Facebook";
-	public static final String CTYPE_TWITTER = "Twitter";
-	public static final String CTYPE_WHATAPP = "WhatsApp";
-	
-	public static String[] CONTACT_TYPES = {
-		CTYPE_PHONE,CTYPE_EMAIL,CTYPE_QQ,
-		CTYPE_WEIXIN,CTYPE_ZUOJI,CTYPE_FB,
-		CTYPE_TWITTER,CTYPE_WHATAPP};
+//	public static final String CTYPE_PHONE = "Phone";
+//	public static final String CTYPE_EMAIL = "Email";
+//	public static final String CTYPE_IM = "IM";
+//	public static final String CTYPE_QQ = "QQ";
+//	public static final String CTYPE_WEIXIN = "WeiXin";
+//	public static final String CTYPE_ZUOJI = "Home Phone";
+//	public static final String CTYPE_FB = "Facebook";
+//	public static final String CTYPE_TWITTER = "Twitter";
+//	public static final String CTYPE_WHATAPP = "WhatsApp";
+//	
+//	public static String[] CONTACT_TYPES = {
+//		CTYPE_PHONE,CTYPE_EMAIL,CTYPE_QQ,
+//		CTYPE_WEIXIN,CTYPE_ZUOJI,CTYPE_FB,
+//		CTYPE_TWITTER,CTYPE_WHATAPP};
 	/** ===Contact Static Value End=== */
 	
 	/** ===Group Static Value Start=== */
@@ -155,9 +155,9 @@ public class GlobalValue {
 		CREATE_GROUP_NUMBERS_RULE.put(UTYPE_NULL, 3);
 		
 		GROUP_CAPACITY_RULE.put(GTYPE_DEV, 2000);
-		GROUP_CAPACITY_RULE.put(GTYPE_LEVEL2, 2000);
-		GROUP_CAPACITY_RULE.put(GTYPE_LEVE1, 500);
-		GROUP_CAPACITY_RULE.put(GTYPE_NORMAL, 100);
+		GROUP_CAPACITY_RULE.put(GTYPE_LEVEL2, 500);
+		GROUP_CAPACITY_RULE.put(GTYPE_LEVE1, 100);
+		GROUP_CAPACITY_RULE.put(GTYPE_NORMAL, 50);
 		GROUP_CAPACITY_RULE.put(GTYPE_NULL, 50);
 	}
 	

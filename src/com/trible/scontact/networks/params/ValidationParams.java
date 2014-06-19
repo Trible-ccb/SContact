@@ -27,7 +27,14 @@ public class ValidationParams {
 				+ StringUtil.getEncodeURLParams(v);
 		return url;
 	}
-	
+	public static String getUpdateRelationshipParams(ValidateInfo info){
+		String v = new Gson().toJson(info);
+		String url = SContactApplication.getURL() + mPath 
+				+ "/updateRelationship"
+				+ "?json=" 
+				+ StringUtil.getEncodeURLParams(v);
+		return url;
+	}
 	public static String getRemoveRelationshipParams(ValidateInfo info){
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPath 
@@ -37,12 +44,23 @@ public class ValidationParams {
 		return url;
 	}
 	
-	public static String getMyValidateListParams(Long uid){
+	public static String getMyInboxListParams(Long uid){
 		ValidateInfo info = new ValidateInfo();
 		info.setEnd_user_id(uid);
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/getMyValidateList"
+				+ "?json=" 
+				+ StringUtil.getEncodeURLParams(v);
+		return url;
+	}
+	
+	public static String getMyInboxNumberParams(Long uid){
+		ValidateInfo info = new ValidateInfo();
+		info.setEnd_user_id(uid);
+		String v = new Gson().toJson(info);
+		String url = SContactApplication.getURL() + mPath 
+				+ "/getMyInboxNumber"
 				+ "?json=" 
 				+ StringUtil.getEncodeURLParams(v);
 		return url;

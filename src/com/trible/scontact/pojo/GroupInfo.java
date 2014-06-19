@@ -13,7 +13,8 @@ public class GroupInfo extends BaseInfo implements Serializable{
 
 	private static final long serialVersionUID = 5992369539881658675L;
 	private Integer status,capacity,identify;
-
+	private int groupMembers;
+	
 	private Long createTime,updateTime,id,ownerId;
 	private String displayName,description,type;
 
@@ -35,7 +36,12 @@ public class GroupInfo extends BaseInfo implements Serializable{
 	public void setOwnerId(Long ownerId) {
 		this.ownerId = ownerId;
 	}
-	
+	public int getGroupMembers() {
+		return groupMembers;
+	}
+	public void setGroupMembers(int groupMembers) {
+		this.groupMembers = groupMembers;
+	}
 	
 	public Integer getStatus() {
 		return status;

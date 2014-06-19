@@ -1,5 +1,6 @@
 package com.trible.scontact.components.adpater;
 
+import java.sql.Time;
 import java.util.List;
 
 import android.content.Context;
@@ -13,15 +14,16 @@ import android.widget.TextView;
 
 import com.trible.scontact.R;
 import com.trible.scontact.pojo.ValidateInfo;
+import com.trible.scontact.utils.TimeUtil;
 
-public class MessageListAdapter extends BaseAdapter {
+public class InboxListAdapter extends BaseAdapter {
 
 	Context mContext;
 	LayoutInflater mInflater;
 	List<ValidateInfo> mDatas;
 	OnHandleMessageAction mHandleMessageAction;
 	
-	public MessageListAdapter(Context c){
+	public InboxListAdapter(Context c){
 		mContext = c;
 		if ( mContext instanceof OnHandleMessageAction ){
 			mHandleMessageAction = (OnHandleMessageAction) mContext;
@@ -54,7 +56,9 @@ public class MessageListAdapter extends BaseAdapter {
 	public Object getItem(int position) {
 		return mDatas.get(position);
 	}
-
+	public ValidateInfo getValidateInfoItem(int position) {
+		return (ValidateInfo) getItem(position);
+	}
 	@Override
 	public long getItemId(int position) {
 		return mDatas.get(position).getId();
@@ -70,11 +74,13 @@ public class MessageListAdapter extends BaseAdapter {
 			mHolder.img = (ImageView) convertView.findViewById(R.id.user_image);
 			mHolder.accept = (TextView) convertView.findViewById(R.id.accept);
 			mHolder.reject = (TextView) convertView.findViewById(R.id.rejuect);
-			mHolder.username = (TextView) convertView.findViewById(R.id.user_name);
+			mHolder.desp = (TextView) convertView.findViewById(R.id.message_description);
+			mHolder.time = (TextView) convertView.findViewById(R.id.message_time);
 			convertView.setTag(mHolder);
 		} else {
 			mHolder = (ContactViewHolder) convertView.getTag();
 		}
+		mHolder.img.setVisibility(View.GONE);
 		final ValidateInfo info = mDatas.get(pos);
 		mHolder.reject.setOnClickListener(new OnClickListener() {
 			
@@ -94,12 +100,36 @@ public class MessageListAdapter extends BaseAdapter {
 				}
 			}
 		});
+		String desp = null;
+		if ( info.getGroupId() == null ){
+			if ( info.getStartUser() != null 
+					&& info.getEndUser() != null )
+			desp = mContext.getString(
+					R.string.format_user_as_friend,
+					info.getStartUser().getDisplayName(),
+					info.getEndUser().getDisplayName());
+		} else if ( info.getIs_group_to_user() == 0 ){
+			if (info.getStartUser() != null 
+					&& info.getGroupInfo() != null )
+			desp = mContext.getString(
+					R.string.format_user_join_group,
+					info.getStartUser().getDisplayName(),
+					info.getGroupInfo().getDisplayName());
+		} else if (info.getStartUser() != null 
+				&& info.getGroupInfo() != null ){
+			desp = mContext.getString(
+					R.string.format_invite_user_join_group,
+					info.getStartUser().getDisplayName(),
+					info.getGroupInfo().getDisplayName());
+		}
+		mHolder.desp.setText(desp);
+		mHolder.time.setText(TimeUtil.toTimeString(info.getCreateTime()));
 		return convertView;
 	}
 
 	class ContactViewHolder {
 		ImageView img;
-		TextView username,accept,reject;
+		TextView desp,accept,reject,time;
 	}
 	
 	public interface OnHandleMessageAction{

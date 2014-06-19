@@ -1,5 +1,7 @@
 package com.trible.scontact.components.activity;
 
+import org.androidpn.client.ServiceManager;
+
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.animation.Animation;
@@ -8,6 +10,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.trible.scontact.R;
+import com.trible.scontact.components.widgets.NotifyHelper;
 import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.value.GlobalValue;
@@ -28,12 +31,9 @@ public class IntroActivity extends CustomSherlockFragmentActivity implements Ani
 		mIntroImage = (ImageView) findViewById(R.id.logo_first);
 		mIntroImage.startAnimation(mAnimIn);
 		mInfo = AccountInfo.getInstance();
-		String ip = PrefManager.getInstance().getString("IP");
-		if ( !TextUtils.isEmpty(ip) ){
-			SContactApplication.setIP(ip);
-		}
+		NotifyHelper.setCallbackActivity(this);
 	}
-	
+
 	@Override
 	public void onAnimationStart(Animation animation) {
 		

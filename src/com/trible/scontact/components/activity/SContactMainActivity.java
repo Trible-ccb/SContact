@@ -17,14 +17,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.Window;
 import com.google.gson.reflect.TypeToken;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
@@ -41,13 +39,15 @@ import com.trible.scontact.controller.impl.RemoteGroupControlller;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.ContactParams;
 import com.trible.scontact.networks.params.GroupParams;
+import com.trible.scontact.networks.params.ValidationParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
-import com.trible.scontact.utils.DeviceUtil;
+import com.trible.scontact.utils.IntentUtil;
 import com.trible.scontact.utils.ListUtil;
+import com.trible.scontact.utils.StringUtil;
 import com.trible.scontact.value.RequestCode;
 
 /**
@@ -57,7 +57,6 @@ import com.trible.scontact.value.RequestCode;
 public final class SContactMainActivity extends CustomSherlockFragmentActivity 
 									implements OnItemClickListener
 									,OnClickListener
-									,OnItemLongClickListener
 								 	,OnGroupActionListener
 									,OnFragmentListener{
 
@@ -70,19 +69,19 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	
 	Menu mMenu;
 	
-//	TabLayoutHelper mContactTabHelper;
 	LayoutInflater mInflater;
 	LoadingDialog mLoadingDialog;
 	
 	IGroupControl mGroupController,mLocalGroupController,mReomoteGroupController;
 	List<GroupInfo> mRemoteGroupsInfos,mLocalGroupsInfos,mCurGroupsInfos;
-	GroupInfo mFriendGroup,mLocalFriendGroup;
+	GroupInfo mFriendGroup,mLocalFriendGroup,mSelectGroupsInfo;
 	public static List<ContactInfo> myAllContacts;
 	ChooseGroupActionDialog mGroupAcionDialog;
 	
 	AccountInfo mUserInfo;
+	public static boolean needRefreshFriendList,needRefeshGroupList,needRereshContactList;
 	int mSelectedGroupPos = -1;
-	
+	Long mInboxNum = null;
 	public static final Long GROUP_OF_FRIEND = -1L;
 	public static final Long GROUP_OF_LOCAL_FRIEND = -2L;
 	
@@ -143,7 +142,6 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		mGroupListView.setAdapter(mGroupListAdapter);
 		mGroupListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		mGroupListView.setOnItemClickListener(this);
-		mGroupListView.setOnItemLongClickListener(this);
 		mDrawerToggle = new ActionBarDrawerToggle(
 				this, mDrawerLayout, 
 				R.drawable.ic_drawer,
@@ -161,14 +159,6 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		super.onPostCreate(savedInstanceState);
 		mDrawerToggle.syncState();
 	}
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_scontact_menu, menu);
-		mMenu = menu;
-		return super.onCreateOptionsMenu(menu);
-	}
-	
 	@Override
 	protected void onActivityResult(int arg0, int arg1, Intent arg2) {
 		if ( arg1 == RESULT_OK ){
@@ -191,6 +181,9 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 					} else if (arg2.hasExtra(ChooseGroupActionDialog.EXIT)){
 						result = (GroupInfo) arg2.getSerializableExtra(ChooseGroupActionDialog.EXIT);
 						onExited(result);
+					} else if (arg2.hasExtra(CreateOrUpdateGroupActivity.RESULT_GROUP)){
+						result = (GroupInfo) arg2.getSerializableExtra(CreateOrUpdateGroupActivity.RESULT_GROUP);
+						onEditedGroup(result);
 					}
 					break;
 				default:
@@ -199,6 +192,30 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		}
 		super.onActivityResult(arg0, arg1, arg2);
 	}
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getSupportMenuInflater().inflate(R.menu.activity_scontact_menu, menu);
+		mMenu = menu;
+//		mMenu.findItem(R.id.action_my_profile).setVisible(false);
+		return super.onCreateOptionsMenu(menu);
+	}
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if ( mInboxNum != null && mInboxNum != 0 ){
+			mMenu.findItem(R.id.action_my_inbox).setTitle(getString(R.string.action_inbox)+"("+mInboxNum+")");
+			mMenu.findItem(R.id.action_my_inbox).setIcon(R.drawable.icon_has_msg);
+		} else {
+			mMenu.findItem(R.id.action_my_inbox).setTitle(getString(R.string.action_inbox));
+			mMenu.findItem(R.id.action_my_inbox).setIcon(R.drawable.ic_action_email);
+		}
+		if ( mSelectGroupsInfo.getId() > 0 ){
+			mMenu.findItem(R.id.action_group_infos).setVisible(true);
+		} else {
+			mMenu.findItem(R.id.action_group_infos).setVisible(false);
+		}
+		return super.onPrepareOptionsMenu(menu);
+	}
+	
 	//end override life circle methods===============
 	
 	//override listener methods===============
@@ -212,8 +229,15 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 				mDrawerToggle.onOptionsItemSelected(SherlockMenuItemToMenuItem.getMenuItem(item));
 				return true;
 			case R.id.action_add_group:
-				simpleGetResultFormActivity(CreateOrUpdateGroupActivity.class
-						,RequestCode.CREATE_GROUP);
+				if(ListUtil.isEmpty(myAllContacts)){
+					Bog.toast(R.string.empty_contacts_list);
+				} else {
+					simpleGetResultFormActivity(CreateOrUpdateGroupActivity.class
+							,RequestCode.CREATE_GROUP);
+				}
+				break;
+			case R.id.action_add_local_friend:
+				IntentUtil.insertContact(this,null,null);
 				break;
 			case R.id.action_settings:
 				simpleGetResultFormActivity(SettingsActivity.class, RequestCode.CHANGE_SETTING);
@@ -225,8 +249,17 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			case R.id.action_my_profile:
 				simpleDisplayActivity(MyProfileActivity.class);
 				break;
-			case R.id.action_my_msg:
-				simpleDisplayActivity(MyMsgsActivity.class);
+			case R.id.action_group_infos:
+				simpleGetResultFromActivityWithData(RequestCode.VIEW_GROUP,
+						ViewGroupDetailsActivity.getInentMyself(mSelectGroupsInfo));
+				break;
+			case R.id.action_my_contacts:
+				simpleDisplayActivity(MyContactsActivity.class);
+				break;
+			case R.id.action_my_inbox:
+				mInboxNum = 0L;
+				mMenu.findItem(R.id.action_my_inbox).setTitle(getString(R.string.action_inbox));
+				simpleDisplayActivity(MyInboxActivity.class);
 				break;
 			
 			default:
@@ -250,6 +283,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		} else {//drawer group item click
 			Long gid = mGroupListAdapter.getItemId(position);
 			GroupInfo info = mGroupListAdapter.getGroupInfoInPosition(position);
+			mSelectGroupsInfo = info;
 			if ( GROUP_OF_FRIEND.equals(gid) ){
 				mFriendsListFragment.loadRomoteFriendsByUserId(info);
 			} else if ( GROUP_OF_LOCAL_FRIEND.equals(gid) ){
@@ -260,35 +294,14 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			mSelectedGroupPos = position;
 			mGroupListAdapter.setSelected(mSelectedGroupPos);
 			mDrawerLayout.closeDrawers();
+			supportInvalidateOptionsMenu();
+			setTitle(mSelectGroupsInfo.getDisplayName(), R.color.blue_qq);
 		}
-	}
-	
-	@Override
-	public boolean onItemLongClick(AdapterView<?> parent, View view,
-			int position, long id) {
-		GroupInfo info = mGroupListAdapter.getGroupInfoInPosition(position);
-		if ( info == null
-				|| info.getId() < 0 )return true;//only handle remote group
-		if ( mRemoteGroupsInfos != null && mRemoteGroupsInfos.get(position) != null ){
-			mGroupAcionDialog = new ChooseGroupActionDialog(this, mRemoteGroupsInfos.get(position));
-			AccountInfo uInfo = AccountInfo.getInstance();
-			if ( uInfo.getId().equals(info.getOwnerId())){
-				mGroupAcionDialog.setMutilVisible(true, false, true, false, false);
-			} else {
-				mGroupAcionDialog.setMutilVisible(true, false, true, false, false);
-			}
-			mGroupAcionDialog.show();
-		} else {
-			Bog.toast(R.string.invalid);
-		}
-
-		return false;
 	}
 	
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		if ( keyCode == KeyEvent.KEYCODE_MENU 
-				&& event.getAction() == KeyEvent.ACTION_UP){
+		if ( keyCode == KeyEvent.KEYCODE_MENU ){
 			mMenu.performIdentifierAction(R.id.action_overflow, 0);
 			return true;
 		}
@@ -318,6 +331,12 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		mTipView.setVisibility(View.GONE);
 	}
 
+	private void addStaticGroup(List<GroupInfo> holder){
+		holder.clear();
+		holder.add(mFriendGroup);
+		holder.add(mLocalFriendGroup);
+		
+	}
 	private void loadGroups(){
 		
 			if ( mRemoteGroupsInfos != null ){
@@ -325,8 +344,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 				updateUILoadGroupDone();
 			} else {
 				mCurGroupsInfos = new ArrayList<GroupInfo>();
-				mCurGroupsInfos.add(mLocalFriendGroup);
-				mCurGroupsInfos.add(mFriendGroup);
+				addStaticGroup(mCurGroupsInfos);
 				mGroupListAdapter.setData(mCurGroupsInfos);
 				loadRemoteGroups();
 			}
@@ -351,24 +369,41 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 						if ( mRemoteGroupsInfos == null ){
 							mRemoteGroupsInfos = new ArrayList<GroupInfo>();
 						}
-//						if ( mContactTabHelper.getSelection() == 0 ){
-						mRemoteGroupsInfos.clear();
-						mRemoteGroupsInfos.add(mLocalFriendGroup);
-						mRemoteGroupsInfos.add(mFriendGroup);
+						addStaticGroup(mRemoteGroupsInfos);
 						mRemoteGroupsInfos.addAll(infos);
 						mCurGroupsInfos = mRemoteGroupsInfos;
-//						}
 						updateUILoadGroupDone();
 					}
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 							Throwable arg3) {
-						Bog.toast(getString(R.string.connect_server_err));
+						Bog.toast(getString(R.string.load_groups_err));
 					}
 				});
 	}
 	
-	
+	void loadInboxNumber(){
+		
+		SContactAsyncHttpClient.post(
+				ValidationParams.getMyInboxNumberParams(AccountInfo.getInstance().getId()),
+				null,
+				new AsyncHttpResponseHandler(){
+					
+					@Override
+					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+						try {
+							mInboxNum = Long.valueOf(StringUtil.getStringForByte(arg2));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+					}
+					@Override
+					public void onFinish() {
+						supportInvalidateOptionsMenu();
+					}
+				});
+	}
 	void loadMyAllContacts(){
 		SContactAsyncHttpClient.post(ContactParams.getUserContactsParams(mUserInfo.getId()),
 				null, new AsyncHttpResponseHandler(){
@@ -384,10 +419,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			@Override
 			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 					Throwable arg3) {
-				Bog.toast( R.string.connect_server_err );
-			}
-			@Override
-			public void onFinish() {
+				Bog.toast( R.string.load_contacts_err );
 			}
 		});
 		
@@ -399,6 +431,13 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		mGroupListAdapter.setData(mRemoteGroupsInfos);
 		int idx = mRemoteGroupsInfos.indexOf(cur);
 		mGroupListAdapter.setSelected(idx);
+	}
+	public void onEditedGroup(GroupInfo g){
+		boolean flg = mGroupListAdapter.editedGroupBy(g);
+		if ( flg ){
+			mSelectGroupsInfo = mGroupListAdapter.getSeletedGroupInfo();
+			setTitle(mSelectGroupsInfo.getDisplayName(), R.color.blue_qq);
+		}
 	}
 	@Override
 	public void onAparted(GroupInfo g) {
@@ -444,5 +483,24 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	public void onFragmentCreated() {
 		loadGroups();
 		onItemClick(mGroupListView, mGroupListView.getChildAt(0), 0, 0);
+		loadInboxNumber();
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if ( needRefreshFriendList ){
+			onItemClick(mGroupListView,
+					mGroupListView.getChildAt(mSelectedGroupPos), mSelectedGroupPos, 0);
+			needRefreshFriendList = false;
+		}
+		if ( needRefeshGroupList ){
+			needRefeshGroupList = false;
+			loadRemoteGroups();
+		}
+		if ( needRereshContactList ){
+			loadMyAllContacts();
+			needRereshContactList = false;
+		}
 	}
 }

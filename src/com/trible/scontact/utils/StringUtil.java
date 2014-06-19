@@ -1,6 +1,7 @@
 package com.trible.scontact.utils;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
@@ -89,11 +90,11 @@ public class StringUtil {
 	}
 
 	public static boolean isValidName(String name){
-		return name == null ? false : name.matches("[^\"'%*]+");
+		return name == null ? false : name.matches("[^\"'%*]{1,30}");
 	}
 	
 	public static boolean isValidPwd(String pwd){
-		return pwd == null ? false : pwd.matches("[^\"']+");
+		return pwd == null ? false : pwd.matches("[^\"']{1,30}");
 	}	
 	
 	public static String MD5(String str) {
@@ -113,9 +114,13 @@ public class StringUtil {
 		}
 		byte[] md5Bytes = md5.digest(byteArray);
 
+
+		return getHexStringOfByte(md5Bytes);
+	}
+	public static String getHexStringOfByte(byte[] bytes){
 		StringBuffer hexValue = new StringBuffer();
-		for (int i = 0; i < md5Bytes.length; i++) {
-			int val = (md5Bytes[i]) & 0xff;
+		for (int i = 0; i < bytes.length; i++) {
+			int val = (bytes[i]) & 0xff;
 			if (val < 16) {
 				hexValue.append("0");
 			}
@@ -123,7 +128,6 @@ public class StringUtil {
 		}
 		return hexValue.toString();
 	}
-
 	public static String getFormatDateTime(String formatString, Date d) {
 		SimpleDateFormat sdf = new SimpleDateFormat(formatString,
 				Locale.ENGLISH);
@@ -315,6 +319,17 @@ public class StringUtil {
 		try {
 			ev = URLEncoder.encode(v, "UTF-8");
 			Bog.v("after encode v = " + ev);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ev;
+	}
+	public static String getDecodeURLParams(String v){
+		Bog.v("before Decode v = " + v);
+		String ev = null;
+		try {
+			ev = URLDecoder.decode(v, "UTF-8");
+			Bog.v("after Decode v = " + ev);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

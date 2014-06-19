@@ -21,7 +21,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
-import com.trible.scontact.components.adpater.ContactsListAdapter;
+import com.trible.scontact.components.adpater.ChooseContactsListAdapter;
 import com.trible.scontact.components.widgets.LoadingDialog;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
@@ -38,6 +38,7 @@ import com.trible.scontact.pojo.PhoneAndGroupInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
 
+@Deprecated
 public class SelectContactsActivity extends CustomSherlockFragmentActivity 
 										{
 
@@ -46,7 +47,7 @@ public class SelectContactsActivity extends CustomSherlockFragmentActivity
 	ListView mContactsListView;
 	List<ContactInfo> myAllContacts;
 	List<ContactInfo> chooseContacts;
-	ContactsListAdapter mAdapter;
+	ChooseContactsListAdapter mAdapter;
 	AccountInfo mUserInfo;
 	
 	LoadingDialog mLoadingDialog;
@@ -73,7 +74,7 @@ public class SelectContactsActivity extends CustomSherlockFragmentActivity
 		mContactsListView = (ListView) findViewById(R.id.contacts_list_view);
 	}
 	void initData(){
-		mAdapter = new ContactsListAdapter(this);
+		mAdapter = new ChooseContactsListAdapter(this);
 		mContactsListView.setAdapter(mAdapter);
 		myAllContacts = new ArrayList<ContactInfo>();
 		chooseContacts = new ArrayList<ContactInfo>();

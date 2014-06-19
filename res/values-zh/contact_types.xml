@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cellphone">手机号</string>
+    <string name="email">邮箱</string>
+    <string name="telephone">座机号</string>
+    <string name="custom">自定义</string>
+</resources>

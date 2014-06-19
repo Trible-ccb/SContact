@@ -12,5 +12,8 @@
    	    android:layout_height="wrap_content"
    	    android:id="@+id/my_messages_list_view"
    	    style="@style/ListViewStyle"
+   	    android:padding="6dp"
+   	    android:divider="@color/transparent"
+   	    android:dividerHeight="6dp"
    	    />
 </LinearLayout>

@@ -6,7 +6,6 @@ import org.apache.http.Header;
 
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -14,15 +13,17 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.adpater.FriendContactsListAdapter;
-import com.trible.scontact.components.adpater.SearchResultAdapter.FriendViewHolder;
-import com.trible.scontact.components.widgets.ChooseFriendActionDialog;
+import com.trible.scontact.components.adpater.TypeHandler;
+import com.trible.scontact.components.widgets.ChooseContactActionDialog;
+import com.trible.scontact.components.widgets.ChooseContactsListDialog;
 import com.trible.scontact.components.widgets.LoadingDialog;
 import com.trible.scontact.components.widgets.YesOrNoTipDialog;
 import com.trible.scontact.components.widgets.YesOrNoTipDialog.OnButtonClickListner;
@@ -36,9 +37,8 @@ import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.pojo.UserRelationInfo;
 import com.trible.scontact.pojo.ValidateInfo;
 import com.trible.scontact.utils.Bog;
-import com.trible.scontact.utils.IntentUtil;
+import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.value.GlobalValue;
-import com.trible.scontact.value.RequestCode;
 
 
 /**
@@ -53,9 +53,10 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 	Button mFriendAction;
 	ListView mContactsListView;
 	FriendContactsListAdapter mAdapter;
-	FriendViewHolder mFriendViewHolder;
+	TextView mFriendName,mFriendDesp;
 	
-	ChooseFriendActionDialog mChooseFriendActionDialog;
+	ChooseContactsListDialog mContactsListDialog;
+	ChooseContactActionDialog mChooseFriendActionDialog;
 	LoadingDialog mLoadingDialog;
 	
 	List<ContactInfo> mContacts;
@@ -77,15 +78,18 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		mFriend = (AccountInfo) getIntent().getSerializableExtra("ViewFriend");
 		mGroupInfo = (GroupInfo) getIntent().getSerializableExtra("InGroup");
 		setContentView(R.layout.activity_view_friend);
+		setTitle(R.string.details_title, R.color.blue_qq);
 		initView();
 		initViewData();
 		checkIsFriend();
 	}
 
 	void initView(){
-		mFriendViewHolder = new FriendViewHolder(findViewById(R.id.friend_layout));
+		mContactsListDialog = new ChooseContactsListDialog(this);
 		mFriendAction = (Button) findViewById(R.id.friend_action);
 		mFriendAction.setOnClickListener(this);
+		mFriendName = (TextView) findViewById(R.id.friend_name);
+		mFriendDesp = (TextView) findViewById(R.id.friend_desp);
 		mContactsListView = (ListView) findViewById(R.id.friend_contacts_list_view);
 		mLoadingDialog = new LoadingDialog(this);
 	}
@@ -95,30 +99,108 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		mContactsListView.setOnItemClickListener(this);
 		mContacts = mFriend.getContactsList();
 		mAdapter.setData(mContacts);
-		mFriendViewHolder.title.setText(mFriend.getDisplayName());
-		mFriendViewHolder.desp.setText(mFriend.getDescription());
+		String gender = "";
+		if ( GlobalValue.UGENDER_FEMALE.equals(mFriend.getGender()) ){
+			gender = "(" + getString(R.string.gender_female) + ")";
+		} else if ( GlobalValue.UGENDER_FEMALE.equals(mFriend.getGender()) ){
+			gender = "(" + getString(R.string.gender_male) + ")";
+		}
+		mFriendName.setText(mFriend.getDisplayName() + gender);
+		mFriendDesp.setText(mFriend.getDescription());
 		
 	}
-
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		getSupportMenuInflater().inflate(R.menu.activity_view_friend_menu, menu);
+		if ( mFirendFlag == 3 || mFirendFlag == 1 ){
+			menu.findItem(R.id.action_edit).setVisible(true);
+		} else {
+			menu.findItem(R.id.action_edit).setVisible(false);
+		}
+		return super.onPrepareOptionsMenu(menu);
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.action_edit:
+				if ( mFirendFlag == 3 ){
+					mContactsListDialog.setTileText(
+							getString(R.string.format_select_contact,
+									getString(R.string.group_lable) 
+									+ mGroupInfo.getDisplayName()));
+				} else if ( mFirendFlag == 1 ){
+					mContactsListDialog.setTileText(
+							getString(R.string.format_select_contact, 
+									mFriend.getDisplayName()));
+				} else {
+					return false;
+				}
+				mContactsListDialog.sureBtn.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						List<ContactInfo> c = mContactsListDialog.getSelectedContacts();
+						if ( ListUtil.isEmpty(c) ){
+							Bog.toast(R.string.selected_empty);
+						} else {
+							ValidateInfo info = new ValidateInfo();
+							info.setStart_user_id(AccountInfo.getInstance().getId());
+							info.setContact_ids(ContactInfo.arrayToString(c));
+							if ( mFirendFlag == 3 ){
+								info.setGroupId(mGroupInfo.getId());
+								info.setEnd_user_id(mGroupInfo.getOwnerId());
+							} else if ( mFirendFlag == 1 ){
+								info.setEnd_user_id(mFriend.getId());
+							}
+							onSureToUpdateVisibleContacts(info);
+							mContactsListDialog.getDialog().dismissDialogger();
+						}
+					}
+				});
+				mContactsListDialog.show();
+				mContactsListDialog.setSelectedContacts(mContacts);
+				break;
+	
+			default:
+				break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-		String type = mContacts.get(position).getType();
-		String contact = mContacts.get(position).getContact();
-		mChooseFriendActionDialog = new ChooseFriendActionDialog(this, contact);
-		if ( GlobalValue.CTYPE_EMAIL.equals(type) ){
-			IntentUtil.sendEmail(this, contact, "", "");
-			return;
-		} else if ( GlobalValue.CTYPE_PHONE.equals(type) ){
-			if ( mFirendFlag == 2 ){
-				mChooseFriendActionDialog.setMutilVisible(true, true, true);
-			} else {
-				mChooseFriendActionDialog.setMutilVisible(true, true, false);
+		String type = mAdapter.getContact(position).getType();
+		String contact = mAdapter.getContact(position).getContact();
+		mChooseFriendActionDialog = new ChooseContactActionDialog(
+				this, mAdapter.getContact(position));
+		new TypeHandler(this) {
+			@Override
+			protected void onPhone() {
+				mChooseFriendActionDialog.addAction(getString(R.string.call_lable));
+				mChooseFriendActionDialog.addAction(getString(R.string.message_lable));
+				if ( mFirendFlag == 2 ){
+					mChooseFriendActionDialog.addAction(getString(R.string.invite_lable));
+				} else {
+					mChooseFriendActionDialog.name = mFriend.getDisplayName();
+					mChooseFriendActionDialog.addAction(getString(R.string.add_to_local_lable));
+				}
+			}
+			@Override
+			protected void onEmail() {
+				mChooseFriendActionDialog.addAction(getString(R.string.send_email_lable));
+				if ( mFirendFlag == 2 ){
+					mChooseFriendActionDialog.addAction(getString(R.string.invite_lable));
+				} else {
+					mChooseFriendActionDialog.name = mFriend.getDisplayName();
+					mChooseFriendActionDialog.addAction(getString(R.string.add_to_local_lable));
+				}
 			}
 			
-		} else if ( GlobalValue.CTYPE_IM.equals(type) ){
-			
-		} 
+		}.handle(type);
+//		if ( GlobalValue.CTYPE_EMAIL.equals(type) ){
+//		} else if ( GlobalValue.CTYPE_PHONE.equals(type) ){
+//		} else if ( GlobalValue.CTYPE_IM.equals(type) ){
+//		} 
+		mChooseFriendActionDialog.addAction(getString(R.string.copy_lable));
 		mChooseFriendActionDialog.show();
 	}
 	void checkIsFriend(){
@@ -127,29 +209,31 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 			if ( SContactMainActivity.GROUP_OF_FRIEND.equals(mGroupInfo.getId()) ){
 				mFirendFlag = 1;
 				mFriendAction.setText(R.string.remove_friend_lable);
+				mFriendAction.setTextColor(getResources().getColor(R.color.red));
 				mFriendAction.setVisibility(View.VISIBLE);
 				return;
 			} else if ( SContactMainActivity.GROUP_OF_LOCAL_FRIEND.equals(mGroupInfo.getId()) ){
 				mFirendFlag = 2;
 				return;
-			} else if (AccountInfo.getInstance().getId().equals(mFriend.getId()) ){
-				mFirendFlag = 3;
-				return;
 			} else {
 				mFirendFlag = 0;
 			}
 		}
+		if (AccountInfo.getInstance().getId().equals(mFriend.getId()) ){
+			mFirendFlag = 3;
+			return;
+		} 
 		SContactAsyncHttpClient.post(
 				AccountParams.getCheckIsFriendsParams(
 						AccountInfo.getInstance().getId(),mFriend.getId()),
 				null, new AsyncHttpResponseHandler(){
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
 						UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
 						if ( result != null && result.getId() != null){
 							mFirendFlag = 1;
 							mFriendAction.setText(R.string.remove_friend_lable);
+							mFriendAction.setTextColor(getResources().getColor(R.color.red));
 						} else if ( result == null ){
 							mFirendFlag = 0;
 							mFriendAction.setText(R.string.add_friend_lable);
@@ -161,20 +245,51 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
 						Bog.toast(R.string.connect_server_err);
+					}
+					@Override
+					public void onFinish() {
+						supportInvalidateOptionsMenu();
 					}
 		});
 	}
 	
-	void onSureToAdd(String contactids){
+	void onSureToUpdateVisibleContacts(ValidateInfo info){
+		mLoadingDialog.show();
+		SContactAsyncHttpClient.post(
+				ValidationParams.getUpdateRelationshipParams(info)
+				, null
+				, new AsyncHttpResponseHandler(){
+					@Override
+					public void onSuccess(int arg0, Header[] arg1,
+							byte[] arg2) {
+						UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
+						if ( result != null && result.getId() != null){
+							Bog.toast(R.string.success);
+							SContactMainActivity.needRefreshFriendList = true;
+						} else {
+							Bog.toastErrorInfo(arg2);
+						}
+					}
+					@Override
+					public void onFailure(int arg0, Header[] arg1,
+							byte[] arg2, Throwable arg3) {
+						Bog.toast(R.string.connect_server_err);
+					}
+					@Override
+					public void onFinish() {
+						mLoadingDialog.getDialog().dismissDialogger();
+					}
+				});
+	}
+	void onSureToAddFriend(String contactids){
 		if ( TextUtils.isEmpty(contactids) ){
 			Bog.toast(R.string.selected_empty);
 		} else {
 			mLoadingDialog.show();
 			ValidateInfo info = new ValidateInfo();
 			info.setContact_ids(contactids);
-			info.setIs_group_to_user("0");
+			info.setIs_group_to_user(0);
 			info.setStart_user_id(AccountInfo.getInstance().getId());
 			info.setEnd_user_id(mFriend.getId());
 			SContactAsyncHttpClient.post(
@@ -184,10 +299,9 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 						@Override
 						public void onSuccess(int arg0, Header[] arg1,
 								byte[] arg2) {
-							super.onSuccess(arg0, arg1, arg2);
 							UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
 							if ( result != null && result.getId() != null){
-								Bog.toast(R.string.success);
+								Bog.toast(R.string.request_have_send);
 								finish();
 							} else {
 								Bog.toastErrorInfo(arg2);
@@ -196,12 +310,10 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 						@Override
 						public void onFailure(int arg0, Header[] arg1,
 								byte[] arg2, Throwable arg3) {
-							super.onFailure(arg0, arg1, arg2, arg3);
 							Bog.toast(R.string.connect_server_err);
 						}
 						@Override
 						public void onFinish() {
-							super.onFinish();
 							mLoadingDialog.getDialog().dismissDialogger();
 						}
 					});
@@ -244,6 +356,7 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 											UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
 											if ( result != null && result.getId() != null ){
 												Bog.toast(R.string.success);
+												SContactMainActivity.needRefreshFriendList = true;
 												finish();
 											} else {
 												Bog.toast(R.string.failed);
@@ -262,28 +375,34 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 									});
 							dialog.getDialog().dismissDialogger();
 						}
-						
 						@Override
 						public void onNoButton() {
 						}
 					});
 					dialog.show();
 				} else if (getString(R.string.add_friend_lable).equals(ts) ){// add friend relationship
-					simpleGetResultFormActivity(
-							SelectContactsActivity.class, RequestCode.SELECT_CONTACTS);
+					
+					mContactsListDialog.setTileText(
+							getString(R.string.format_select_contact,
+									mFriend.getDisplayName()));
+					mContactsListDialog.sureBtn.setOnClickListener(new OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							List<ContactInfo> c = mContactsListDialog.getSelectedContacts();
+							if ( ListUtil.isEmpty(c) ){
+								Bog.toast(R.string.selected_empty);
+							} else {
+								onSureToAddFriend(ContactInfo.arrayToString(c));
+								mContactsListDialog.getDialog().dismissDialogger();
+							}
+						}
+					});
+					mContactsListDialog.show();
 				}
 				break;
 	
 			default:
 				break;
-		}
-	}
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if (resultCode == RESULT_OK){
-			String contactids = data.getStringExtra(SelectContactsActivity.SELECTED_CONTACT);
-			onSureToAdd(contactids);
 		}
 	}
 }

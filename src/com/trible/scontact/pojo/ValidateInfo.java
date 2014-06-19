@@ -20,9 +20,12 @@ public class ValidateInfo extends BaseInfo implements Serializable{
 	private String contact_ids;
 	private Long groupId;
 	private Long end_user_id;
-	private String is_group_to_user;
-	
-	
+	private int is_group_to_user;
+	private long createTime;
+
+	private AccountInfo startUser,endUser;
+	private GroupInfo groupInfo;
+	List<ContactInfo> contactsList;
 	
 	
 	
@@ -32,7 +35,12 @@ public class ValidateInfo extends BaseInfo implements Serializable{
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+	public long getCreateTime() {
+		return createTime;
+	}
+	public void setCreateTime(long createTime) {
+		this.createTime = createTime;
+	}
 	
 	public Long getStart_user_id() {
 		return start_user_id;
@@ -50,10 +58,10 @@ public class ValidateInfo extends BaseInfo implements Serializable{
 	}
 	
 	
-	public String getIs_group_to_user() {
+	public int getIs_group_to_user() {
 		return is_group_to_user;
 	}
-	public void setIs_group_to_user(String is_group_to_user) {
+	public void setIs_group_to_user(int is_group_to_user) {
 		this.is_group_to_user = is_group_to_user;
 	}
 	
@@ -65,7 +73,6 @@ public class ValidateInfo extends BaseInfo implements Serializable{
 		this.contact_ids = contact_ids;
 	}
 	
-	
 	public Long getGroupId() {
 		return groupId;
 	}
@@ -73,6 +80,30 @@ public class ValidateInfo extends BaseInfo implements Serializable{
 		this.groupId = groupId;
 	}
 	
+	public AccountInfo getStartUser() {
+		return startUser;
+	}
+	public void setStartUser(AccountInfo startUser) {
+		this.startUser = startUser;
+	}
+	public AccountInfo getEndUser() {
+		return endUser;
+	}
+	public void setEndUser(AccountInfo endUser) {
+		this.endUser = endUser;
+	}
+	public GroupInfo getGroupInfo() {
+		return groupInfo;
+	}
+	public void setGroupInfo(GroupInfo groupInfo) {
+		this.groupInfo = groupInfo;
+	}
+	public List<ContactInfo> getContactsList() {
+		return contactsList;
+	}
+	public void setContactsList(List<ContactInfo> contactsList) {
+		this.contactsList = contactsList;
+	}
 	public Type listType() {
 		return new TypeToken<List<ValidateInfo>>(){}.getType();
 	}

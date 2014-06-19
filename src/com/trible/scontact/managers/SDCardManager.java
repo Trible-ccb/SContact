@@ -205,17 +205,22 @@ public class SDCardManager {
 	}
 	
 	public File getFileOf(String pathkey,String filename){
+		if ( filename == null || pathkey == null )return null;
 		String md5 = MD5FileUtil.getMD5String(filename);
 		return new File(getStringPath(pathkey), md5);
 	}
 	
 	public void createFileTo(String pathkey,String filename,InputStream is){
 		File tmp = getFileOf(pathkey, filename);
+		OutputStream os = null ;
 		try {
-			FileUtils.writeStringToFile(tmp, IOUtils.toString(is));
+//			FileUtils.w(tmp, IOUtils.);
+			os = new FileOutputStream(tmp);
+			IOUtils.copy(is, os);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
+			IOUtils.closeQuietly(os);
 			IOUtils.closeQuietly(is);
 		}
 	}

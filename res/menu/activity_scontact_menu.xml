@@ -1,15 +1,41 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
+	<item 
+		android:id="@+id/action_my_inbox"
+		android:title="@string/action_inbox"
+		android:icon="@drawable/ic_action_email"
+		android:showAsAction="always"/>
     <item
-        android:id="@+id/action_search"
+        android:id="@+id/action_search_local"
         android:showAsAction="always"
         android:icon="@drawable/ic_action_search"
         android:title="@string/action_search"
+        android:visible="false"
         />
-     <item
-        android:id="@+id/action_add_group"
-        android:icon="@drawable/ic_action_add_group"
+    <item
+        android:icon="@drawable/ic_action_new"
         android:showAsAction="always"
-        android:title="@string/action_add"/>
+        android:title="@string/add_title"
+        >
+        <menu >
+            <item
+		        android:id="@+id/action_add_group"
+		        android:icon="@drawable/ic_action_add_group"
+		        android:showAsAction="always"
+		        android:title="@string/action_create_group"/>
+            <item
+		        android:id="@+id/action_add_local_friend"
+		        android:icon="@drawable/ic_action_add_person"
+		        android:showAsAction="always"
+		        android:title="@string/action_add_local_friend"/>
+           	<item
+		        android:id="@+id/action_search"
+		        android:showAsAction="always"
+		        android:icon="@drawable/ic_action_search"
+		        android:title="@string/action_search"
+		        />
+        </menu>
+     </item>
+
      <item
         android:id="@+id/action_overflow"
         android:icon="@drawable/ic_action_overflow"
@@ -27,11 +53,17 @@
 		        android:icon="@drawable/ic_action_person"
 		        android:showAsAction="ifRoom"
 		        android:title="@string/action_my_profile"/>
-		     <item 
-		        android:id="@+id/action_my_msg"
-		        android:title="@string/action_my_messages"
-		        android:icon="@drawable/ic_action_email"
-		        android:showAsAction="ifRoom"/>
+		     <item
+		        android:id="@+id/action_group_infos"
+		        android:icon="@drawable/ic_action_group"
+		        android:showAsAction="ifRoom"
+		        android:title="@string/action_group_profile"/>
+		     <item
+		        android:id="@+id/action_my_contacts"
+		        android:icon="@drawable/ic_action_view_as_list"
+		        android:showAsAction="ifRoom"
+		        android:title="@string/action_my_contacts"/>
+
 		     <item
 		        android:id="@+id/action_settings"
 		        android:icon="@drawable/ic_action_settings"

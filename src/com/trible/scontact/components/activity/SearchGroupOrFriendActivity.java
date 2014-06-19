@@ -10,7 +10,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -20,33 +19,21 @@ import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.SearchView;
 import com.actionbarsherlock.widget.SearchView.OnQueryTextListener;
 import com.actionbarsherlock.widget.SearchView.SearchAutoComplete;
-import com.google.gson.reflect.TypeToken;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
-import com.trible.scontact.components.adpater.SearchResultAdapter;
-import com.trible.scontact.components.adpater.SearchResultAdapter.SectionData;
+import com.trible.scontact.components.adpater.MixFriendsGroupsListAdapter;
+import com.trible.scontact.components.adpater.MixFriendsGroupsListAdapter.SectionData;
 import com.trible.scontact.components.widgets.ChooseGroupActionDialog;
 import com.trible.scontact.components.widgets.LoadingDialog;
-import com.trible.scontact.components.widgets.TabLayoutHelper;
-import com.trible.scontact.controller.impl.SearchLocalFriendControl;
-import com.trible.scontact.controller.impl.SearchLocalGroupControl;
-import com.trible.scontact.controller.impl.SearchRemoteFriendControl;
-import com.trible.scontact.controller.impl.SearchRemoteGroupControl;
-import com.trible.scontact.models.Friendinfo;
-import com.trible.scontact.networks.NetWorkEvent;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
-import com.trible.scontact.networks.SimpleAsynTask;
-import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.networks.params.GroupParams;
 import com.trible.scontact.pojo.AccountInfo;
-import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.InputUtil;
 import com.trible.scontact.utils.ListUtil;
-import com.umeng.common.net.t;
 
 
 /**
@@ -61,16 +48,13 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 	String mQueryString;
 	
 	ListView mSearchResultListView;
-	List<Friendinfo> mResultFriendsData;
-	List<GroupInfo> mResultGroupData;
+	List<Object> mResultDatas;
 	
 	LoadingDialog mLoadingDialog;
 	
 	ChooseGroupActionDialog mGroupActionDialog;
 	
-	TabLayoutHelper mTabLayoutHelper;
-	SearchResultAdapter mAdapter;
-	SimpleAsynTask mSearchLocalTask,mSearchReomteTask;
+	MixFriendsGroupsListAdapter mAdapter;
 	
 	public static Bundle getIntentMyselfBundle(String qStr){
 		Bundle b = new Bundle();
@@ -88,20 +72,15 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 	}
 
 	void initData(){
-		mSearchLocalTask = new SimpleAsynTask();
-		mSearchReomteTask = new SimpleAsynTask();
-		mResultFriendsData = new ArrayList<Friendinfo>();
-		mResultGroupData = new ArrayList<GroupInfo>();
-		mAdapter = new SearchResultAdapter(this);
+		mResultDatas = new ArrayList<Object>();
+		mAdapter = new MixFriendsGroupsListAdapter(this);
+		mAdapter.showEmptyView(false);
+		
 	}
 	void initView(){
 		mLoadingDialog = new LoadingDialog(this);
-		mLoadingDialog.setTipText(R.string.waiting);
+		mLoadingDialog.setTipText(R.string.searching);
 		
-		mTabLayoutHelper = new TabLayoutHelper((ViewGroup) findViewById(R.id.tabs_layout),
-				new int[]{R.string.search_people_lable,R.string.search_group_lable});
-		mTabLayoutHelper.setDefaultSelection(0);
-		mTabLayoutHelper.setOnItemClickListner(this);
 		mSearchResultListView = (ListView) findViewById(R.id.search_list_view);
 		mSearchResultListView.setOnItemClickListener(this);
 		mSearchResultListView.setAdapter(mAdapter);
@@ -117,7 +96,6 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 			SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 			mSearchable.setSearchableInfo(searchManager.getSearchableInfo( getComponentName()));
 			mSearchable.setOnQueryTextListener(new OnQueryTextListener() {
-				
 				@Override
 				public boolean onQueryTextSubmit(String query) {
 					mQueryString = query;
@@ -146,7 +124,6 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 			mQueryTextView.setOnKeyListener(mTextKeyListener);
 			sItem.expandActionView();
 			mSearchable.setIconifiedByDefault(false);
-			mQueryTextView.requestFocus();
 		
 		}
 		return super.onCreateOptionsMenu(menu);
@@ -155,16 +132,6 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 		if ( parent == null ){//tab item click
-			switch (position) {
-				case 0:
-					mAdapter.displayFriend();
-					break;
-				case 1:
-					mAdapter.displayGroup();
-					break;
-				default:
-					break;
-			}
 		} else {//list item click
 			Object tgt =  mAdapter.getItem(position);
 			if ( tgt instanceof GroupInfo ){
@@ -173,83 +140,73 @@ public final class SearchGroupOrFriendActivity extends CustomSherlockFragmentAct
 						ViewGroupDetailsActivity.getInentMyself(tmp));
 			} else if ( tgt instanceof AccountInfo){
 				AccountInfo tmp = (AccountInfo) tgt;
-				simpleDisplayActivity(
-						ViewFriendDetailsActivity.getInentMyself(tmp,null));
+				if (AccountInfo.getInstance().getId().equals(tmp.getId()) ){
+					simpleDisplayActivity(MyProfileActivity.class);
+				} else {
+					simpleDisplayActivity(
+							ViewFriendDetailsActivity.getInentMyself(tmp,null));
+				}
 			}
 		}
 	}
 	void onSubmit(){
 		mLoadingDialog.show();
-		mSearchLocalTask = new SimpleAsynTask();
-		mSearchReomteTask = new SimpleAsynTask();
 		mAdapter.clear();
-		mSearchLocalTask.doTask(new AsynTaskListner() {
-			List<GroupInfo> glocal;
-			List<AccountInfo> flocal;
-			@Override
-			public void onTaskDone(NetWorkEvent event) {
-				mAdapter.addFriendSection(
-						new SectionData(getString(R.string.local_contacts)), flocal);
-				mAdapter.addGroupSection(
-						new SectionData(getString(R.string.local_contacts)), glocal);
-			}
-			
-			@Override
-			public void doInBackground() {
-				flocal = new SearchLocalFriendControl().searchByName(mQueryString);
-				glocal = new SearchLocalGroupControl().searchByName(mQueryString);
-			}
-		});
+		mAdapter.showEmptyView(false);
 		SContactAsyncHttpClient.post(
 				GroupParams.getSearchGroupParams(mQueryString),
 				null, new AsyncHttpResponseHandler(){
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
 						List<GroupInfo> results = GsonHelper.getInfosFromJson(arg2,new GroupInfo().listType());
-						mAdapter.addGroupSection(
-								new SectionData(getString(R.string.remote_contacts)), results);
-						if ( results == null ){
-							ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-							Bog.toast(err == null ? ErrorInfo.getUnkownErr().toString() : err.toString());
-						}
-					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
-						Bog.toast(R.string.connect_server_err);
-					}
-					@Override
-					public void onFinish() {
-						super.onFinish();
-						mLoadingDialog.getDialog().dismissDialogger();
-					}
-				});
-		SContactAsyncHttpClient.post(
-				AccountParams.getSearchAccountInfosParams(mQueryString),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
-						List<AccountInfo> results = GsonHelper.getInfosFromJson(arg2,new AccountInfo().listType());
-						mAdapter.addFriendSection(new SectionData(getString(R.string.remote_contacts)), results);
 						if ( results == null ){
 							Bog.toastErrorInfo(arg2);
+						} else {
+							if ( ListUtil.isNotEmpty(results) ){
+								SectionData groupsection = new SectionData(getString(R.string.search_group_lable));
+								mResultDatas.add(groupsection);
+								mResultDatas.addAll(results);
+							}
 						}
 					}
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
-						Bog.toast(R.string.connect_server_err);
 					}
 					@Override
 					public void onFinish() {
-						super.onFinish();
-						mLoadingDialog.getDialog().dismissDialogger();
+						SContactAsyncHttpClient.post(
+								AccountParams.getSearchAccountInfosParams(mQueryString),
+								null, new AsyncHttpResponseHandler(){
+									@Override
+									public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+										List<AccountInfo> results = GsonHelper.getInfosFromJson(arg2,new AccountInfo().listType());
+										if ( results == null ){
+											Bog.toastErrorInfo(arg2);
+										} else {
+											if ( ListUtil.isNotEmpty(results) ){
+												SectionData peoplesection = new SectionData(getString(R.string.search_people_lable));
+												mResultDatas.add(peoplesection);
+												mResultDatas.addAll(results);
+											}
+										}
+										mAdapter.mEmptyData.mText = getString(R.string.empty_search_result);
+									}
+									@Override
+									public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+											Throwable arg3) {
+										mAdapter.mEmptyData.mText = getString(R.string.connect_server_err);
+									}
+									@Override
+									public void onFinish() {
+										mLoadingDialog.getDialog().dismissDialogger();
+										mAdapter.setData(mResultDatas);
+										mAdapter.showEmptyView(true);
+									}
+								});
 					}
 				});
+		
 
 	}
 }

@@ -15,7 +15,9 @@
             android:textSize="16sp"
             android:layout_marginBottom="10dp"
             android:id="@+id/tips_text"
+            style="@style/PrimaryTextAppeare"
             />
+        <include layout="@layout/layout_divider"/>
 		<LinearLayout 
 		    android:layout_width="match_parent"
 		    android:layout_height="wrap_content"

@@ -36,7 +36,7 @@
         		    android:padding="10dp"
         		    android:textColor="@color/blue_white"
         		    android:gravity="center_vertical"
-        		    android:textSize="16sp"
+        		    android:textSize="18sp"
         		    />
         		<View
         		    android:layout_width="match_parent"

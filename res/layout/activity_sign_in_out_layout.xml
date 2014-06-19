@@ -2,13 +2,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_blue"
-    android:paddingTop="@dimen/actionbar_height"
+    
      >
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@+id/indicators"
+         />
 
     <RadioGroup
         android:id="@+id/indicators"
@@ -18,8 +20,8 @@
         android:layout_centerHorizontal="true"
         android:paddingTop="6dp"
         android:clickable="false"
+        android:layout_marginTop="@dimen/actionbar_height"
         >
-
         <RadioButton
             android:id="@+id/radio0"
             android:layout_width="wrap_content"
@@ -38,5 +40,15 @@
             android:layout_marginLeft="6dp"
 			/>
     </RadioGroup>
-
+	<TextView 
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:id="@+id/tip"
+	    android:text="dsfsdfsd"
+	    android:layout_centerHorizontal="true"
+	    android:background="@color/white"
+	    android:textColor="@color/red"
+	    android:gravity="center"
+	    android:padding="4dp"
+	    />
 </RelativeLayout>

@@ -18,16 +18,27 @@ public class AccountParams {
 	/**
 	 * @param name
 	 * @param password
+	 * @param uuid an id got from androidpn server
 	 * @return
 	 */
-	public static String getLoginParams(String name,String password){
+	public static String getLoginParams(String name,String password,String uuid){
 		String Login = SContactApplication.getURL() + mAccountPath + "/login";
 		AccountInfo info = new AccountInfo();
 		info.setDisplayName(name);
 		info.setPassword(password);
+		info.setNotifyId(uuid);
 		String v = new Gson().toJson(info);
 		String url = Login + "?json=" + StringUtil.getEncodeURLParams(v);
 		Bog.v("login url = " + url);
+		return url;
+	}
+	
+	public static String getUpdateParams(AccountInfo tmp){
+		String Login = SContactApplication.getURL() + mAccountPath + "/update";
+		AccountInfo info = tmp;
+		String v = new Gson().toJson(info);
+		String url = Login + "?json=" + StringUtil.getEncodeURLParams(v);
+		Bog.v("update url = " + url);
 		return url;
 	}
 	

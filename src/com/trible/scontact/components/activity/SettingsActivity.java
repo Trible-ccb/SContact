@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
+import com.trible.scontact.components.widgets.NotifyHelper;
 import com.trible.scontact.components.widgets.SettingItemCheckable;
 import com.trible.scontact.networks.NetWorkEvent;
 import com.trible.scontact.networks.SimpleAsynTask;
@@ -46,7 +47,7 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 		DeviceUtil.focusePortraitForPhoneButPad(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_settings);
-	
+		setTitle(R.string.action_settings, R.color.blue_qq);
 		initView();
 		new SimpleAsynTask().doTask(new AsynTaskListner() {
 			
@@ -89,13 +90,13 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 		mSettingRankApp = new SettingItemCheckable(findViewById(R.id.setting_rank_app));
 		
 		mSignOutApp.setHintText(uInfo.getDisplayName());
-		mSignOutApp.setTitle("Sign Out");
+		mSignOutApp.setTitle(getString(R.string.sign_out));
 		
-		mSettingRankApp.setHintText("Rank app on google play");
-		mSettingRankApp.setTitle("Rank app");
+		mSettingRankApp.setHintText(getString(R.string.rank_app_hint));
+		mSettingRankApp.setTitle(getString(R.string.rank_app));
 		
-		mSettingContactUs.setHintText("send email to author (chenchuibo@gmail.com)");
-		mSettingContactUs.setTitle("Contact Us");
+		mSettingContactUs.setHintText(getString(R.string.contact_us_hint));
+		mSettingContactUs.setTitle(getString(R.string.contact_us));
 		
 		mSignOutApp.setOnclickListner(new OnClickListener() {
 			
@@ -134,6 +135,7 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 		Intent in = new Intent();
 		in.putExtra(SIGN_OUT_TAG, true);
 		setResult(Activity.RESULT_OK,in);
+		NotifyHelper.stopConnect(this);
 		finish();
 	}
 	public String getVersion() {

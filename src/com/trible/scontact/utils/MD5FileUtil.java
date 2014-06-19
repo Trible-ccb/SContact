@@ -54,6 +54,7 @@ public class MD5FileUtil {
 	}
 
 	public static String getMD5String(String s) {
+		if ( s == null )return null;
 		return getMD5String(s.getBytes());
 	}
 

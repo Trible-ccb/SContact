@@ -13,6 +13,24 @@ public class TimeUtil {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		return sdf.format(c.getTime());
 	}
+	public static boolean withinWeek(long ms){
+		long now = System.currentTimeMillis();
+		long diff = now - ms;
+		if ( diff / (1000*24*60*60) < 8 ){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	public static boolean withinMonth(long ms){
+		long now = System.currentTimeMillis();
+		long diff = now - ms;
+		if ( diff / (1000*24*60*60) < 30 ){
+			return true;
+		} else {
+			return false;
+		}
+	}
 	/**
 	 * 
 	 * @return GMT0 time in senconds

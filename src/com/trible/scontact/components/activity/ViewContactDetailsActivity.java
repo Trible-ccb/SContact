@@ -17,11 +17,11 @@ import com.actionbarsherlock.view.MenuItem;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.adpater.MixFriendsGroupsListAdapter;
-import com.trible.scontact.components.adpater.SearchResultAdapter.SectionData;
+import com.trible.scontact.components.adpater.MixFriendsGroupsListAdapter.SectionData;
 import com.trible.scontact.components.widgets.AddUpdateContactDialog;
-import com.trible.scontact.components.widgets.YesOrNoTipDialog;
 import com.trible.scontact.components.widgets.AddUpdateContactDialog.OnSubmitContactListener;
 import com.trible.scontact.components.widgets.LoadingDialog;
+import com.trible.scontact.components.widgets.YesOrNoTipDialog;
 import com.trible.scontact.components.widgets.YesOrNoTipDialog.OnButtonClickListner;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
@@ -39,6 +39,7 @@ import com.trible.scontact.utils.ListUtil;
  * @author Trible Chen
  *here you can see the friends and groups which the contact belong to;
  */
+@Deprecated
 public class ViewContactDetailsActivity extends CustomSherlockFragmentActivity 
 										implements OnItemClickListener
 												{
@@ -166,6 +167,7 @@ public class ViewContactDetailsActivity extends CustomSherlockFragmentActivity
 									@Override
 									public void onFinish() {
 										mAdapter.setData(mObjects);
+										mAdapter.showEmptyView(true);
 										dialog.getDialog().dismissDialogger();
 									}
 						});
@@ -207,7 +209,7 @@ public class ViewContactDetailsActivity extends CustomSherlockFragmentActivity
 	}
 	void doDeleteContact(){
 		final YesOrNoTipDialog dialog = new YesOrNoTipDialog(
-				this, getString(R.string.promote_remove_contact), null);
+				this, null, getString(R.string.promote_remove_contact));
 		dialog.setOnButtonClickListner(new OnButtonClickListner() {
 			
 			@Override

@@ -51,7 +51,7 @@
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">20sp</item>
         <item name="android:padding">6dp</item>
-        <item name="android:background">@drawable/presser_bg_white_border</item>
+        <item name="android:background">@drawable/pressor_bg_white_border</item>
     </style>
     <style name="ButtonFull.RedText">
         <item name="android:textColor">@color/red</item>
@@ -66,8 +66,8 @@
     </style>
     <style name="ListViewStyle">
         <item name="android:choiceMode">singleChoice</item>
-        <item name="android:cacheColorHint">@null</item>
-        <item name="android:listSelector">@null</item>
+        <item name="android:cacheColorHint">@color/transparent</item>
+        <item name="android:listSelector">@color/transparent</item>
     </style>
     <style name="ChooseActionItemStyle">
 		<item name="android:singleLine">true</item>

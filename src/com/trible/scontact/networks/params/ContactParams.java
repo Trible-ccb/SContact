@@ -1,7 +1,5 @@
 package com.trible.scontact.networks.params;
 
-import java.net.URLEncoder;
-
 import com.google.gson.Gson;
 import com.trible.scontact.components.activity.SContactApplication;
 import com.trible.scontact.pojo.ContactInfo;
@@ -51,7 +49,7 @@ public class ContactParams {
 				+ "/update_contact"
 				+ "?json=" 
 				+ StringUtil.getEncodeURLParams(v);
-		Bog.v("getAddContactParams url = " + url);
+		Bog.v("getUpdateContactParams url = " + url);
 		return url;
 	}
 	
@@ -75,7 +73,7 @@ public class ContactParams {
 				+ "/get_user_contacts"
 				+ "?json=" 
 				+ StringUtil.getEncodeURLParams(v);
-		Bog.v("getDeleteContactParams url = " + url);
+		Bog.v("getUserContactsParams url = " + url);
 		return url;
 	}
 	
