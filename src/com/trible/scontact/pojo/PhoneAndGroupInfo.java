@@ -5,6 +5,10 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import com.google.gson.reflect.TypeToken;
+import com.j256.ormlite.field.DataType;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+import com.trible.scontact.database.DBConstants;
 
 /**
  * 
@@ -13,22 +17,24 @@ import com.google.gson.reflect.TypeToken;
  */
 
 
-
+@DatabaseTable(tableName=DBConstants.PhoneGroupInfoFieldName.table_name)
 public class PhoneAndGroupInfo extends BaseInfo implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-	private Long id;
-	private Long groupId;
-	private Long contactId;
 	
+	
+	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.PhoneGroupInfoFieldName.id)
+	private Long id;
+	
+	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.PhoneGroupInfoFieldName.group_id)
+	private Long groupId;
+	
+	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.PhoneGroupInfoFieldName.user_id)
 	private Long userId;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.PhoneGroupInfoFieldName.contact_ids)
 	private String contactIds;
 //	List<Long> contactIds;
-	
-
-	
-	
-	
 	
 	public Long getId() {
 		return id;
@@ -46,12 +52,12 @@ public class PhoneAndGroupInfo extends BaseInfo implements Serializable{
 	}
 	
 	
-	public Long getContactId() {
-		return contactId;
-	}
-	public void setContactId(Long contactId) {
-		this.contactId = contactId;
-	}
+//	public Long getContactId() {
+//		return contactId;
+//	}
+//	public void setContactId(Long contactId) {
+//		this.contactId = contactId;
+//	}
 	
 	
 //	public List<Long> getContactIds() {

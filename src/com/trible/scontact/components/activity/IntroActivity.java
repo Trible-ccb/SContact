@@ -1,19 +1,16 @@
 package com.trible.scontact.components.activity;
 
-import org.androidpn.client.ServiceManager;
-
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.trible.scontact.R;
-import com.trible.scontact.components.widgets.NotifyHelper;
-import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.value.GlobalValue;
+import com.umeng.message.PushAgent;
+import com.umeng.update.UmengUpdateAgent;
 
 public class IntroActivity extends CustomSherlockFragmentActivity implements AnimationListener{
 
@@ -31,9 +28,15 @@ public class IntroActivity extends CustomSherlockFragmentActivity implements Ani
 		mIntroImage = (ImageView) findViewById(R.id.logo_first);
 		mIntroImage.startAnimation(mAnimIn);
 		mInfo = AccountInfo.getInstance();
-		NotifyHelper.setCallbackActivity(this);
+		openNotifyPusher();
+		UmengUpdateAgent.update(this);
+		
 	}
 
+	void openNotifyPusher(){
+//		use umeng message pusher
+		PushAgent.getInstance(this).enable();
+	}
 	@Override
 	public void onAnimationStart(Animation animation) {
 		

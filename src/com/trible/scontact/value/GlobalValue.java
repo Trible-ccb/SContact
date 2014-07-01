@@ -12,6 +12,10 @@ public class GlobalValue {
 
 	public static final String QQAPPID = "101122109";
 	public static final String QQAPPKEY = "9b9efb8a71e54af99e138f0b40031d2a";
+	public static final String SINAAPPKEY = "1750398435";
+	public static final String SINASECRET= "b15d59755432b07de594d100b9993319";
+//	public static final String TWeiBoAPPKEY = "801517995";
+//	public static final String TWeiBoSECRET= "351f56362c42c59b5ad4136e462e54ae";
 	
 	public static final int CODE_UNKOWN_ERROR = -1;
 	public static final String STR_UNKOWN_ERROR = "Unkown Err";

@@ -21,8 +21,11 @@ import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.ChoosePictureDialog;
+import com.trible.scontact.components.widgets.LoadingDialog;
+import com.trible.scontact.components.widgets.SimpleInputDialog;
 import com.trible.scontact.components.widgets.ChoosePictureDialog.OnPickListener;
 import com.trible.scontact.components.widgets.PropertyKeyValue;
+import com.trible.scontact.components.widgets.SimpleInputDialog.OnSubmitInputListener;
 import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.networks.ListImageAsynTask;
 import com.trible.scontact.networks.ListImageAsynTask.ItemImageLoadingListner;
@@ -30,12 +33,13 @@ import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.GsonHelper;
-import com.trible.scontact.thirdparty.QQLoginListener;
-import com.trible.scontact.thirdparty.TencentHelper;
 import com.trible.scontact.thirdparty.beans.LoginResponse;
 import com.trible.scontact.thirdparty.beans.QQUserInfo;
+import com.trible.scontact.thirdparty.qq.QQLoginListener;
+import com.trible.scontact.thirdparty.qq.TencentQQHelper;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
+import com.trible.scontact.utils.StringUtil;
 import com.trible.scontact.value.GlobalValue;
 
 public class MyProfileActivity extends CustomSherlockFragmentActivity implements OnPickListener {
@@ -43,53 +47,50 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 	PropertyKeyValue mPhoto,mDisplayname,mRealname,mGender,mDesription,mMyContacts;
 	AccountInfo mUserInfo;
 	ChoosePictureDialog mPictureDialog;
+	SimpleInputDialog mInputDialog;
+	LoadingDialog mLoadingDialog;
 	Button mUseQQButton;
 	Drawable mPhotoBitmap;
 	boolean mPhotoLoaded;
+	
+	String unset;
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_my_profile);
-
+		unset =  getString(R.string.unset);
 		setTitle(R.string.action_my_profile, R.color.blue_qq);
 		mPhotoLoaded = false; 
 		initView();
 	}
 	
 	void initView(){
-		mPhotoBitmap = getResources().getDrawable(R.drawable.ic_launcher);
-		
+		mPhotoBitmap = getResources().getDrawable(R.drawable.icon_logo);
+		mInputDialog = new SimpleInputDialog(this);
+		mInputDialog.setmListener(new OnSubmitInputListener() {
+			@Override
+			public void onSubmit(String input) {
+				if ( TextUtils.isEmpty(input) )return;
+				String title = mInputDialog.getDialog().getTitleText();
+				AccountInfo tmp = AccountInfo.getInstance().copy();
+				if ( getString(R.string.realname_lable).equals(title) ){
+					tmp.setRealName(input);
+				} else if ( getString(R.string.description_lable).equals(title) ){
+					tmp.setDescription(input);
+				} else if ( getString(R.string.gender_lable).equals(title) ){
+				}
+				updateAccountToServer(tmp);
+				mInputDialog.getDialog().dismissDialogger();
+			}
+		});
 		mUseQQButton = (Button) findViewById(R.id.use_qq_profile);
+		mUseQQButton.setVisibility(View.GONE);
 		mUseQQButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				Tencent t = TencentHelper.getTencent();
-				if ( true ){
-					t.login(MyProfileActivity.this,
-							"get_user_info,get_simple_userinfo",
-							new IUiListener() {
-								@Override
-								public void onCancel() {
-								}
-								@Override
-								public void onComplete(Object json) {
-									mPhotoLoaded = false;
-									getQQUserInfo(json);
-								}
-								@Override
-								public void onError(UiError arg0) {
-									Bog.toast(arg0.errorMessage);
-								}
-		
-							}
-					);
-				}
-//				else {
-//					LoginResponse re = LoginResponse.getFromSpf();
-//					getQQUserInfo(re);
-//				}
+				fetchQQInfo(false);
 			}
 		});
 		
@@ -107,26 +108,26 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 
 		mPhoto.mNextIcon.setBackgroundResource(R.drawable.bg_white_border);
 		mPhoto.mNextIcon.setImageDrawable(mPhotoBitmap);
-		mPhoto.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-//				mPictureDialog.show();
-			}
-		});
-		
-		mDisplayname.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				
-			}
-		});
+//		mPhoto.setOnClickListener(new OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				Bog.toast(R.string.unsupport_action);
+//			}
+//		});
 		
 		mDesription.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				
+				mInputDialog.getDialog().setTitleText(getString(R.string.description_lable));
+				mInputDialog.mEditText.setHint("");
+				String va = mDesription.mValue.getText().toString();
+				if ( !unset.equals(v) ){
+					mInputDialog.mEditText.setText(va);
+				} else {
+					mInputDialog.mEditText.setText("");
+				}
+				mInputDialog.show();
 			}
 		});
 		
@@ -134,7 +135,15 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 			
 			@Override
 			public void onClick(View v) {
-				
+				mInputDialog.getDialog().setTitleText(getString(R.string.realname_lable));
+				mInputDialog.mEditText.setHint("");
+				String va = mRealname.mValue.getText().toString();
+				if ( !unset.equals(v) ){
+					mInputDialog.mEditText.setText(va);
+				} else {
+					mInputDialog.mEditText.setText("");
+				}
+				mInputDialog.show();
 			}
 		});
 		
@@ -142,7 +151,15 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 			
 			@Override
 			public void onClick(View v) {
-				
+				mInputDialog.getDialog().setTitleText(getString(R.string.gender_lable));
+				mInputDialog.mEditText.setHint("");
+				String va = mGender.mValue.getText().toString();
+				if ( !unset.equals(v) ){
+					mInputDialog.mEditText.setText(va);
+				} else {
+					mInputDialog.mEditText.setText("");
+				}
+				mInputDialog.show();
 			}
 		});
 		mMyContacts.setKeyText(getString(R.string.action_my_contacts));
@@ -159,18 +176,41 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 		refreshInfo();
 	}
 
-	void getQQUserInfo(Object json){
+	void fetchQQInfo(final boolean photoonly){
+		Tencent t = TencentQQHelper.getTencent();
+		if ( true ){
+			t.login(MyProfileActivity.this,
+					"get_user_info,get_simple_userinfo",
+					new IUiListener() {
+						@Override
+						public void onCancel() {
+						}
+						@Override
+						public void onComplete(Object json) {
+							mPhotoLoaded = false;
+							getQQUserInfo(json,photoonly);
+						}
+						@Override
+						public void onError(UiError arg0) {
+							Bog.toast(arg0.errorMessage);
+						}
+
+					}
+			);
+		}
+	}
+	void getQQUserInfo(Object json,final boolean photoonly){
 		LoginResponse re;
 		if ( json instanceof LoginResponse ){
 			re = (LoginResponse) json;
 		} else {
 			re = LoginResponse.getFromJson(json.toString());
 		}
-		TencentHelper.setData(re);
+		TencentQQHelper.setTokenData(re);
 		re.saveToSpf();
 		if ( re.access_token != null && re.ret == 0 ){
 			re.saveToSpf();
-			UserInfo qquser = new UserInfo(getApplicationContext(), TencentHelper.getTencent().getQQToken());
+			UserInfo qquser = new UserInfo(getApplicationContext(), TencentQQHelper.getTencent().getQQToken());
 			qquser.getUserInfo(new IUiListener() {
 				@Override
 				public void onError(UiError arg0) {
@@ -181,7 +221,11 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 					QQUserInfo inforeqp = GsonHelper.getInfosFromJson(arg0.toString(), QQUserInfo.class);
 					if ( inforeqp.nickname != null && inforeqp.ret == 0 ){
 						AccountInfo tmp = AccountInfo.getInstance().copy();
-						inforeqp.saveToAccountInfo(tmp);
+						if ( photoonly ){
+							tmp.setPhotoUrl(inforeqp.getPhotoUrl());
+						} else {
+							inforeqp.saveToAccountInfo(tmp);
+						}
 						updateAccountToServer(tmp);
 					} else {
 						Bog.toast(R.string.failed);
@@ -208,7 +252,6 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 	
 	void refreshInfo(){
 		mUserInfo = AccountInfo.getInstance();
-		String unset =  getString(R.string.unset);
 		
 		mPhoto.setKeyText(getString(R.string.photo_lable));
 		mPhoto.setValueText("");
@@ -265,18 +308,27 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 	}
 	
 	void updateAccountToServer(final AccountInfo tmp){
+		mLoadingDialog = new LoadingDialog(this);
+		mLoadingDialog.show();
 		SContactAsyncHttpClient.post(AccountParams.getUpdateParams(tmp), null,
 				new AsyncHttpResponseHandler(){
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
 							Throwable arg3) {
-						Bog.toast(R.string.failed);
+						Bog.toast(
+								StringUtil.catStringFromResId(
+										MyProfileActivity.this, 
+										R.string.update,R.string.failed));
 					}
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
 						AccountInfo.setAccountInfo(tmp);
 						AccountInfo.getInstance().saveToPref();
 						refreshInfo();
+					}
+					@Override
+					public void onFinish() {
+						mLoadingDialog.getDialog().dismissDialogger();
 					}
 		});
 	}

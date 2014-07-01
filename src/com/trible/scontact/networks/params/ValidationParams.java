@@ -68,7 +68,9 @@ public class ValidationParams {
 	
 	public static String getAcceptOneValidateParams(
 			ValidateInfo info,String optionContactids){
-		String v = new Gson().toJson(info);
+		ValidateInfo ret = new ValidateInfo();
+		ret.setId(info.getId());
+		String v = new Gson().toJson(ret);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/AcceptOneValidate"
 				+ "?json=" 
@@ -79,7 +81,9 @@ public class ValidationParams {
 	}
 	
 	public static String getNotAcceptOneValidateParams(ValidateInfo info){
-		String v = new Gson().toJson(info);
+		ValidateInfo ret = new ValidateInfo();
+		ret.setId(info.getId());
+		String v = new Gson().toJson(ret);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/NotAcceptOneValidate"
 				+ "?json=" 

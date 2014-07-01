@@ -2,9 +2,13 @@
 <resources>
 
     <!-- common text -->
-    <string name="app_name">SContact</string>
+    <string name="app_name">OO</string>
+    <string name="preference_name">OO</string>
     <string name="sign_out">Sign Out</string>
     <string name="rank_app">Rank App</string>
+    <string name="account">ACCOUNT</string>
+	<string name="account_level">Account Level</string>
+	<string name="account_upgrade">Upgrade Account</string>
     <string name="rank_app_hint">Rank app on google play</string>
     <string name="contact_us">Contact Us</string>
     <string name="contact_us_hint">Send an email to author (chenchuibo@gmail.com)</string>
@@ -38,6 +42,7 @@
     <string name="selected_empty">You must select at least one contact.</string>
     <string name="connect_server_err">Connect Server Error! </string>
     <string name="load_groups_err">Loading groups error! </string>
+    <string name="load_err">load data error.</string>
     <string name="invalid">\tis Invalid </string>
     <string name="pls_input_correct"> Please input correctly. </string>
     <string name="pls_input_others"> Please input others. </string>
@@ -52,6 +57,7 @@
     <string name="searching">Searching.</string>
     <string name="done">Done</string>
     <string name="failed">Failed</string>
+    <string name="update"> Update </string>
     <string name="invalid_account">Invalid username and password combination.</string>
     <string name="success">Success.</string>
     <string name="waiting">Waiting.</string>
@@ -59,6 +65,7 @@
     <string name="request_have_send">Request have send.</string>
     <string name="group_name_empty">Please input name.</string>
     <string name="unsupport_type"> Unsupport Type </string>
+    <string name="unsupport_action"> Unsupport Action </string>
     <!-- hint text -->
     <string name="hint_input_type">Address or Company etc.</string>
     <string name="hint_contact">Email or Numbers etc.</string>
@@ -75,6 +82,8 @@
     <!-- long text -->
     
     <!-- label / title text -->
+    <string name="login_sina">Login with Sina</string>
+    <string name="login_qq">Login with QQ</string>
     <string name="use_qq_profile">Use QQ Profile</string>
     <string name="contact_used_within_week"> Used last week </string>
     <string name="contact_used_within_month"> Used last month </string>
@@ -83,6 +92,7 @@
     <string name="members">Members</string>
     <string name="cancel">Cancel</string>
     <string name="add_contact">Add Contact</string>
+    <string name="new_lable">New</string>
     <string name="take_photo">Take Photo</string>
     <string name="pick_picture">Pick Picture</string>
     <string name="choose_app">choose app</string>

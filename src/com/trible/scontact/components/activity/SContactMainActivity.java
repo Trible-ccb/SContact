@@ -1,5 +1,6 @@
 package com.trible.scontact.components.activity;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,8 @@ import com.trible.scontact.components.widgets.SherlockMenuItemToMenuItem;
 import com.trible.scontact.controller.IGroupControl;
 import com.trible.scontact.controller.impl.LocalGroupControlller;
 import com.trible.scontact.controller.impl.RemoteGroupControlller;
+import com.trible.scontact.database.DaoMangers;
+import com.trible.scontact.database.dao.GroupDao;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.ContactParams;
 import com.trible.scontact.networks.params.GroupParams;
@@ -82,7 +85,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	public static boolean needRefreshFriendList,needRefeshGroupList,needRereshContactList;
 	int mSelectedGroupPos = -1;
 	Long mInboxNum = null;
-	public static final Long GROUP_OF_FRIEND = -1L;
+	public static final Long GROUP_ID_OF_FRIEND = -1L;
 	public static final Long GROUP_OF_LOCAL_FRIEND = -2L;
 	
 	// override life circle methods===============
@@ -102,7 +105,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	void initDefaultData(){
 		mFriendGroup = new GroupInfo();
 		mFriendGroup.setDisplayName(getString(R.string.friends_list_lable));
-		mFriendGroup.setId(GROUP_OF_FRIEND);
+		mFriendGroup.setId(GROUP_ID_OF_FRIEND);
 		mFriendGroup.setCapacity(null);
 		mLocalFriendGroup = new GroupInfo();
 		mLocalFriendGroup.setDisplayName(getString(R.string.local_friends));
@@ -243,8 +246,9 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 				simpleGetResultFormActivity(SettingsActivity.class, RequestCode.CHANGE_SETTING);
 				break;
 			case R.id.action_refresh:
-				loadRemoteGroups();
-				loadMyAllContacts();
+//				loadRemoteGroups();
+//				loadMyAllContacts();
+				refreshCache();
 				break;
 			case R.id.action_my_profile:
 				simpleDisplayActivity(MyProfileActivity.class);
@@ -283,13 +287,12 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		} else {//drawer group item click
 			Long gid = mGroupListAdapter.getItemId(position);
 			GroupInfo info = mGroupListAdapter.getGroupInfoInPosition(position);
+			if ( info == null )return;
 			mSelectGroupsInfo = info;
-			if ( GROUP_OF_FRIEND.equals(gid) ){
-				mFriendsListFragment.loadRomoteFriendsByUserId(info);
-			} else if ( GROUP_OF_LOCAL_FRIEND.equals(gid) ){
+			if ( GROUP_OF_LOCAL_FRIEND.equals(gid) ){
 				mFriendsListFragment.loadLocalFriendsByGroup(info);
 			} else {
-				mFriendsListFragment.loadRomoteFriendsByGroup(info);
+				mFriendsListFragment.loadRomoteAccountsByGroup(info);
 			}
 			mSelectedGroupPos = position;
 			mGroupListAdapter.setSelected(mSelectedGroupPos);
@@ -310,15 +313,20 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	//end override listener methods===============
 
 	//private methods===============
+	
+	private void refreshCache(){
+		loadRemoteGroups();
+		loadMyAllContacts();
+		
+	}
 	private void updateUILoadingGroup(){
-//		mLoadingDialog.getDialog().dismissDialogger();
-//		mLoadingDialog.show();
 		showTip(getString(R.string.loading_groups));
 	}
 	private void updateUILoadGroupDone(){
 		mLoadingDialog.getDialog().dismissDialogger();
 		mGroupListAdapter.setData(mCurGroupsInfos);
 		mGroupListAdapter.setSelected(mSelectedGroupPos);
+		
 		hideTip();
 	}
 	
@@ -338,16 +346,16 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		
 	}
 	private void loadGroups(){
-		
-			if ( mRemoteGroupsInfos != null ){
-				mCurGroupsInfos = mRemoteGroupsInfos;
-				updateUILoadGroupDone();
-			} else {
-				mCurGroupsInfos = new ArrayList<GroupInfo>();
-				addStaticGroup(mCurGroupsInfos);
-				mGroupListAdapter.setData(mCurGroupsInfos);
-				loadRemoteGroups();
-			}
+		mRemoteGroupsInfos = GroupInfo.getGroupsFromSpf();
+		if ( ListUtil.isNotEmpty(mRemoteGroupsInfos) ){
+			mCurGroupsInfos = mRemoteGroupsInfos;
+			updateUILoadGroupDone();
+		} else {
+			mCurGroupsInfos = new ArrayList<GroupInfo>();
+			addStaticGroup(mCurGroupsInfos);
+			mGroupListAdapter.setData(mCurGroupsInfos);
+			loadRemoteGroups();
+		}
 	}
 	private void loadRemoteGroups(){
 		
@@ -372,7 +380,11 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 						addStaticGroup(mRemoteGroupsInfos);
 						mRemoteGroupsInfos.addAll(infos);
 						mCurGroupsInfos = mRemoteGroupsInfos;
-						updateUILoadGroupDone();
+						for ( GroupInfo g : mRemoteGroupsInfos ){
+							if ( mFriendsListFragment != null ){
+								mFriendsListFragment.addGroupForLoad(g);
+							}
+						}
 					}
 					@Override
 					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
@@ -429,8 +441,12 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		GroupInfo cur = mGroupListAdapter.getSeletedGroupInfo();
 		mRemoteGroupsInfos.add(g);
 		mGroupListAdapter.setData(mRemoteGroupsInfos);
-		int idx = mRemoteGroupsInfos.indexOf(cur);
+		int idx = mRemoteGroupsInfos.indexOf(g);
 		mGroupListAdapter.setSelected(idx);
+		mSelectedGroupPos = idx;
+		onItemClick(mGroupListView,
+				mGroupListView.getChildAt(mSelectedGroupPos), mSelectedGroupPos, 0);
+		
 	}
 	public void onEditedGroup(GroupInfo g){
 		boolean flg = mGroupListAdapter.editedGroupBy(g);

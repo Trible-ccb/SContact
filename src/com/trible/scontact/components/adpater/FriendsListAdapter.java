@@ -1,8 +1,6 @@
 package com.trible.scontact.components.adpater;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -26,7 +24,6 @@ public class FriendsListAdapter extends EmptyBaseAdapter {
 	Context mContext;
 	LayoutInflater mInflater;
 	List<AccountInfo> mDatas;
-
 	
 	public boolean mUsePhoto;
 	

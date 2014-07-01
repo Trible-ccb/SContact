@@ -1,19 +1,21 @@
 package com.trible.scontact.components.activity;
 
-import org.androidpn.client.ServiceManager;
+import android.app.Application;
+import android.text.TextUtils;
 
-import com.tencent.tauth.Tencent;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.NotifyHelper;
+import com.trible.scontact.database.DBHelper;
 import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.managers.SDCardManager;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactTypes;
-import com.trible.scontact.thirdparty.TencentHelper;
+import com.trible.scontact.thirdparty.qq.TencentQQHelper;
 import com.trible.scontact.utils.Bog;
-
-import android.app.Application;
-import android.text.TextUtils;
+import com.umeng.socialize.bean.SocializeConfig;
+import com.umeng.socialize.sso.QZoneSsoHandler;
+import com.umeng.socialize.sso.SinaSsoHandler;
+import com.umeng.socialize.sso.TencentWBSsoHandler;
 
 /**
  * @author Trible Chen
@@ -23,7 +25,7 @@ public class SContactApplication extends Application {
 
 	public static SContactApplication mAppContext;
 	
-	private static String IP = "192.168.1.104";
+	private static String IP = "192.168.1.100";
 	private static String URL = "http://" + IP + ":8888/scontacts/services";
 	public static void setIP(String s){
 		IP = s;
@@ -62,12 +64,13 @@ public class SContactApplication extends Application {
 		
 	}
 	void initSystem(){
-		String name = "SContact";
+		String name = getString(R.string.preference_name);
 		Bog.init(this, name);
 		PrefManager.initPrefManager(this, name);
 		SDCardManager.initStorageWithClassicPaths(getApplicationContext(), name);
-		TencentHelper.init(this);
 		ContactTypes.init(this);
-		NotifyHelper.register(this);
+		SocializeConfig.getSocializeConfig().setSsoHandler(new SinaSsoHandler());
+		SocializeConfig.getSocializeConfig().setSsoHandler(new TencentWBSsoHandler());
+		DBHelper.init(this);
 	}
 }

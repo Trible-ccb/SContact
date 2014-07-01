@@ -210,4 +210,7 @@ public class PopupDialogger extends Dialog implements AnimationListener{
 	public void setTitleText(String titleString) {
 		mTitle = titleString;
 	}
+	public String getTitleText(){
+		return mTitle;
+	}
 }

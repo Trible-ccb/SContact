@@ -11,7 +11,7 @@ import com.trible.scontact.R;
 
 public class SettingItemCheckable {
 
-	View mRoot,mSettingItem;
+	public View mRoot,mSettingItem;
 	CheckBox mCheckBox;
 	TextView titleView;
 	TextView hintView;

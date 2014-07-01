@@ -1,6 +1,9 @@
 package com.trible.scontact.components.adpater;
 
+import java.security.acl.Group;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import android.content.Context;
@@ -11,6 +14,11 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
+import com.trible.scontact.database.DaoMangers;
+import com.trible.scontact.database.dao.GroupDao;
+import com.trible.scontact.networks.NetWorkEvent;
+import com.trible.scontact.networks.SimpleAsynTask;
+import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.GroupInfo;
 
@@ -30,6 +38,28 @@ public class GroupsListAdapter extends BaseAdapter {
 	public void setData(List<GroupInfo> data){
 		mDatas = data;
 		selectedPos = -1;
+		
+		SimpleAsynTask.doTask2(new AsynTaskListner() {
+			@Override
+			public void onTaskDone(NetWorkEvent event) {
+			}
+			@Override
+			public void doInBackground() {
+				List<GroupInfo> tmp = GroupInfo.getGroupsFromSpf();
+				if ( mDatas != null && tmp != null ){
+					HashSet<Long> nowids = new HashSet<Long>();
+					for ( GroupInfo g : mDatas ){
+						nowids.add(g.getId());
+					}
+					for ( GroupInfo i : tmp ){
+						if ( !nowids.contains(i.getId()) ){
+							i.deleteSpf();
+						}
+					}
+				}
+				GroupInfo.saveGroupsFromSpf(mDatas);
+			}
+		});
 		notifyDataSetChanged();
 	}
 	public void setSelected(int pos){
@@ -76,6 +106,7 @@ public class GroupsListAdapter extends BaseAdapter {
 	}
 	@Override
 	public long getItemId(int position) {
+		if ( position >= getCount() )return Integer.MIN_VALUE;
 		return mDatas.get(position).getId();
 	}
 

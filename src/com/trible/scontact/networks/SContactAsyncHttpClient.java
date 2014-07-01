@@ -63,13 +63,17 @@ public class SContactAsyncHttpClient {
 
 	public static void get(String url, RequestParams params,
 			AsyncHttpResponseHandler responseHandler) {
-		client.get(url, params, responseHandler);
+//		client.get(url, params, responseHandler);
+		ScontactHttpClient.post(url, null, responseHandler);
 
 	}
 
 	public static void post(String url, RequestParams params,
 			AsyncHttpResponseHandler responseHandler) {
-		client.post(url, params, responseHandler);
+		//because the cache bug in loop that request does not send
+//		client.post(url, params, responseHandler);
+		//we use DefaultHttpClient instead. wrapped it in asynchronized way
+		ScontactHttpClient.post(url, null, responseHandler);
 	}
 
 	public static void cancel(Context c,boolean flg){

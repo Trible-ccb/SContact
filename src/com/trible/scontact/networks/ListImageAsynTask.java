@@ -154,7 +154,7 @@ public class ListImageAsynTask{
 	                } else {
 	                	tmpFile.renameTo(imgFile);
 	                }
-	                bitmap = ImageUtil.getOptionBitmap(tmpFile,preImgWidth,preImgHeight);
+	                bitmap = ImageUtil.getOptionBitmap(imgFile,preImgWidth,preImgHeight);
 	                
 	                
 				} catch (OutOfMemoryError e){

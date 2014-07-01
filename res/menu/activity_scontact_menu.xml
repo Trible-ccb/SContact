@@ -26,6 +26,7 @@
 		        android:id="@+id/action_add_local_friend"
 		        android:icon="@drawable/ic_action_add_person"
 		        android:showAsAction="always"
+		        android:visible="false"
 		        android:title="@string/action_add_local_friend"/>
            	<item
 		        android:id="@+id/action_search"

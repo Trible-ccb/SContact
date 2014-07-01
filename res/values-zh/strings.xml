@@ -2,9 +2,13 @@
 <resources>
 
     <!-- common text -->
-    <string name="app_name">微联</string>
+    <string name="app_name">欧欧</string>
+    <string name="preference_name">OO</string>
 	<string name="sign_out">退出账户</string>
 	<string name="rank_app">评分</string>
+	<string name="account">账户</string>
+	<string name="account_level">账户类别</string>
+	<string name="account_upgrade">升级账户</string>
 	<string name="rank_app_hint">到google市场评分</string>
     <string name="contact_us">联系我们</string>
     <string name="contact_us_hint">发送反馈邮件给作者(chenchuibo@gmail.com)</string>
@@ -12,7 +16,7 @@
     <string name="action_settings">设置</string>
     <string name="action_create_group">创建群组</string>
     <string name="action_add_local_friend">添加本地联系人</string>
-    <string name="action_refresh">刷新</string>
+    <string name="action_refresh">刷新缓存</string>
     <string name="action_search">查找群/好友</string>
     <string name="action_search_local">本地搜索</string>
     <string name="action_save">保存</string>
@@ -25,7 +29,7 @@
     <string name="action_my_contacts">我的联系方式</string>
     <string name="action_my_profile">个人资料</string>
     <string name="action_group_profile">群组资料</string>
-    <string name="action_inbox">消息</string>
+    <string name="action_inbox">消息列表</string>
     
     <!-- toast text -->
     <string name="notify_register"> 注册消息推送 </string>
@@ -34,6 +38,7 @@
     <string name="cannot_pick_picture">不支持选择图片</string>
     <string name="selected_empty">至少选择一条联系方式</string>
     <string name="connect_server_err">连接服务器失败！ </string>
+    <string name="load_err">加载数据失败</string>
     <string name="load_groups_err">加载群列表失败! </string>
     <string name="invalid">\t非法 </string>
     <string name="pls_input_correct"> 请正确输入内容 </string>
@@ -49,6 +54,7 @@
     <string name="searching">搜索中..</string>
     <string name="done">完成</string>
     <string name="failed">失败</string>
+    <string name="update"> 更新 </string>
     <string name="invalid_account">账户名或密码不正确.</string>
     <string name="success">成功.</string>
     <string name="waiting">稍后..</string>
@@ -56,6 +62,7 @@
     <string name="request_have_send">请求已经发送.</string>
     <string name="group_name_empty">请输入名字.</string>
     <string name="unsupport_type"> 未支持的类型 </string>
+    <string name="unsupport_action"> 暂不支持该操作 </string>
     <!-- hint text -->
     <string name="hint_input_type">例如地址,公司</string>
     <string name="hint_contact">邮箱或者号码等.</string>
@@ -72,6 +79,8 @@
     <!-- long text -->
     
     <!-- label / title text -->
+    <string name="login_sina">新浪微博登录</string>
+    <string name="login_qq">QQ登录</string>
     <string name="use_qq_profile">使用QQ资料</string>
     <string name="contact_used_within_week"> 最近一周在用 </string>
     <string name="contact_used_within_month"> 最近一个月在用 </string>
@@ -80,6 +89,7 @@
     <string name="members">成员</string>
     <string name="cancel">取消</string>
     <string name="add_contact">添加联系方式</string>
+    <string name="new_lable">新建</string>
     <string name="take_photo">照相</string>
     <string name="pick_picture">从相册中选择</string>
     <string name="choose_app">选择应用</string>
@@ -152,14 +162,14 @@
     
     <!-- strings for empty list -->
     <string name="empty_search_result">无搜索结果.</string>
-    <string name="empty_friend_list">暂无好友.</string>
+    <string name="empty_friend_list">暂无好友,赶紧去添加吧.</string>
     <string name="empty_contacts_list">你还没有联系方式.\n请先添加联系方式.</string>
     <!-- format strings -->
     <string name="selected_contacts">已选%d条联系方式.</string>
-    <string name="format_select_contact">勾选%s可见的联系方式。</string>
+    <string name="format_select_contact">勾选  %s 可见的联系方式。</string>
     <string name="format_shared_contacts">%1$s 分享  %2$d 条联系方式.</string>
     <string name="format_title_contacts"> %d 条联系方式</string>
-    <string name="format_creator">创建者:%s</string>
+    <string name="format_creator">创建者: %s</string>
     <string name="format_user_join_group">%1$s 希望加入群 %2$s.</string>
     <string name="format_invite_user_join_group">%1$s 希望你加入群 %2$s.</string>
     <string name="format_user_as_friend">%s 希望加你为好友。</string>

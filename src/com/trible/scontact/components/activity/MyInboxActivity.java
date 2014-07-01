@@ -49,7 +49,6 @@ public class MyInboxActivity extends CustomSherlockFragmentActivity
 
 	ListView mMesgsListView,mViewContactListView;
 	
-	
 	ChooseContactsListDialog mContactsListDialog;
 	FriendContactsListAdapter mViewContactsListAdapter;
 	PopupDialogger mViewContactsDialog;
@@ -74,7 +73,6 @@ public class MyInboxActivity extends CustomSherlockFragmentActivity
 		initViewData();
 		loadMessages();
 		refreshTitle();
-		NotifyHelper.setCallbackActivity(this);
 	}
 
 	void initView(){
@@ -82,7 +80,6 @@ public class MyInboxActivity extends CustomSherlockFragmentActivity
 		mViewContactsDialog = PopupDialogger.createDialog(this);
 		mViewContactsDialog.setUseNoneScrollRootViewId();
 		mDialog = new LoadingDialog(this);
-		mDialog.getDialog().setCancelable(false);
 		mAdapter = new InboxListAdapter(this);
 		mMesgsListView = (ListView) findViewById(R.id.my_messages_list_view);
 		mMesgsListView.setAdapter(mAdapter);
@@ -106,7 +103,7 @@ public class MyInboxActivity extends CustomSherlockFragmentActivity
 						actionDialog.addAction(getString(R.string.message_lable));
 					}
 					protected void onEmail() {
-						IntentUtil.sendEmail(MyInboxActivity.this, contact, "", "");
+						actionDialog.addAction(getString(R.string.send_email_lable));
 					};
 				}.handle(type);
 				actionDialog.addAction(getString(R.string.copy_lable));
@@ -158,6 +155,7 @@ public class MyInboxActivity extends CustomSherlockFragmentActivity
 
 	}
 	void loadMessages(){
+		mDialog.getDialog().setTitleText(getString(R.string.loading));
 		mDialog.show();
 		SContactAsyncHttpClient.post(
 				ValidationParams.getMyInboxListParams(AccountInfo.getInstance().getId()),
@@ -185,7 +183,7 @@ public class MyInboxActivity extends CustomSherlockFragmentActivity
 	}
 	void refreshTitle(){
 		int m = ListUtil.isEmpty(mMessages) ? 0 : mMessages.size();
-		setTitle(getString(R.string.action_inbox) + " (" + m + ")",R.color.blue_qq);
+		setTitle(getString(R.string.action_inbox),R.color.blue_qq);
 	}
 
 	@Override

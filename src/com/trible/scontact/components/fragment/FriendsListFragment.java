@@ -2,6 +2,8 @@ package com.trible.scontact.components.fragment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.http.Header;
 
@@ -13,11 +15,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.GridView;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockFragment;
@@ -26,7 +27,6 @@ import com.trible.scontact.R;
 import com.trible.scontact.components.activity.CustomSherlockFragmentActivity;
 import com.trible.scontact.components.activity.SContactMainActivity;
 import com.trible.scontact.components.activity.ViewFriendDetailsActivity;
-import com.trible.scontact.components.adpater.FriendsGridAdapter;
 import com.trible.scontact.components.adpater.FriendsListAdapter;
 import com.trible.scontact.components.widgets.ChooseContactActionDialog;
 import com.trible.scontact.components.widgets.LoadingDialog;
@@ -40,6 +40,7 @@ import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
+import com.trible.scontact.utils.ListUtil;
 
 public class FriendsListFragment extends SherlockFragment 
 						implements OnItemLongClickListener,OnItemClickListener{
@@ -57,11 +58,15 @@ public class FriendsListFragment extends SherlockFragment
 	ChooseContactActionDialog mFriendActionDialog;
 	CustomSherlockFragmentActivity mActivity;
 	
-	int mLoadFlag = 1;
 	boolean isLocalData;
 	GroupInfo mFriendBelongToGroup;
 	OnFragmentListener mFragmentListener;
+	Queue<GroupInfo> mGroupQueueForLoading;
+	SimpleAsynTask mLoadingMembersTask;
 	
+	public FriendsListFragment(){
+		mGroupQueueForLoading = new LinkedBlockingQueue<GroupInfo>();
+	}
 	public static FriendsListFragment getInstance(){
 		return new FriendsListFragment();
 	}
@@ -92,10 +97,12 @@ public class FriendsListFragment extends SherlockFragment
 		mFriendListView.setOnItemLongClickListener(this);
 		mFriendsController = new LocalFriendsController(getActivity());
 		mActivity = (CustomSherlockFragmentActivity) getActivity();
+		mLoadingDialog = new LoadingDialog(mActivity);
+		setUpLoadingMembersOfGroups();
 		if ( mFragmentListener != null ){
 			mFragmentListener.onFragmentCreated();
 		}
-		mLoadingDialog = new LoadingDialog(mActivity);
+		
 	}
 
 	@Override
@@ -133,15 +140,8 @@ public class FriendsListFragment extends SherlockFragment
 	}
 	void updateUIAfterLoadFriend(){
 		if ( !isAdded() )return;
+		mFriendsListAdapter.setData(mFriendinfo);
 		setTitle(mFriendsListAdapter.getCount() + "");
-		mFriendsListAdapter.mEmptyData.mListener = new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				refreshList();
-			}
-		};
-		mFriendsListAdapter.mEmptyData.mBtnText = getString(R.string.re_try);
-		mFriendsListAdapter.mEmptyData.mText = getString(R.string.empty_friend_list);
 		mFriendsListAdapter.showEmptyView(true);
 		mLoadingDialog.getDialog().dismissDialogger();
 		if ( mActivity instanceof SContactMainActivity ){
@@ -149,15 +149,22 @@ public class FriendsListFragment extends SherlockFragment
 		}
 	}
 	public void loadLocalFriendsByGroup(final GroupInfo info){
-		mLoadFlag = 1;
 		isLocalData = true;
 		mFriendBelongToGroup = info;
 		updateUIBeforeLoadFriend();
 		SimpleAsynTask.doTask2(new AsynTaskListner() {
-			
 			@Override
 			public void onTaskDone(NetWorkEvent event) {
-				mFriendsListAdapter.setData(mFriendinfo);
+				
+				mFriendsListAdapter.mEmptyData.mListener = new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						refreshList();
+					}
+				};
+				mFriendsListAdapter.mEmptyData.mBtnText = getString(R.string.re_try);
+				mFriendsListAdapter.mEmptyData.mText = getString(R.string.load_err);
+				if ( SContactMainActivity.GROUP_OF_LOCAL_FRIEND.equals(mFriendBelongToGroup.getId()) )
 				updateUIAfterLoadFriend();
 			}
 			
@@ -170,63 +177,81 @@ public class FriendsListFragment extends SherlockFragment
 			}
 		});
 	}
-	public void loadRomoteFriendsByGroup(GroupInfo info){
-		mLoadFlag = 2;
-		mFriendBelongToGroup = info;
-		isLocalData = false;
-		updateUIBeforeLoadFriend();
-		SContactAsyncHttpClient.post(AccountParams.getAccountByGroupIdParams(info.getId()),
-				null, new AsyncHttpResponseHandler(){
+	//like a background service
+	private void setUpLoadingMembersOfGroups(){
+		mLoadingMembersTask = new SimpleAsynTask();
+		mLoadingMembersTask.doTask(new AsynTaskListner() {
 			@Override
-			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-				mFriendinfo = GsonHelper.getInfosFromJson(arg2, new AccountInfo().listType());
-				mFriendsListAdapter.setData(mFriendinfo);
-				if ( mFriendinfo != null ){
-				} else {
-					Bog.toastErrorInfo(arg2);
+			public void onTaskDone(NetWorkEvent event) {
+			}
+			@Override
+			public void doInBackground() {
+				while ( true ){
+					final GroupInfo g = mGroupQueueForLoading.poll();
+					if ( g != null 
+							&& !SContactMainActivity.GROUP_OF_LOCAL_FRIEND.equals(g.getId())){
+						String url = null;
+						if ( SContactMainActivity.GROUP_ID_OF_FRIEND.equals(g.getId()) ){
+							url = AccountParams.getFriendsByUserIdParams(
+									AccountInfo.getInstance().getId());
+						} else {
+							url = AccountParams.getAccountByGroupIdParams(g.getId());
+						}
+						SContactAsyncHttpClient.post(url,
+								null, new AsyncHttpResponseHandler(){
+							@Override
+							public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+								List<AccountInfo> friendinfo = GsonHelper.getInfosFromJson(arg2, new AccountInfo().listType());
+								if ( friendinfo != null ){
+									g.saveMembersToSpf(friendinfo);
+								} else {
+									Bog.toastErrorInfo(arg2);
+								}
+							}
+						});
+					}
 				}
-			}
-			@Override
-			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-					Throwable arg3) {
-				Bog.toast( R.string.connect_server_err );
-			}
-			@Override
-			public void onFinish() {
-				updateUIAfterLoadFriend();
 			}
 		});
 	}
-	public void loadRomoteFriendsByUserId(GroupInfo info){
-		mLoadFlag = 3;
+	public void addGroupForLoad(GroupInfo g){
+		mGroupQueueForLoading.add(g);
+	}
+	public void loadRomoteAccountsByGroup(final GroupInfo info){
 		mFriendBelongToGroup = info;
 		isLocalData = false;
 		updateUIBeforeLoadFriend();
-		SContactAsyncHttpClient.post(
-				AccountParams.getFriendsByUserIdParams(AccountInfo.getInstance().getId()),
-				null, new AsyncHttpResponseHandler(){
-			@Override
-			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-				super.onSuccess(arg0, arg1, arg2);
-				mFriendinfo = GsonHelper.getInfosFromJson(arg2, new AccountInfo().listType());
-				mFriendsListAdapter.setData(mFriendinfo);
-				if ( mFriendinfo != null ){
-				} else {
-					Bog.toastErrorInfo(arg2);
+		if ( mFriendBelongToGroup != null ){
+			if ( SContactMainActivity.GROUP_ID_OF_FRIEND.equals(mFriendBelongToGroup.getId()) ){
+				mFriendsListAdapter.mEmptyData.mListener = null;
+				mFriendsListAdapter.mEmptyData.mText = getString(R.string.empty_friend_list);
+			} else {
+				mFriendsListAdapter.mEmptyData.mListener = new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						refreshList();
+					}
+				};
+				mFriendsListAdapter.mEmptyData.mBtnText = getString(R.string.re_try);
+				mFriendsListAdapter.mEmptyData.mText = getString(R.string.connect_server_err);
+			}
+			//load data from cache first
+			addGroupForLoad(info);
+			SimpleAsynTask.doTask2(new AsynTaskListner() {
+				
+				@Override
+				public void onTaskDone(NetWorkEvent event) {
+					updateUIAfterLoadFriend();
 				}
-			}
-			@Override
-			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-					Throwable arg3) {
-				super.onFailure(arg0, arg1, arg2, arg3);
-				Bog.toast( R.string.connect_server_err );
-			}
-			@Override
-			public void onFinish() {
-				super.onFinish();
-				updateUIAfterLoadFriend();
-			}
-		});
+				
+				@Override
+				public void doInBackground() {
+					mFriendinfo = mFriendBelongToGroup.getMembersFromSpf();
+				}
+			});
+			
+			
+		}
 	}
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
@@ -243,9 +268,13 @@ public class FriendsListFragment extends SherlockFragment
 			int position, long id) {
 		return true;
 	}
-	
+	@Override
+	public void onDestroy() {
+		if ( mLoadingMembersTask != null )
+			mLoadingMembersTask.cancelTask();
+		super.onDestroy();
+	}
 	void setTitle(String size){
-		
 		String sub = null;
 		if ( mFriendBelongToGroup.getCapacity() != null ){
 			sub = "(" +size + "/" + mFriendBelongToGroup.getCapacity() +")";
@@ -256,18 +285,12 @@ public class FriendsListFragment extends SherlockFragment
 			getSherlockActivity().getSupportActionBar().setSubtitle(sub);
 	}
 	public void refreshList(){
-		switch (mLoadFlag) {
-		case 1:
-			loadLocalFriendsByGroup(mFriendBelongToGroup);
-			break;
-		case 2:
-			loadRomoteFriendsByGroup(mFriendBelongToGroup);
-			break;
-		case 3:
-			loadRomoteFriendsByUserId(mFriendBelongToGroup);
-			break;
-		default:
-			break;
+		if ( mFriendBelongToGroup != null ){
+			if ( SContactMainActivity.GROUP_OF_LOCAL_FRIEND.equals(mFriendBelongToGroup.getId() )){
+				loadLocalFriendsByGroup(mFriendBelongToGroup);
+			} else {
+				loadRomoteAccountsByGroup(mFriendBelongToGroup);
+			}
 		}
 	}
 }

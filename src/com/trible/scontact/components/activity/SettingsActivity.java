@@ -16,20 +16,24 @@ import android.widget.TextView;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.NotifyHelper;
 import com.trible.scontact.components.widgets.SettingItemCheckable;
+import com.trible.scontact.database.DBHelper;
 import com.trible.scontact.networks.NetWorkEvent;
 import com.trible.scontact.networks.SimpleAsynTask;
 import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 import com.trible.scontact.pojo.AccountInfo;
+import com.trible.scontact.pojo.GroupInfo;
+import com.trible.scontact.thirdparty.umeng.UmengController;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
 import com.trible.scontact.utils.IntentUtil;
 import com.trible.scontact.value.GlobalValue;
+import com.umeng.message.PushAgent;
 
 public class SettingsActivity extends  CustomSherlockFragmentActivity implements OnClickListener{
 	
 	TextView mEmailText;
 	
-	SettingItemCheckable mSettingContactUs,mSettingRankApp,mSignOutApp;
+	SettingItemCheckable mSettingContactUs,mSettingRankApp,mSignOutApp,mAccountLevel;
 	
 	AccountInfo uInfo = AccountInfo.getInstance();
 	
@@ -73,24 +77,25 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 		});
 	}
 	@Override
-	  public void onStart() {
+	public void onStart() {
 	    super.onStart();
-//	    EasyTracker.getInstance(this).activityStart(this);  // Add this method.
-	  }
+	}
 
-	  @Override
-	  public void onStop() {
+	@Override
+	public void onStop() {
 	    super.onStop();
-	     // The rest of your onStop() code.
-//	    EasyTracker.getInstance(this).activityStop(this);  // Add this method.
-	  }
+	}
 	public void initView(){
 		mSignOutApp = new SettingItemCheckable(findViewById(R.id.setting_sign_out));
 		mSettingContactUs = new SettingItemCheckable(findViewById(R.id.setting_contact_us));
 		mSettingRankApp = new SettingItemCheckable(findViewById(R.id.setting_rank_app));
+		mAccountLevel = new SettingItemCheckable(findViewById(R.id.setting_account_level));
 		
 		mSignOutApp.setHintText(uInfo.getDisplayName());
 		mSignOutApp.setTitle(getString(R.string.sign_out));
+		
+		mAccountLevel.setTitle(getString(R.string.account_level));
+		mAccountLevel.setHintText(uInfo.getType());
 		
 		mSettingRankApp.setHintText(getString(R.string.rank_app_hint));
 		mSettingRankApp.setTitle(getString(R.string.rank_app));
@@ -105,6 +110,13 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 				doSignOut();
 			}
 		});
+		mAccountLevel.setOnclickListner(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				upgradeAccount();
+			}
+		});
+		mSettingRankApp.setVisibility(View.GONE);
 		mSettingRankApp.setOnclickListner(new OnClickListener() {
 			
 			@Override
@@ -131,13 +143,20 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 	void doSignOut(){
 		uInfo.setStatus(GlobalValue.USTATUS_SIGN_OUT);
 		uInfo.saveToPref();
+		DBHelper.reset();
+		clearPojoCache();
 		simpleDisplayActivity(SignInUpActivity.class);
 		Intent in = new Intent();
 		in.putExtra(SIGN_OUT_TAG, true);
 		setResult(Activity.RESULT_OK,in);
-		NotifyHelper.stopConnect(this);
+		PushAgent.getInstance(this).disable();
+		UmengController.getLoginService().loginout(this,null);
 		finish();
 	}
+	void upgradeAccount(){
+		
+	}
+	
 	public String getVersion() {
 		try {
 	         PackageManager manager = this.getPackageManager();
@@ -172,6 +191,9 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 		} else {
 			Bog.toast("no google play app.");
 		}
+	}
+	void clearPojoCache(){
+		GroupInfo.clearSpf();
 	}
 	
 }

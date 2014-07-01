@@ -8,21 +8,37 @@ import ccb.java.android.utils.encoder.SecurityMethod;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.j256.ormlite.field.DataType;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+import com.trible.scontact.database.DBConstants;
 import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.value.PrefKeys;
 
 
 
-
+@DatabaseTable(tableName=DBConstants.RawContactFieldName.table_name)
 public class ContactInfo extends BaseInfo implements Serializable{
+	
 	private static final long serialVersionUID = 2279560755875633905L;
-
+	
+	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.RawContactFieldName.id)
 	private Long id;
+	
+	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.RawContactFieldName.user_id)
 	private Long userId;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.RawContactFieldName.contact_string)
 	private String contact;
+	
+	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.RawContactFieldName.status)
 	private Integer status;
+	
+	@DatabaseField(dataType=DataType.LONG,columnName=DBConstants.RawContactFieldName.latest_used_time)
 	private long lastestUsedTime;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.RawContactFieldName.type)
 	private String type;
 	
 	public String getType() {

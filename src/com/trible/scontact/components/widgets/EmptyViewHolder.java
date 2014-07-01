@@ -29,6 +29,8 @@ public class EmptyViewHolder {
 		mEmptyText.setText(data.mText);
 		if ( data.mListener != null ){
 			setOnclickListener(data.mListener);
+		} else {
+			mEmptyBtn.setVisibility(View.GONE);
 		}
 	}
 	public static class EmptyViewData{

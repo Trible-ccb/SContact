@@ -26,12 +26,36 @@
 	    android:cacheColorHint="#000000"
 	    android:layout_weight="8"
 	    />
-	<Button
-    	android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/sure_btn"
-        android:text="@string/ok"
-        style="@style/ButtonFull"
-        />
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_weight="1"
+	    android:orientation="horizontal"
+	    android:background="@drawable/pressor_bg_white_border"
+	    >
+	    	<Button
+		    	android:layout_weight="1"
+		        android:layout_width="0dp"
+		        android:layout_height="wrap_content"
+		        android:id="@+id/create_btn"
+		        android:text="@string/new_lable"
+		        android:gravity="center"
+		        android:background="@color/transparent"
+		        />
+	    	<Button
+		        android:layout_width="1dp"
+		        android:layout_height="wrap_content"
+		        android:background="@drawable/drawer_shadow"
+		        />
+	    	<Button
+		    	android:layout_weight="3"
+		        android:layout_width="0dp"
+		        android:layout_height="wrap_content"
+		        android:id="@+id/sure_btn"
+		        android:background="@color/transparent"
+		        android:text="@string/ok"
+		        android:textColor="@color/blue_qq"
+		        />
+	</LinearLayout>    
+
 </LinearLayout>

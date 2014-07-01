@@ -5,7 +5,7 @@
     android:label="@string/scontact_title"
     android:searchButtonText="@string/search_lable"
     android:voiceSearchMode="showVoiceSearchButton|launchRecognizer"
-
+	
     >
 
 </searchable>

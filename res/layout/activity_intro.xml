@@ -9,13 +9,16 @@
 	    android:layout_height="wrap_content"
 	    android:id="@+id/logo_layout"
 	    android:layout_centerInParent="true"
+	    android:background="@color/transparent"
 	    >
 	    	<ImageView
-			    android:layout_width="match_parent"
-			    android:layout_height="match_parent"
-			    android:scaleType="fitXY"
-			    android:src="@drawable/icon_has_msg"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:scaleType="centerInside"
+			    android:src="@drawable/icon_logo"
 		    	android:id="@+id/logo_first"
+		    	android:contentDescription="@string/apart_group_lable"
+		    	
 		    	 />
 	</RelativeLayout>
 

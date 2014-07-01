@@ -9,7 +9,7 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             android:id="@+id/users_list_item_name"
-            android:text="@string/app_name"
+            android:text="@string/preference_name"
             style="@style/PrimaryTextAppeare"
             android:padding="20dp"
             android:gravity="center"

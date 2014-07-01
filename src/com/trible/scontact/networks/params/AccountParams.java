@@ -6,10 +6,12 @@ import com.google.gson.Gson;
 import com.trible.scontact.components.activity.SContactApplication;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.pojo.ContactTypes;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.UserRelationInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.StringUtil;
+import com.trible.scontact.value.GlobalValue;
 
 public class AccountParams {
 
@@ -30,6 +32,14 @@ public class AccountParams {
 		String v = new Gson().toJson(info);
 		String url = Login + "?json=" + StringUtil.getEncodeURLParams(v);
 		Bog.v("login url = " + url);
+		return url;
+	}
+	
+	public static String getLoginWithSocialParams(AccountInfo info){
+		String Login = SContactApplication.getURL() + mAccountPath + "/loginWithThirdParty";
+		String v = new Gson().toJson(info);
+		String url = Login + "?json=" + StringUtil.getEncodeURLParams(v);
+		Bog.v("loginWithThirdParty url = " + url);
 		return url;
 	}
 	
@@ -54,6 +64,7 @@ public class AccountParams {
 		info.setDisplayName(name);
 		info.setPassword(password);
 		info.setPhoneNumber(phone);
+		info.setType(ContactTypes.getInstance().getCellPhoneType());
 		String v = new Gson().toJson(info);
 		String url = Register + "?json=" + StringUtil.getEncodeURLParams(v);
 		Bog.v("register url = " + url);

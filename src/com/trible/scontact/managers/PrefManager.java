@@ -1,5 +1,7 @@
 package com.trible.scontact.managers;
 
+import java.io.File;
+
 import org.w3c.dom.UserDataHandler;
 
 import android.content.Context;
@@ -19,7 +21,6 @@ public class PrefManager {
 	}
 
 	public static PrefManager getInstance(String... name) {
-
 		if (mPrefManager == null) {
 			mPrefManager = new PrefManager(null);
 
@@ -116,9 +117,14 @@ public class PrefManager {
 		return edt.commit();
 	}
 
-	public boolean clearUserData(Context c) {
+	public boolean clearUserData() {
 		Editor e = mSpf.edit().clear();
 		return e.commit();
 	}
-
+	public void deleteFile(String name) {
+		File f = new File(mContext.getFilesDir().getParent()+"/shared_prefs/" + name + ".xml");
+		if ( f != null && f.exists() ){
+			f.delete();
+		}
+	}
 }

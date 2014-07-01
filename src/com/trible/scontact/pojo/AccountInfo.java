@@ -8,20 +8,61 @@ import ccb.java.android.utils.encoder.SecurityMethod;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.j256.ormlite.field.DataType;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+import com.trible.scontact.database.DBConstants;
 import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.value.GlobalValue;
 import com.trible.scontact.value.PrefKeys;
 
  
  
- 
+@DatabaseTable(tableName=DBConstants.AccountFieldName.table_name) 
 public class AccountInfo extends BaseInfo implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-	private Integer status,gender;
-	Long birthday,createTime,id;
-	private String displayName,phoneNumber,photoUrl,
-	email,realName,description,type,password,cookie,notifyId;
+	
+	private Integer status;
+	
+	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.AccountFieldName.user_gender)
+	Integer gender;
+	
+	Long birthday;
+	
+	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.AccountFieldName.user_create_time)
+	Long createTime;
+	
+	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.AccountFieldName.user_id)
+	Long id;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_display_name)
+	private String displayName;
+	
+	String phoneNumber;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_photo_url)
+	String photoUrl;
+
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_email)
+	String email;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_real_name)
+	String realName;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_description)
+	String description;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_type)
+	String type;
+	
+	String password;
+	String cookie;
+	
+	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_notify_id)
+	String notifyId;
+	
+	String thirdPartyId;
 
 	private List<ContactInfo> contactsList;
 	
@@ -46,7 +87,13 @@ public class AccountInfo extends BaseInfo implements Serializable{
 		this.birthday = birthday;
 	}
 	
-	 
+	public String getThirdPartyId() {
+		return thirdPartyId;
+	}
+	public void setThirdPartyId(String thirdPartyId) {
+		this.thirdPartyId = thirdPartyId;
+	}
+	
 	public Long getCreateTime() {
 		return createTime;
 	}
@@ -171,6 +218,8 @@ public class AccountInfo extends BaseInfo implements Serializable{
 		tmp.setPhotoUrl(photoUrl);
 		tmp.setRealName(realName);
 		tmp.setType(type);
+		tmp.setNotifyId(notifyId);
+		tmp.setThirdPartyId(thirdPartyId);
 		return tmp;
 	}
 	public static void setAccountInfo(AccountInfo info){

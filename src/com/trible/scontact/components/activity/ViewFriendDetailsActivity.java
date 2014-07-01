@@ -110,14 +110,14 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		
 	}
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(Menu menu) {
 		getSupportMenuInflater().inflate(R.menu.activity_view_friend_menu, menu);
 		if ( mFirendFlag == 3 || mFirendFlag == 1 ){
 			menu.findItem(R.id.action_edit).setVisible(true);
 		} else {
 			menu.findItem(R.id.action_edit).setVisible(false);
 		}
-		return super.onPrepareOptionsMenu(menu);
+		return super.onCreateOptionsMenu(menu);
 	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -206,7 +206,7 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 	void checkIsFriend(){
 		if ( mGroupInfo != null ){
 			mFriendAction.setVisibility(View.GONE);
-			if ( SContactMainActivity.GROUP_OF_FRIEND.equals(mGroupInfo.getId()) ){
+			if ( SContactMainActivity.GROUP_ID_OF_FRIEND.equals(mGroupInfo.getId()) ){
 				mFirendFlag = 1;
 				mFriendAction.setText(R.string.remove_friend_lable);
 				mFriendAction.setTextColor(getResources().getColor(R.color.red));

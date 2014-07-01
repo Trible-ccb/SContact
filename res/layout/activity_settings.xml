@@ -23,12 +23,13 @@
             android:layout_marginLeft="10dp"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:text="账户"
+            android:text="@string/account"
             android:textColor="@color/grey_999999" />
 		<include layout="@layout/layout_divider"/>
     </LinearLayout>
 
     <include layout="@layout/setting_layout_item_checkable" android:id="@+id/setting_sign_out"/>
+    <include layout="@layout/setting_layout_item_checkable" android:id="@+id/setting_account_level"/>
     <include layout="@layout/setting_layout_item_checkable" android:id="@+id/setting_contact_us"/>
     <include layout="@layout/setting_layout_item_checkable" android:id="@+id/setting_rank_app"/>
     </LinearLayout>
