@@ -1,21 +1,16 @@
 package com.trible.scontact.components.activity;
 
 import android.app.Application;
-import android.text.TextUtils;
 
 import com.trible.scontact.R;
-import com.trible.scontact.components.widgets.NotifyHelper;
 import com.trible.scontact.database.DBHelper;
 import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.managers.SDCardManager;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactTypes;
-import com.trible.scontact.thirdparty.qq.TencentQQHelper;
 import com.trible.scontact.utils.Bog;
 import com.umeng.socialize.bean.SocializeConfig;
-import com.umeng.socialize.sso.QZoneSsoHandler;
 import com.umeng.socialize.sso.SinaSsoHandler;
-import com.umeng.socialize.sso.TencentWBSsoHandler;
 
 /**
  * @author Trible Chen
@@ -24,24 +19,26 @@ import com.umeng.socialize.sso.TencentWBSsoHandler;
 public class SContactApplication extends Application {
 
 	public static SContactApplication mAppContext;
-	
-	private static String IP = "192.168.1.100";
-	private static String URL = "http://" + IP + ":8888/scontacts/services";
+	public static boolean ENV_DEBUG = false;
+	public static boolean LOG_DEBUG = true;
+	public static String DEV_IP = "192.168.1.100";
+	public static String PRODUCT_IP = "121.48.175.134";
+	public static String IP;
+	public static String URL = "http://" + IP + ":8888/scontact/services";
 	public static void setIP(String s){
 		IP = s;
 		if ( s.contains(":") ){
-			URL = "http://" + IP + "/scontacts/services";
+			URL = "http://" + IP + "/scontact/services";
 		} else if(s.startsWith("192")){
-			URL = "http://" + IP + ":8888/scontacts/services";
+			URL = "http://" + IP + ":8888/scontact/services";
 		} else {
-			URL = "http://" + IP + "/services";
+			URL = "http://" + IP + "/scontact/services";
 		}
-		
-		PrefManager.getInstance().putString("IP", s);
+//		PrefManager.getInstance().putString("IP", s);
 	}
 	
 	public static String getURL() {
-		setIP(PrefManager.getInstance().getString("IP"));
+//		setIP(PrefManager.getInstance().getString("IP"));
 		return URL;
 	}
 
@@ -55,11 +52,10 @@ public class SContactApplication extends Application {
 	
 	void initData(){
 		AccountInfo.setAccountInfo(AccountInfo.getFromPref());
-		String ip = PrefManager.getInstance().getString("IP");
-		if ( !TextUtils.isEmpty(ip) ){
-			SContactApplication.setIP(ip);
+		if ( SContactApplication.ENV_DEBUG ){
+			setIP(DEV_IP);
 		} else {
-			setIP(IP);
+			setIP(PRODUCT_IP);
 		}
 		
 	}
@@ -70,7 +66,6 @@ public class SContactApplication extends Application {
 		SDCardManager.initStorageWithClassicPaths(getApplicationContext(), name);
 		ContactTypes.init(this);
 		SocializeConfig.getSocializeConfig().setSsoHandler(new SinaSsoHandler());
-		SocializeConfig.getSocializeConfig().setSsoHandler(new TencentWBSsoHandler());
 		DBHelper.init(this);
 	}
 }

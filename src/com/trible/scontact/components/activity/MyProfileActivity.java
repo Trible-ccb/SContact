@@ -21,22 +21,17 @@ import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.ChoosePictureDialog;
-import com.trible.scontact.components.widgets.LoadingDialog;
-import com.trible.scontact.components.widgets.SimpleInputDialog;
 import com.trible.scontact.components.widgets.ChoosePictureDialog.OnPickListener;
+import com.trible.scontact.components.widgets.LoadingDialog;
 import com.trible.scontact.components.widgets.PropertyKeyValue;
+import com.trible.scontact.components.widgets.SimpleInputDialog;
 import com.trible.scontact.components.widgets.SimpleInputDialog.OnSubmitInputListener;
-import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.networks.ListImageAsynTask;
 import com.trible.scontact.networks.ListImageAsynTask.ItemImageLoadingListner;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.GsonHelper;
-import com.trible.scontact.thirdparty.beans.LoginResponse;
-import com.trible.scontact.thirdparty.beans.QQUserInfo;
-import com.trible.scontact.thirdparty.qq.QQLoginListener;
-import com.trible.scontact.thirdparty.qq.TencentQQHelper;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
 import com.trible.scontact.utils.StringUtil;
@@ -90,7 +85,6 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 			
 			@Override
 			public void onClick(View v) {
-				fetchQQInfo(false);
 			}
 		});
 		
@@ -176,69 +170,6 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 		refreshInfo();
 	}
 
-	void fetchQQInfo(final boolean photoonly){
-		Tencent t = TencentQQHelper.getTencent();
-		if ( true ){
-			t.login(MyProfileActivity.this,
-					"get_user_info,get_simple_userinfo",
-					new IUiListener() {
-						@Override
-						public void onCancel() {
-						}
-						@Override
-						public void onComplete(Object json) {
-							mPhotoLoaded = false;
-							getQQUserInfo(json,photoonly);
-						}
-						@Override
-						public void onError(UiError arg0) {
-							Bog.toast(arg0.errorMessage);
-						}
-
-					}
-			);
-		}
-	}
-	void getQQUserInfo(Object json,final boolean photoonly){
-		LoginResponse re;
-		if ( json instanceof LoginResponse ){
-			re = (LoginResponse) json;
-		} else {
-			re = LoginResponse.getFromJson(json.toString());
-		}
-		TencentQQHelper.setTokenData(re);
-		re.saveToSpf();
-		if ( re.access_token != null && re.ret == 0 ){
-			re.saveToSpf();
-			UserInfo qquser = new UserInfo(getApplicationContext(), TencentQQHelper.getTencent().getQQToken());
-			qquser.getUserInfo(new IUiListener() {
-				@Override
-				public void onError(UiError arg0) {
-					Bog.toast(arg0.errorMessage);
-				}
-				@Override
-				public void onComplete(Object arg0) {
-					QQUserInfo inforeqp = GsonHelper.getInfosFromJson(arg0.toString(), QQUserInfo.class);
-					if ( inforeqp.nickname != null && inforeqp.ret == 0 ){
-						AccountInfo tmp = AccountInfo.getInstance().copy();
-						if ( photoonly ){
-							tmp.setPhotoUrl(inforeqp.getPhotoUrl());
-						} else {
-							inforeqp.saveToAccountInfo(tmp);
-						}
-						updateAccountToServer(tmp);
-					} else {
-						Bog.toast(R.string.failed);
-					}
-				}
-				@Override
-				public void onCancel() {
-				}
-			});
-		} else {
-			Bog.toast(R.string.failed);
-		}
-	}
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);

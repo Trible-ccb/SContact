@@ -14,28 +14,22 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import ccb.java.android.utils.encoder.SecurityMethod;
 
 import com.actionbarsherlock.view.Window;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.tencent.tauth.Tencent;
-import com.trible.scontact.BuildConfig;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.CustomPasswordInput;
 import com.trible.scontact.components.widgets.CustomTextInput;
 import com.trible.scontact.components.widgets.LoadingDialog;
-import com.trible.scontact.components.widgets.NotifyHelper;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GsonHelper;
-import com.trible.scontact.thirdparty.qq.QQLoginListener;
-import com.trible.scontact.thirdparty.qq.TencentQQHelper;
 import com.trible.scontact.thirdparty.umeng.UmengController;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
@@ -43,18 +37,14 @@ import com.trible.scontact.utils.StringUtil;
 import com.trible.scontact.value.GlobalValue;
 import com.umeng.message.PushAgent;
 import com.umeng.message.UmengRegistrar;
-import com.umeng.socialize.bean.Gender;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.bean.SnsAccount;
-import com.umeng.socialize.bean.SocializeConfig;
 import com.umeng.socialize.bean.SocializeEntity;
 import com.umeng.socialize.bean.SocializeUser;
 import com.umeng.socialize.controller.listener.SocializeListeners.FetchUserListener;
 import com.umeng.socialize.controller.listener.SocializeListeners.SocializeClientListener;
 import com.umeng.socialize.controller.listener.SocializeListeners.UMAuthListener;
 import com.umeng.socialize.exception.SocializeException;
-import com.umeng.socialize.net.w;
-import com.umeng.socialize.sso.QZoneSsoHandler;
 import com.umeng.socialize.sso.UMSsoHandler;
 
 public class SignInUpActivity extends CustomSherlockFragmentActivity 
@@ -66,6 +56,8 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	SignInHandler mSignInHandler;
 	SignUpHandler mSignUpHandler;
 	LoginByThirdParty mThirdParty;
+	
+	String device_token;
 	
 	LoadingDialog mDialog;
 	RadioGroup mIndicator;
@@ -97,6 +89,10 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	private void showTip(String tip){
 		mTipText.setText(tip);
 		mTipText.setVisibility(View.VISIBLE);
+		mThirdParty.enableButtons();
+		if ( mDialog != null && mDialog.getDialog() != null){
+			mDialog.getDialog().dismissDialogger();
+		}
 	}
 	private void hideTip(){
 		mTipText.setVisibility(View.GONE);
@@ -173,11 +169,6 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 			mSignInBtn.setOnLongClickListener(new OnLongClickListener() {
 				@Override
 				public boolean onLongClick(View v) {
-					if ( BuildConfig.DEBUG ){
-						String s = mNameInput.getmEditText().getText().toString();
-						SContactApplication.setIP(s);
-						Bog.toast(s);
-					}
 					return true;
 				}
 			});
@@ -357,142 +348,167 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 			mLoginSinaView.setOnClickListener(SignInUpActivity.this);
 			mLoginQQView.setOnClickListener(SignInUpActivity.this);
 		}
+		public void enableButtons(){
+			mLoginQQView.setEnabled(true);
+			mLoginSinaView.setEnabled(true);
+		}
+		public void disableButtons(){
+			mLoginQQView.setEnabled(false);
+			mLoginSinaView.setEnabled(false);
+		}
 	}
 	void loginThirdParty(final SHARE_MEDIA m){
 		hideTip();
+		PushAgent.getInstance(SignInUpActivity.this).enable();
+		mThirdParty.disableButtons();
+		mDialog = new LoadingDialog(SignInUpActivity.this);
+		mDialog.setTipText(R.string.loading);
+		mDialog.show();
 		UmengController.getLoginService().doOauthVerify(
 				SignInUpActivity.this, m, new UMAuthListener() {
+					
 			@Override
 			public void onStart(SHARE_MEDIA arg0) {
+				mThirdParty.disableButtons();
 			}
 			@Override
 			public void onError(SocializeException arg0, SHARE_MEDIA arg1) {
-				showTip(arg0.getErrorCode() + ":" +arg0.getMessage());
+				showTip(arg0.getErrorCode() + ":" + arg1.name());
+				mThirdParty.enableButtons();
 			}
 			
 			@Override
 			public void onComplete(Bundle value, SHARE_MEDIA arg1) {
+				mThirdParty.enableButtons();
 				if (value != null && !TextUtils.isEmpty(value.getString("uid"))) {
+					UmengController.getService().login(
+							SignInUpActivity.this,
+							m,
+							new SocializeClientListener() {
+						
+						@Override
+						public void onStart() {
+							mThirdParty.disableButtons();
+						}
+						
+						@Override
+						public void onComplete(int arg0, SocializeEntity arg1) {
+							mThirdParty.enableButtons();
+							if ( arg0 == 200 ){
+								UmengController.getService().getUserInfo(
+										SignInUpActivity.this, new FetchUserListener() {
+									@Override
+									public void onStart() {
+										mThirdParty.disableButtons();
+									}
+									
+									@Override
+									public void onComplete(int code, SocializeUser user) {
+										mThirdParty.enableButtons();
+										if ( code != 200 || user.mLoginAccount == null ){
+											showTip(StringUtil.catStringFromResId(
+													SignInUpActivity.this,
+													R.string.sign_in,R.string.failed));
+											return;
+										}
+										device_token = UmengRegistrar.getRegistrationId(SignInUpActivity.this);
+										SnsAccount a = user.mLoginAccount;
+										AccountInfo wrap = new AccountInfo();
+										wrap.setDisplayName(a.getUserName());
+										wrap.setThirdPartyId(a.getUsid());
+										if ( TextUtils.isEmpty(device_token) ){
+											Bog.toast(
+													StringUtil.catStringFromResId(
+															SignInUpActivity.this,
+															R.string.notify_register,R.string.failed));
+										} else {
+											wrap.setNotifyId(device_token);
+										}
+										wrap.setPhotoUrl(a.getAccountIconUrl());
+										wrap.setDescription(a.getProfileUrl());
+										wrap.setPassword(
+												SecurityMethod.encryptSHA(a.getUsid()+a.getUserName()));
+										int g = GlobalValue.UGENDER_UNSET;
+										//友盟bug,如果是新浪微博用户，用户性别搞反了。
+										if ( SHARE_MEDIA.SINA.equals(m) ){
+											switch (a.getGender()) {
+											case FEMALE:
+												g = GlobalValue.UGENDER_MALE;
+												break;
+											case MALE:
+												g = GlobalValue.UGENDER_FEMALE;
+												break;
+											default:
+												break;
+											}
+										} else {
+											switch (a.getGender()) {
+											case FEMALE:
+												g = GlobalValue.UGENDER_FEMALE;
+												break;
+											case MALE:
+												g = GlobalValue.UGENDER_MALE;
+												break;
+											default:
+												break;
+											}
+										}
+										
+										wrap.setGender(g);
+										SContactAsyncHttpClient.post(
+												AccountParams.getLoginWithSocialParams(wrap),
+												null,
+												new AsyncHttpResponseHandler(){
+													@Override
+													public void onFailure(int arg0,
+															Header[] arg1, byte[] arg2,
+															Throwable arg3) {
+														showTip(getString(R.string.connect_server_err));
+													}
+													public void onStart() {
+														mThirdParty.disableButtons();
+													};
+													@Override
+													public void onFinish() {
+														mDialog.getDialog().dismissDialogger();
+														mThirdParty.enableButtons();
+													}
+													@Override
+													public void onSuccess(int arg0,
+															Header[] arg1, byte[] arg2) {
+														if ( !mDialog.getDialog().isShowing() )return;
+														AccountInfo result = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
+														if ( result != null ){
+															Long id = result.getId();
+															if ( id != null ){
+																AccountInfo.setAccountInfo(result);
+																result.saveToPref();
+																ContactInfo.clear();
+																SContactAsyncHttpClient.refreshCookie();
+																if ( !AccountInfo.getInstance().isSignOut() ){
+																	simpleDisplayActivity(SContactMainActivity.class);
+																	finish();
+																}
+															} else {
+																showTip(getString(R.string.invalid_account));
+															}
+														} else {
+															Bog.toastErrorInfo(arg2);
+														}
+														
+													}
+										});
+										
+									}
+								});
+							}
+						}
+					});
+					
 				} else {
 					showTip(getString(R.string.failed));
 					return;
 				}
-				UmengController.getLoginService().login(SignInUpActivity.this, m, new SocializeClientListener() {
-					@Override
-					public void onStart() {
-						PushAgent.getInstance(SignInUpActivity.this).enable();
-					}
-					@Override
-					public void onComplete(int arg0, SocializeEntity arg1) {
-						if ( arg0 == 200 ){
-							UmengController.getService().getUserInfo(
-									SignInUpActivity.this, new FetchUserListener() {
-								
-								@Override
-								public void onStart() {
-									mDialog = new LoadingDialog(SignInUpActivity.this);
-									mDialog.setTipText(R.string.loading);
-									mDialog.show();
-								}
-								
-								@Override
-								public void onComplete(int arg0, SocializeUser arg1) {
-									if ( arg0 != 200 ){
-										showTip(StringUtil.catStringFromResId(
-												SignInUpActivity.this,
-												R.string.sign_in,R.string.failed));
-										return;
-									}
-									final String device_token = UmengRegistrar.getRegistrationId(SignInUpActivity.this);
-									SnsAccount a = arg1.mLoginAccount;
-									AccountInfo wrap = new AccountInfo();
-									wrap.setDisplayName(a.getUserName());
-//									wrap.setBirthday(Long.valueOf(a.getBirthday()));
-									wrap.setThirdPartyId(a.getUsid());
-									if ( TextUtils.isEmpty(device_token) ){
-										Bog.toast(
-												StringUtil.catStringFromResId(
-														SignInUpActivity.this,
-														R.string.notify_register,R.string.failed));
-									} else {
-										wrap.setNotifyId(device_token);
-									}
-									
-									wrap.setPhotoUrl(a.getAccountIconUrl());
-									wrap.setDescription(a.getProfileUrl());
-									wrap.setPassword(SecurityMethod.encryptSHA(a.getUsid()+a.getUserName()));
-									int g = GlobalValue.UGENDER_UNSET;
-									//友盟bug,如果是新浪微博用户，用户性别搞反了。
-									if ( SHARE_MEDIA.SINA.equals(m) ){
-										switch (a.getGender()) {
-										case FEMALE:
-											g = GlobalValue.UGENDER_MALE;
-											break;
-										case MALE:
-											g = GlobalValue.UGENDER_FEMALE;
-											break;
-										default:
-											break;
-										}
-									} else {
-										switch (a.getGender()) {
-										case FEMALE:
-											g = GlobalValue.UGENDER_FEMALE;
-											break;
-										case MALE:
-											g = GlobalValue.UGENDER_MALE;
-											break;
-										default:
-											break;
-										}
-									}
-									
-									wrap.setGender(g);
-
-									SContactAsyncHttpClient.post(
-											AccountParams.getLoginWithSocialParams(wrap),
-											null,
-											new AsyncHttpResponseHandler(){
-												@Override
-												public void onFailure(int arg0,
-														Header[] arg1, byte[] arg2,
-														Throwable arg3) {
-													showTip(getString(R.string.connect_server_err));
-												}
-												@Override
-												public void onFinish() {
-													mDialog.getDialog().dismissDialogger();
-												}
-												@Override
-												public void onSuccess(int arg0,
-														Header[] arg1, byte[] arg2) {
-													if ( !mDialog.getDialog().isShowing() )return;
-													AccountInfo result = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
-													if ( result != null ){
-														Long id = result.getId();
-														if ( id != null ){
-															AccountInfo.setAccountInfo(result);
-															result.saveToPref();
-															ContactInfo.clear();
-															if ( !AccountInfo.getInstance().isSignOut() ){
-																simpleDisplayActivity(SContactMainActivity.class);
-																finish();
-															}
-														} else {
-															showTip(getString(R.string.invalid_account));
-														}
-													} else {
-														Bog.toastErrorInfo(arg2);
-													}
-													
-												}
-									});
-									
-								}
-							});
-						}
-					}
-				});
 			}
 			
 			@Override

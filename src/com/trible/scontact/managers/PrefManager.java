@@ -2,8 +2,6 @@ package com.trible.scontact.managers;
 
 import java.io.File;
 
-import org.w3c.dom.UserDataHandler;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -11,7 +9,7 @@ import android.content.SharedPreferences.Editor;
 public class PrefManager {
 
 	private static Context mContext;
-	private static PrefManager mPrefManager;
+//	private static PrefManager mPrefManager;
 	private static String APP_NAME;
 	private boolean isFirstOpen;
 	SharedPreferences mSpf;
@@ -21,9 +19,9 @@ public class PrefManager {
 	}
 
 	public static PrefManager getInstance(String... name) {
+		PrefManager mPrefManager = null;
 		if (mPrefManager == null) {
 			mPrefManager = new PrefManager(null);
-
 		}
 		if ( name == null || name.length == 0 ){
 			mPrefManager.useDefaultSPF();
@@ -36,7 +34,7 @@ public class PrefManager {
 	public static void initPrefManager(Context c, String AppName) {
 		APP_NAME = AppName;
 		mContext = c;
-		getInstance();
+		PrefManager mPrefManager = getInstance();
 		mPrefManager.isFirstOpen = false;
 		mPrefManager.useDefaultSPF();
 		if (mPrefManager.getIsFirstTimeLauch()) {
@@ -57,6 +55,7 @@ public class PrefManager {
 	}
 	
 	public boolean getIsFirstOpen() {
+		PrefManager mPrefManager = getInstance();
 		return mPrefManager.isFirstOpen;
 	}
 

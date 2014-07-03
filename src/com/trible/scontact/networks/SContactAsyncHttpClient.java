@@ -21,6 +21,8 @@ import android.content.Context;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.trible.scontact.components.activity.SContactApplication;
+import com.trible.scontact.pojo.AccountInfo;
 
 /**
  * 
@@ -58,13 +60,12 @@ public class SContactAsyncHttpClient {
 				.setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
 		client.addHeader("User-Agent", "Mozilla/5.0");
 		client.addHeader("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-		setCookies();
 	}
 
 	public static void get(String url, RequestParams params,
 			AsyncHttpResponseHandler responseHandler) {
 //		client.get(url, params, responseHandler);
-		ScontactHttpClient.post(url, null, responseHandler);
+		ScontactHttpClient.asyncpost(url, null, responseHandler);
 
 	}
 
@@ -73,27 +74,45 @@ public class SContactAsyncHttpClient {
 		//because the cache bug in loop that request does not send
 //		client.post(url, params, responseHandler);
 		//we use DefaultHttpClient instead. wrapped it in asynchronized way
-		ScontactHttpClient.post(url, null, responseHandler);
+		ScontactHttpClient.asyncpost(url, null, responseHandler);
 	}
 
 	public static void cancel(Context c,boolean flg){
 		client.cancelRequests(c, flg);
 	}
-	public static void setCookies() {
-//		DefaultHttpClient dhc = (DefaultHttpClient) client.getHttpClient();
-//		dhc.getCookieStore().clear();
-//
-//		BasicClientCookie cookie1 = new BasicClientCookie(
-//				"diigoandlogincookie", "android-.-"
-//						+ User.getInstance().getUserName() + "-.-android");
-//		cookie1.setDomain(Constant.ApiParmas.DOMAIN);
-//		cookie1.setVersion(1);
-//		cookie1.setPath("/");
-//		dhc.getCookieStore().addCookie(cookie1);
-//
+	public static void refreshCookie(){
+		DefaultHttpClient dhc = ScontactHttpClient.client;
+		DefaultHttpClient dhc2 = (DefaultHttpClient) SContactAsyncHttpClient.client.getHttpClient();
+		setCookies(dhc2);
+		setCookies(dhc);
+	}
+	public static void setCookies(DefaultHttpClient dhc) {
+//		DefaultHttpClient dhc = ScontactHttpClient.client;
+		dhc.getCookieStore().clear();
+		String uid = "";
+		String cookie = "";
+		if ( AccountInfo.getInstance().getId() != null ){
+			uid = AccountInfo.getInstance().getId() + "";
+		}
+		if ( AccountInfo.getInstance().getCookie() != null ){
+			cookie = AccountInfo.getInstance().getCookie();
+		}
+		
+		BasicClientCookie cookie1 = new BasicClientCookie(
+				"requestcookie",
+						""
+//						+ AccountInfo.getInstance().getDisplayName() + "_"
+						+ uid + "_._"
+						+ cookie
+						);
+		cookie1.setDomain(SContactApplication.DEV_IP);
+		cookie1.setVersion(1);
+		cookie1.setPath("/");
+		dhc.getCookieStore().addCookie(cookie1);
+
 //		BasicClientCookie cookie2 = new BasicClientCookie("CHKIO", User
 //				.getInstance().getsKey());
-//		cookie2.setDomain(Constant.ApiParmas.DOMAIN);
+//		cookie2.setDomain(SContactApplication.IP);
 //		cookie2.setVersion(1);
 //		cookie2.setPath("/");
 //		dhc.getCookieStore().addCookie(cookie2);

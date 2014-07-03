@@ -6,6 +6,9 @@ import org.apache.http.Header;
 
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -13,6 +16,7 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -27,6 +31,8 @@ import com.trible.scontact.components.widgets.ChooseContactsListDialog;
 import com.trible.scontact.components.widgets.LoadingDialog;
 import com.trible.scontact.components.widgets.YesOrNoTipDialog;
 import com.trible.scontact.components.widgets.YesOrNoTipDialog.OnButtonClickListner;
+import com.trible.scontact.networks.ListImageAsynTask;
+import com.trible.scontact.networks.ListImageAsynTask.ItemImageLoadingListner;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.networks.params.ValidationParams;
@@ -54,6 +60,8 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 	ListView mContactsListView;
 	FriendContactsListAdapter mAdapter;
 	TextView mFriendName,mFriendDesp;
+	ImageView mFriendHead;
+	Drawable mPhotoBitmap;
 	
 	ChooseContactsListDialog mContactsListDialog;
 	ChooseContactActionDialog mChooseFriendActionDialog;
@@ -61,6 +69,7 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 	
 	List<ContactInfo> mContacts;
 	AccountInfo mFriend;
+	
 	GroupInfo mGroupInfo;//which the friend belong to
 	int mFirendFlag;//0 stranger,1 friend,2 local friend,3 myself
 	
@@ -77,8 +86,18 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		super.onCreate(arg0);
 		mFriend = (AccountInfo) getIntent().getSerializableExtra("ViewFriend");
 		mGroupInfo = (GroupInfo) getIntent().getSerializableExtra("InGroup");
+		if ( mFriend == null ) {
+			Bog.toast(R.string.failed);
+			finish();
+			return;
+		}
 		setContentView(R.layout.activity_view_friend);
-		setTitle(R.string.details_title, R.color.blue_qq);
+		String title = getString(R.string.details_title);
+		if ( mGroupInfo != null ){
+			title = String.format(getString(R.string.friend_in_group_details_title),
+					mGroupInfo.getDisplayName());
+		}
+		setTitle(title, R.color.blue_qq);
 		initView();
 		initViewData();
 		checkIsFriend();
@@ -88,6 +107,8 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		mContactsListDialog = new ChooseContactsListDialog(this);
 		mFriendAction = (Button) findViewById(R.id.friend_action);
 		mFriendAction.setOnClickListener(this);
+		mFriendHead = (ImageView) findViewById(R.id.friend_head);
+		mPhotoBitmap = getResources().getDrawable(R.drawable.icon_logo);
 		mFriendName = (TextView) findViewById(R.id.friend_name);
 		mFriendDesp = (TextView) findViewById(R.id.friend_desp);
 		mContactsListView = (ListView) findViewById(R.id.friend_contacts_list_view);
@@ -102,11 +123,30 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		String gender = "";
 		if ( GlobalValue.UGENDER_FEMALE.equals(mFriend.getGender()) ){
 			gender = "(" + getString(R.string.gender_female) + ")";
-		} else if ( GlobalValue.UGENDER_FEMALE.equals(mFriend.getGender()) ){
+			mFriendName.setTextColor(getResources().getColor(R.color.pink));
+		} else if ( GlobalValue.UGENDER_MALE.equals(mFriend.getGender()) ){
 			gender = "(" + getString(R.string.gender_male) + ")";
+			mFriendName.setTextColor(getResources().getColor(R.color.green));
 		}
 		mFriendName.setText(mFriend.getDisplayName() + gender);
 		mFriendDesp.setText(mFriend.getDescription());
+		
+		mFriendHead.setImageDrawable(mPhotoBitmap);
+		ListImageAsynTask phototask = new ListImageAsynTask();
+		phototask.setmLoadingListner(new ItemImageLoadingListner() {
+			@Override
+			public void onPreLoad() {
+			}
+			@Override
+			public void onLoadDone(Bitmap doneBm) {
+				mPhotoBitmap = new BitmapDrawable(getResources(),doneBm);
+				if ( doneBm != null && mPhotoBitmap != null ){
+					mFriendHead.setImageDrawable(mPhotoBitmap);
+				}
+			}
+		});
+		phototask.loadBitmapByScaleOfWinWidthForWidget(this,
+				mFriend.getPhotoUrl(), 0.5f);
 		
 	}
 	@Override
@@ -196,10 +236,6 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 			}
 			
 		}.handle(type);
-//		if ( GlobalValue.CTYPE_EMAIL.equals(type) ){
-//		} else if ( GlobalValue.CTYPE_PHONE.equals(type) ){
-//		} else if ( GlobalValue.CTYPE_IM.equals(type) ){
-//		} 
 		mChooseFriendActionDialog.addAction(getString(R.string.copy_lable));
 		mChooseFriendActionDialog.show();
 	}

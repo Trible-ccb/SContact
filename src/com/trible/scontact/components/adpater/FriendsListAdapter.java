@@ -1,5 +1,6 @@
 package com.trible.scontact.components.adpater;
 
+import java.util.Collections;
 import java.util.List;
 
 import android.content.Context;
@@ -13,7 +14,10 @@ import android.widget.TextView;
 import com.trible.scontact.R;
 import com.trible.scontact.managers.SDCardManager;
 import com.trible.scontact.networks.ListImageAsynTask;
+import com.trible.scontact.networks.NetWorkEvent;
 import com.trible.scontact.networks.ListImageAsynTask.ItemImageLoadingListner;
+import com.trible.scontact.networks.SimpleAsynTask;
+import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.utils.DeviceUtil;
 import com.trible.scontact.utils.ImageUtil;
@@ -36,7 +40,19 @@ public class FriendsListAdapter extends EmptyBaseAdapter {
 	}
 	public void setData(List<AccountInfo> data){
 		mDatas = data;
-		notifyDataSetChanged();
+		SimpleAsynTask.doTask2(new AsynTaskListner() {
+			
+			@Override
+			public void onTaskDone(NetWorkEvent event) {
+				notifyDataSetChanged();
+			}
+			
+			@Override
+			public void doInBackground() {
+				if ( mDatas != null )
+				Collections.sort(mDatas);
+			}
+		});
 	}
 	
 	@Override

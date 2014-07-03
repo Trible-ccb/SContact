@@ -139,7 +139,7 @@ public class ChooseContactActionDialog{
 								mContext.getString(R.string.contact_used_within_month) + contact);
 					} 
 				}
-			};
+			}.handle(mContactInfo.getType());
 //			if ( GlobalValue.CTYPE_PHONE.equals(mContactInfo.getType()) ){
 //			}
 			

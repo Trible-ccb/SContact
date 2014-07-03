@@ -186,8 +186,10 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 	}
 
 	void refreshGroupInfo(){
-		mGroupDesc.setText(mGroupInfo.getDescription());
-		mGroupName.setText(mGroupInfo.getDisplayName());
+		mGroupDesc.setText(getString(R.string.hint_description) + 
+				":" + mGroupInfo.getDescription());
+		mGroupName.setText(getString(R.string.hint_group_name) + 
+				":" + mGroupInfo.getDisplayName());
 		String name = "";
 		String desp = "";
 		if ( mOwnerInfo != null ){

@@ -2,7 +2,7 @@
 <resources>
 
     <!-- common text -->
-    <string name="app_name">OO</string>
+    <string name="app_name">OO Contact</string>
     <string name="preference_name">OO</string>
     <string name="sign_out">Sign Out</string>
     <string name="rank_app">Rank App</string>
@@ -22,6 +22,7 @@
     <string name="action_add_local_friend">Add local contact</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_search">Search Online</string>
+    <string name="action_search_local">search on local</string>
     <string name="action_save">Save</string>
     <string name="action_edit">Edit</string>
     <string name="action_disable">Disable</string>
@@ -100,11 +101,9 @@
     <string name="forget_pwd">Forget Password</string>
     <string name="sign_in">Sign In</string>
     <string name="sign_up">Sign Up</string>
-    <string name="sign_out">Sign Out</string>
     <string name="accept">Accept</string>
     <string name="reject">Reject</string>
     <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
     <string name="email_label"> Email </string>
     <string name="phone_number_lable"> Phone Number </string>
     <string name="username_lable"> Username </string>
@@ -114,6 +113,7 @@
     <string name="gender_female"> Female </string>
     <string name="gender_male"> Male </string>
     <string name="unset"> Unset </string>
+    <string name="unknown">Unknown</string>
     <string name="gender_other"> Others </string>
     <string name="realname_lable"> Real Name </string>
     <string name="description_lable"> Description </string>
@@ -144,8 +144,8 @@
     <string name="invite_friend_lable">Invite Friend</string>
     <string name="remove_friend_lable">Remove Friend</string>
     <string name="scontact_title">Scontact</string> 
-    <string name="sign_title">Sign In-Up</string>
     <string name="details_title">Details</string>
+    <string name="friend_in_group_details_title">infos in %1$s .</string>
     <string name="discard_title">Discard</string> 
     <string name="setting_title">Setting</string>
     <string name="add_title">Add</string>

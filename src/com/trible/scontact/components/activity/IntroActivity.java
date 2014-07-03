@@ -7,6 +7,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.trible.scontact.R;
+import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.value.GlobalValue;
 import com.umeng.message.PushAgent;
@@ -30,6 +31,7 @@ public class IntroActivity extends CustomSherlockFragmentActivity implements Ani
 		mInfo = AccountInfo.getInstance();
 		openNotifyPusher();
 		UmengUpdateAgent.update(this);
+		SContactAsyncHttpClient.refreshCookie();
 		
 	}
 

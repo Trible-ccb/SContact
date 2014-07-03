@@ -6,13 +6,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
 
-import com.trible.scontact.BuildConfig;
+import com.trible.scontact.components.activity.SContactApplication;
 import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GsonHelper;
 
 public class Bog {
 
-	private static boolean debug = BuildConfig.DEBUG;
+	private static boolean debug = SContactApplication.LOG_DEBUG;
 	private static String TAG = "Bog";
 	private static Context mContext;
 	

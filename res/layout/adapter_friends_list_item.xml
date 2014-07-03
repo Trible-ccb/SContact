@@ -18,8 +18,7 @@
         android:layout_height="@dimen/list_item_image_height_width"
         android:id="@+id/users_list_item_image"
         android:src="@drawable/ic_launcher"
-        android:scaleType="center"
-        android:background="@drawable/bg_white_border"
+        android:scaleType="centerInside"
         />
 
     <LinearLayout

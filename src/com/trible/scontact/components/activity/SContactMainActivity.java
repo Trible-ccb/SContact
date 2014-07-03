@@ -1,6 +1,5 @@
 package com.trible.scontact.components.activity;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,8 +36,6 @@ import com.trible.scontact.components.widgets.SherlockMenuItemToMenuItem;
 import com.trible.scontact.controller.IGroupControl;
 import com.trible.scontact.controller.impl.LocalGroupControlller;
 import com.trible.scontact.controller.impl.RemoteGroupControlller;
-import com.trible.scontact.database.DaoMangers;
-import com.trible.scontact.database.dao.GroupDao;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.ContactParams;
 import com.trible.scontact.networks.params.GroupParams;
@@ -232,12 +229,12 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 				mDrawerToggle.onOptionsItemSelected(SherlockMenuItemToMenuItem.getMenuItem(item));
 				return true;
 			case R.id.action_add_group:
-				if(ListUtil.isEmpty(myAllContacts)){
-					Bog.toast(R.string.empty_contacts_list);
-				} else {
+//				if(ListUtil.isEmpty(myAllContacts)){
+//					Bog.toast(R.string.empty_contacts_list);
+//				} else {
 					simpleGetResultFormActivity(CreateOrUpdateGroupActivity.class
 							,RequestCode.CREATE_GROUP);
-				}
+//				}
 				break;
 			case R.id.action_add_local_friend:
 				IntentUtil.insertContact(this,null,null);
@@ -371,18 +368,20 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 					@Override
 					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
 						List<GroupInfo> infos = GsonHelper.getInfosFromJson(arg2, new TypeToken<List<GroupInfo>>(){}.getType());
+						
 						if ( infos == null ){
 							Bog.toastErrorInfo(arg2);
-						}
-						if ( mRemoteGroupsInfos == null ){
-							mRemoteGroupsInfos = new ArrayList<GroupInfo>();
-						}
-						addStaticGroup(mRemoteGroupsInfos);
-						mRemoteGroupsInfos.addAll(infos);
-						mCurGroupsInfos = mRemoteGroupsInfos;
-						for ( GroupInfo g : mRemoteGroupsInfos ){
-							if ( mFriendsListFragment != null ){
-								mFriendsListFragment.addGroupForLoad(g);
+						} else {
+							if ( mRemoteGroupsInfos == null ){
+								mRemoteGroupsInfos = new ArrayList<GroupInfo>();
+							}
+							addStaticGroup(mRemoteGroupsInfos);
+							mRemoteGroupsInfos.addAll(infos);
+							mCurGroupsInfos = mRemoteGroupsInfos;
+							for ( GroupInfo g : mRemoteGroupsInfos ){
+								if ( mFriendsListFragment != null ){
+									mFriendsListFragment.addGroupForLoad(g);
+								}
 							}
 						}
 					}
@@ -441,7 +440,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		GroupInfo cur = mGroupListAdapter.getSeletedGroupInfo();
 		mRemoteGroupsInfos.add(g);
 		mGroupListAdapter.setData(mRemoteGroupsInfos);
-		int idx = mRemoteGroupsInfos.indexOf(g);
+		int idx = mRemoteGroupsInfos.indexOf(cur);
 		mGroupListAdapter.setSelected(idx);
 		mSelectedGroupPos = idx;
 		onItemClick(mGroupListView,

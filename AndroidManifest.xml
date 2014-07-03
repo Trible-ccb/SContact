@@ -148,7 +148,6 @@
                 <data android:scheme="tencent101122109" /> 
             </intent-filter>
         </activity>
-        <activity android:name="com.tencent.plus.ImageActivity" />
         <activity android:name="com.tencent.connect.common.AssistActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:screenOrientation="portrait">

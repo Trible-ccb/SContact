@@ -1,7 +1,5 @@
 package com.trible.scontact.components.adpater;
 
-import java.security.acl.Group;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,8 +12,6 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
-import com.trible.scontact.database.DaoMangers;
-import com.trible.scontact.database.dao.GroupDao;
 import com.trible.scontact.networks.NetWorkEvent;
 import com.trible.scontact.networks.SimpleAsynTask;
 import com.trible.scontact.networks.SimpleAsynTask.AsynTaskListner;
@@ -42,6 +38,7 @@ public class GroupsListAdapter extends BaseAdapter {
 		SimpleAsynTask.doTask2(new AsynTaskListner() {
 			@Override
 			public void onTaskDone(NetWorkEvent event) {
+				
 			}
 			@Override
 			public void doInBackground() {

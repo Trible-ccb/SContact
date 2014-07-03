@@ -191,7 +191,9 @@ public class GroupInfo extends BaseInfo implements Serializable{
 		m.putString(getDisplayName()+"_"+getId(), ason);
 	}
 	private String getSpfNameForSaveGroupMem(){
-		return "membersIn_" + getDisplayName() + "_"+getId();
+		return "membersIn_" + getDisplayName() 
+				+ "_" + getId()
+				+ "_" + AccountInfo.getInstance().getId();
 	}
 	public static void clearSpf(){
 		List<GroupInfo> infos = getGroupsFromSpf();

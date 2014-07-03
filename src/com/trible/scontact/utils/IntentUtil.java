@@ -3,13 +3,11 @@ package com.trible.scontact.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 
 import com.trible.scontact.R;
 import com.trible.scontact.components.adpater.TypeHandler;
 import com.trible.scontact.pojo.ContactInfo;
-import com.trible.scontact.value.GlobalValue;
 
 public class IntentUtil {
 

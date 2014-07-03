@@ -2,7 +2,7 @@
 <resources>
 
     <!-- common text -->
-    <string name="app_name">欧欧</string>
+    <string name="app_name">OO通讯录</string>
     <string name="preference_name">OO</string>
 	<string name="sign_out">退出账户</string>
 	<string name="rank_app">评分</string>
@@ -82,8 +82,8 @@
     <string name="login_sina">新浪微博登录</string>
     <string name="login_qq">QQ登录</string>
     <string name="use_qq_profile">使用QQ资料</string>
-    <string name="contact_used_within_week"> 最近一周在用 </string>
-    <string name="contact_used_within_month"> 最近一个月在用 </string>
+    <string name="contact_used_within_week"> 最近一周更新 </string>
+    <string name="contact_used_within_month"> 最近一个月更新 </string>
     <string name="contact_unused"> 未使用 </string>
     <string name="submit">提交</string>
     <string name="members">成员</string>
@@ -109,6 +109,7 @@
     <string name="gender_female"> 女 </string>
     <string name="gender_male"> 男 </string>
     <string name="unset"> 未设置 </string>
+    <string name="unknown">未知</string>
     <string name="gender_other"> 其他 </string>
     <string name="realname_lable"> 姓名 </string>
     <string name="description_lable"> 描述 </string>
@@ -140,6 +141,7 @@
     <string name="remove_friend_lable">删除好友</string>
     <string name="scontact_title">微联</string> 
     <string name="details_title">详细信息</string>
+    <string name="friend_in_group_details_title">在 %1$s 的信息</string>
     <string name="discard_title">丢弃</string> 
     <string name="setting_title">设置</string>
     <string name="add_title">添加</string>

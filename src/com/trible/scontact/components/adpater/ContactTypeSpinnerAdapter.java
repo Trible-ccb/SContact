@@ -9,11 +9,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
-import com.trible.scontact.components.activity.MyInboxActivity;
-import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.ContactTypes;
-import com.trible.scontact.utils.IntentUtil;
-import com.trible.scontact.value.GlobalValue;
 
 public class ContactTypeSpinnerAdapter extends BaseAdapter{
 
@@ -58,7 +54,7 @@ public class ContactTypeSpinnerAdapter extends BaseAdapter{
 	}
 
 	public String getSelected(){
-		return mTypes[mSpinner.getSelectedItemPosition()];
+		return ContactTypes.getInstance().getTypeByTypeValue(mTypes[mSpinner.getSelectedItemPosition()]);
 	}
 	public void setSelected(int pos){
 		mSpinner.setSelection(pos);

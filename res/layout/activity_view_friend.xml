@@ -9,7 +9,6 @@
         android:background="@drawable/bg_ios2"
         android:layout_width="match_parent"
         android:layout_height="150dp"
-        android:scaleType="fitXY"
         android:id="@+id/friend_bg"
         >
 		   <LinearLayout
@@ -17,7 +16,9 @@
 		       android:layout_height="wrap_content"
 		       android:id="@+id/friend_layout"
 		       android:background="@color/black_25"
-		       android:padding="6dp"
+		       android:paddingLeft="82dp"
+		       android:paddingTop="6dp"
+		       android:paddingBottom="6dp"
 		       android:layout_alignParentBottom="true"
 		       android:orientation="vertical"
 		       >
@@ -27,6 +28,7 @@
 		        android:id="@+id/friend_name"
 		        style="@style/PrimaryTextAppeare"
 		        android:text="@string/preference_name"
+		        android:textColor="@color/green"
 		        android:singleLine="true"
 		        android:ellipsize="middle"
 		        />
@@ -39,19 +41,32 @@
 		        android:singleLine="true"
 		        />
 		</LinearLayout>
+		
 	</RelativeLayout>
+	<ImageView
+		    android:layout_width="72dp"
+		    android:layout_height="72dp"
+		    android:src="@drawable/ic_launcher"
+		    android:layout_below="@+id/friend_bg"
+		    android:scaleType="fitXY"
+		    android:id="@+id/friend_head"
+		    android:layout_marginTop="-36dp"
+		    android:layout_marginLeft="6dp"
+		    android:padding="1dp"
+		    android:background="@color/white"
+		    />
    	<ListView
    	    android:layout_width="match_parent"
    	    android:layout_height="wrap_content"
    	    android:id="@+id/friend_contacts_list_view"
    	    android:listSelector="@drawable/pressor_blue_transparent"
-   	    android:layout_marginTop="3dp"
+   	    android:layout_marginTop="6dp"
    	    android:layout_marginBottom="52dp"
    	    android:layout_marginLeft="6dp"
    	    android:layout_marginRight="6dp"
    	    style="@style/ListViewStyle"
    	    android:background="@drawable/bg_white_border"
-   	    android:layout_below="@id/friend_bg"
+   	    android:layout_below="@id/friend_head"
    	    />
    	
    	<Button

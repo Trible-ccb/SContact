@@ -2,7 +2,12 @@ package com.trible.scontact.pojo;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.text.CollationKey;
+import java.text.Collator;
 import java.util.List;
+import java.util.Locale;
+
+import u.aly.an;
 
 import ccb.java.android.utils.encoder.SecurityMethod;
 
@@ -13,13 +18,14 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.trible.scontact.database.DBConstants;
 import com.trible.scontact.managers.PrefManager;
+import com.trible.scontact.utils.StringUtil;
 import com.trible.scontact.value.GlobalValue;
 import com.trible.scontact.value.PrefKeys;
 
  
  
 @DatabaseTable(tableName=DBConstants.AccountFieldName.table_name) 
-public class AccountInfo extends BaseInfo implements Serializable{
+public class AccountInfo extends BaseInfo implements Serializable,Comparable<AccountInfo>{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -64,6 +70,8 @@ public class AccountInfo extends BaseInfo implements Serializable{
 	
 	String thirdPartyId;
 
+	String pinyinname;
+	
 	private List<ContactInfo> contactsList;
 	
 	public Long getId() {
@@ -78,8 +86,19 @@ public class AccountInfo extends BaseInfo implements Serializable{
 	}
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+		
 	}
-	 
+	
+	public String getPinyinname() {
+		if ( pinyinname == null ){
+			setPinyinname(StringUtil.converterToSpell(displayName));
+		}
+		return pinyinname == null ? displayName : pinyinname;
+	}
+	public void setPinyinname(String pinyinname) {
+		this.pinyinname = pinyinname;
+	}
+	
 	public Long getBirthday() {
 		return birthday;
 	}
@@ -256,4 +275,15 @@ public class AccountInfo extends BaseInfo implements Serializable{
 	public boolean isSignOut(){
 		return GlobalValue.USTATUS_SIGN_OUT.equals(status);
 	}
+	@Override
+	public int compareTo(AccountInfo another) {
+		Locale l = Locale.US;
+		Collator collator = Collator.getInstance(l);
+		String n1 = getPinyinname();
+		String n2 = another.getPinyinname();
+		CollationKey k1 = collator.getCollationKey(n1);
+		CollationKey k2 = collator.getCollationKey(n2);
+		return k1.compareTo(k2);
+	}
+	
 }

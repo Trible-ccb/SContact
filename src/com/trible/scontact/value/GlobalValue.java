@@ -10,8 +10,8 @@ import com.trible.scontact.pojo.ErrorInfo;
  */
 public class GlobalValue {
 
-	public static final String QQAPPID = "101122109";
-	public static final String QQAPPKEY = "9b9efb8a71e54af99e138f0b40031d2a";
+	public static final String QQAPPID = "1101692327";
+	public static final String QQAPPKEY = "IIR3l3C4eUhDEPOg";
 	public static final String SINAAPPKEY = "1750398435";
 	public static final String SINASECRET= "b15d59755432b07de594d100b9993319";
 //	public static final String TWeiBoAPPKEY = "801517995";

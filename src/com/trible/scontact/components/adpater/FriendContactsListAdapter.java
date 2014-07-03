@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.PropertyKeyValue;
 import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.pojo.ContactTypes;
 import com.trible.scontact.value.GlobalValue;
 
 public class FriendContactsListAdapter extends BaseAdapter {
@@ -89,9 +90,15 @@ public class FriendContactsListAdapter extends BaseAdapter {
 			mHolder.setValueText(info.getContact());
 		}
 		
-		String type = "Unkown";
+		String type = null;
 		if ( !TextUtils.isEmpty(info.getType() )){
+			type = ContactTypes.getInstance().getTypeValueByType(info.getType());
+		}
+		if ( TextUtils.isEmpty(type) ){
 			type = info.getType();
+		}
+		if ( TextUtils.isEmpty(type) ){
+			type = mContext.getString(R.string.unknown);
 		}
 		mHolder.setKeyText(type);
 		return convertView;

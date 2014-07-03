@@ -3,6 +3,7 @@ package com.trible.scontact.pojo;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -20,6 +21,11 @@ public class ContactTypes {
 	static Context mContext;
 	static ContactTypes mInstance;
 	
+	static String cellphone = "cellphone";
+	static String telephone = "telephone";
+	static String email = "email";
+	static String custom = "custom";
+	
 	public static void init(Context c){
 		mContext = c;
 		mInstance = getInstance();
@@ -30,8 +36,8 @@ public class ContactTypes {
 		}
 	}
 	public void saveToSpf(){
-		mTypes.remove("custom");
-		mTypes.put("custom", mContext.getString(R.string.custom));
+		mTypes.remove(custom);
+		mTypes.put(custom, mContext.getString(R.string.custom));
 		PrefManager.getInstance("Types")
 		.putString("types", new Gson().toJson(mTypes));
 	}
@@ -45,10 +51,10 @@ public class ContactTypes {
 	}
 	private void initWithDefault(){
 		mTypes = new LinkedHashMap<String, String>();
-		mTypes.put("cellphone", mContext.getString(R.string.cellphone));
-		mTypes.put("telephone", mContext.getString(R.string.telephone));
-		mTypes.put("email", mContext.getString(R.string.email));
-		mTypes.put("custom", mContext.getString(R.string.custom));
+		mTypes.put(cellphone, mContext.getString(R.string.cellphone));
+		mTypes.put(telephone, mContext.getString(R.string.telephone));
+		mTypes.put(email, mContext.getString(R.string.email));
+		mTypes.put(custom, mContext.getString(R.string.custom));
 	}
 	private ContactTypes(){};
 	public static ContactTypes getInstance(){
@@ -66,23 +72,38 @@ public class ContactTypes {
 //		return ret;
 //	}
 	public String[] getTypesValue(){
-		mTypes.remove("custom");
-		mTypes.put("custom", mContext.getString(R.string.custom));
+		mTypes.remove(custom);
+		mTypes.put(custom, mContext.getString(R.string.custom));
 		String[] ret = new String[mTypes.size()];
 		mTypes.values().toArray(ret);
 		return ret;
 	}
+	public String getTypeByTypeValue(String v){
+		for ( Entry<String, String> m : mTypes.entrySet() ){
+			if ( m.getValue().equals(v) ){
+				return m.getKey();
+			}
+		}
+		return null;
+	}
+	public String getTypeValueByType(String v){
+		return mTypes.get(v);
+	}
 	public String getCellPhoneType(){
-		return mTypes.get("cellphone");
+//		return mTypes.get("cellphone");
+		return cellphone;
 	}
 	public String getTelephoneType(){
-		return mTypes.get("telephone");
+//		return mTypes.get("telephone");
+		return telephone;
 	}
 	public String getEmailType(){
-		return mTypes.get("email");
+//		return mTypes.get("email");
+		return email;
 	}
 	public String getCustomType(){
-		return mTypes.get("custom");
+//		return mTypes.get("custom");
+		return custom;
 	}
 	public void addType(String type){
 		mTypes.put(type, type);

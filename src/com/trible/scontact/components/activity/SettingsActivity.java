@@ -14,7 +14,6 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import com.trible.scontact.R;
-import com.trible.scontact.components.widgets.NotifyHelper;
 import com.trible.scontact.components.widgets.SettingItemCheckable;
 import com.trible.scontact.database.DBHelper;
 import com.trible.scontact.networks.NetWorkEvent;
@@ -150,7 +149,7 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 		in.putExtra(SIGN_OUT_TAG, true);
 		setResult(Activity.RESULT_OK,in);
 		PushAgent.getInstance(this).disable();
-		UmengController.getLoginService().loginout(this,null);
+		UmengController.getService().loginout(this,null);
 		finish();
 	}
 	void upgradeAccount(){

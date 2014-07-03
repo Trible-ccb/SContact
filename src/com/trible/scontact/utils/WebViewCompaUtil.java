@@ -2,8 +2,10 @@ package com.trible.scontact.utils;
 
 import java.lang.reflect.InvocationTargetException;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.text.Selection;
 import android.text.Spannable;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.widget.ZoomButtonsController;
 
 public class WebViewCompaUtil {
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public static void setDisplayZoomControl(WebView mWebview,boolean flg){
 		  if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			    // Use the API 11+ calls to disable the controls
@@ -43,6 +46,7 @@ public class WebViewCompaUtil {
 	}
 	
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public static boolean canZoomIn(WebView mWebview){
 		  if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			    // Use the API 11+ calls to disable the controls
@@ -52,6 +56,7 @@ public class WebViewCompaUtil {
 
 		  }
 	}
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public static boolean canZoomOut(WebView mWebview){
 		  if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			    // Use the API 11+ calls to disable the controls

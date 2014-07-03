@@ -13,6 +13,12 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
+
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
@@ -335,8 +341,36 @@ public class StringUtil {
 		}
 		return ev;
 	}
+	
+	/** 
+    * 汉字转换位汉语拼音，英文字符不变 
+    * @param chines 汉字 
+    * @return 拼音 
+    */  
+    public static String converterToSpell(String chines){ 
+    	if ( chines == null )return null;
+        StringBuffer pinyinName = new StringBuffer("");  
+        char[] nameChar = chines.toCharArray();  
+        HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();  
+        defaultFormat.setCaseType(HanyuPinyinCaseType.LOWERCASE);  
+        defaultFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);  
+        for (int i = 0; i < nameChar.length; i++) {  
+            if (nameChar[i] > 128) {  
+                try {  
+                    pinyinName.append(
+                    		PinyinHelper.toHanyuPinyinStringArray(nameChar[i], defaultFormat)[0]);  
+                } catch (Exception e) {  
+                    e.printStackTrace();  
+                }  
+            }else{  
+                pinyinName.append(nameChar[i]);  
+            }  
+        }  
+        return pinyinName.toString();  
+    }  
+	      
 	public static void main(String[] args) {
-
+		System.out.println(converterToSpell("欢迎来到最棒的Java中文社区"));  
 		String s = "12345678900";
 		Bog.v("s is home number:" + isValidHomeNumber(s));
 		Bog.v("s is number:" + isValidPhoneNumber(s));

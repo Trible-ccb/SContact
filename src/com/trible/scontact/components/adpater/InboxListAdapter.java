@@ -3,6 +3,7 @@ package com.trible.scontact.components.adpater;
 import java.sql.Time;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -106,8 +107,7 @@ public class InboxListAdapter extends BaseAdapter {
 					&& info.getEndUser() != null )
 			desp = mContext.getString(
 					R.string.format_user_as_friend,
-					info.getStartUser().getDisplayName(),
-					info.getEndUser().getDisplayName());
+					info.getStartUser().getDisplayName());
 		} else if ( info.getIs_group_to_user() == 0 ){
 			if (info.getStartUser() != null 
 					&& info.getGroupInfo() != null )
