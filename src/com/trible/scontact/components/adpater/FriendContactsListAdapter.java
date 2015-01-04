@@ -54,7 +54,7 @@ public class FriendContactsListAdapter extends BaseAdapter {
 	public int indexOfContact(ContactInfo info){
 		if ( info == null || info.getId() == null ) return -1;
 		for ( int i = 0 ; i < getCount() ; i++ ){
-			if(getItemId(i) == info.getId()){
+			if(info.getId().equals(mDatas.get(i).getId())){
 				return i;
 			}
 		}
@@ -65,8 +65,9 @@ public class FriendContactsListAdapter extends BaseAdapter {
 	}
 	@Override
 	public long getItemId(int position) {
-		ContactInfo c = getContact(position);
-		return c == null ? -1 : c.getId();
+//		ContactInfo c = getContact(position);
+//		return c == null ? -1 : c.getId();
+		return position;
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.trible.scontact"
-    android:versionCode="1"
+    android:versionCode="3"
     android:versionName="1.0" >
 
     <uses-sdk
@@ -19,14 +19,17 @@
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- V1.2.3新增的权限, GET_TASKS用于检测APP是否处于前台、是否活着；REORDER_TASKS用于将APP切换到前台  -->
 	<uses-permission android:name="android.permission.GET_TASKS" />
 	<uses-permission android:name="android.permission.REORDER_TASKS" />
+	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 	
     <application
         android:allowBackup="true"
@@ -114,7 +117,14 @@
        <activity
             android:name="com.trible.scontact.components.activity.TutorActivity"
             android:parentActivityName="com.trible.scontact.components.activity.SContactMainActivity"
-            />		
+            />
+       
+       <receiver android:name="com.trible.scontact.components.receiver.PhoneStateReceiver">   
+        <intent-filter>   
+            <action android:name="android.intent.action.PHONE_STATE"/>   
+    		<action android:name="android.intent.action.NEW_OUTGOING_CALL" />   
+        </intent-filter>   
+       </receiver>		
        <!-- ###################注册SDK使用的组件###################### -->
         <!--分享编辑页-->
         <activity
@@ -152,7 +162,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:screenOrientation="portrait">
         </activity>
-		<!-- ############ 友盟消息通知组件 ############ -->
+		<!-- ############ 友盟消息通知组件 ############ 
         <receiver
 	    android:name="com.umeng.message.NotificationProxyBroadcastReceiver"
 	    android:exported="false" >
@@ -201,7 +211,8 @@
 		    </intent-filter>
 		</service>
 		<service android:name="com.umeng.message.UmengIntentService" />
-<!-- ###################添加UmengAppkey###################### -->
+		-->
+	<!-- ###################添加UmengAppkey###################### -->
         <meta-data
             android:name="UMENG_APPKEY"
             android:value="53aad85356240bdd8901917f" >
@@ -210,6 +221,14 @@
 		    android:name="UMENG_MESSAGE_SECRET"
 		    android:value="dbad918d3f7414815c6db76a2850751c" >
 		</meta-data>
+		<!-- ###################添加AVOS push service###################### -->
+		<service android:name="com.avos.avoscloud.PushService"/>
+		<receiver android:name="com.avos.avoscloud.AVBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.USER_PRESENT" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,6 +29,7 @@ public class AddUpdateContactDialog{
 	View contentView;
 	Spinner mTypeSpinner;
 	EditText mContactEditText;
+	ContactInfo mUpdateContact;
 	public Button mSubmit;
 	ContactTypeSpinnerAdapter mTypeAdapter;
 	
@@ -47,6 +47,16 @@ public class AddUpdateContactDialog{
 	public void setSelectType(String type,String contact){
 		mTypeAdapter.setSelectedType(type);
 		mContactEditText.setText(contact);
+	}
+	public void setSelectConactInfo(ContactInfo contact){
+		if ( contact != null ){
+			mUpdateContact = contact;
+			mTypeAdapter.setSelectedType(contact.getType());
+			mContactEditText.setText(contact.getContact());
+		} else {
+			mUpdateContact = null;
+		}
+
 	}
 	private View createContentView(){
 		View view = LayoutInflater.from(mContext).inflate(R.layout.popup_add_update_contact, null);
@@ -99,8 +109,13 @@ public class AddUpdateContactDialog{
 					Bog.toast(R.string.pls_input_correct);
 					return;
 				}
-				ContactInfo info = new ContactInfo();
-				info.setUserId(AccountInfo.getInstance().getId());
+				ContactInfo info;
+				if ( mUpdateContact != null ){
+					info = mUpdateContact;
+				} else {
+					info = new ContactInfo();
+				}
+				info.setOwner(AccountInfo.getInstance());
 				info.setContact(name);
 				info.setType(mTypeAdapter.getSelected());
 				if ( mListener != null ){

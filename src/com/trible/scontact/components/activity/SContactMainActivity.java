@@ -21,8 +21,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVQuery.CachePolicy;
+import com.avos.avoscloud.CountCallback;
+import com.avos.avoscloud.FindCallback;
 import com.google.gson.reflect.TypeToken;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
@@ -44,11 +50,15 @@ import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
+import com.trible.scontact.pojo.ValidateInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.IntentUtil;
 import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.utils.StringUtil;
+import com.trible.scontact.value.GlobalValue;
 import com.trible.scontact.value.RequestCode;
+import com.umeng.update.UmengUpdateAgent;
 
 /**
  * @author Trible Chen
@@ -82,9 +92,10 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	public static boolean needRefreshFriendList,needRefeshGroupList,needRereshContactList;
 	int mSelectedGroupPos = -1;
 	Long mInboxNum = null;
-	public static final Long GROUP_ID_OF_FRIEND = -1L;
-	public static final Long GROUP_OF_LOCAL_FRIEND = -2L;
-	
+//	public static final Long GROUP_ID_OF_FRIEND = -1L;
+//	public static final Long GROUP_OF_LOCAL_FRIEND = -2L;
+	public static final String GROUP_ID_OF_FRIEND = "-1";//用户好友组
+	public static final String GROUP_OF_LOCAL_FRIEND = "-2";//手机本地联系人
 	// override life circle methods===============
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +130,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		mLoadingDialog.setTipText(R.string.waiting);
 		initLeftDrawer();
 		initContentView();
+		initActionBarSpinner();
 	}
 	void initContentView(){
 
@@ -154,6 +166,16 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 		        ActionBar.DISPLAY_HOME_AS_UP);
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 	}
+	void initActionBarSpinner(){
+//		getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+//		getSupportActionBar().setListNavigationCallbacks(mGroupListAdapter,new OnNavigationListener() {
+//			@Override
+//			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+//				onItemClick(mGroupListView, null, itemPosition, itemId);
+//				return false;
+//			}
+//		});
+	}
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
@@ -165,6 +187,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			switch (arg0) {
 				case RequestCode.CREATE_GROUP:
 					GroupInfo newGroup = (GroupInfo) arg2.getSerializableExtra(CreateOrUpdateGroupActivity.RESULT_GROUP);
+					newGroup = CreateOrUpdateGroupActivity.LATEST_GROUP;
 					onCreatedGroup(newGroup);
 					break;
 				case RequestCode.CHANGE_SETTING:
@@ -208,7 +231,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			mMenu.findItem(R.id.action_my_inbox).setTitle(getString(R.string.action_inbox));
 			mMenu.findItem(R.id.action_my_inbox).setIcon(R.drawable.ic_action_email);
 		}
-		if ( mSelectGroupsInfo.getId() > 0 ){
+		if ( mSelectGroupsInfo.getOwner() != null ){
 			mMenu.findItem(R.id.action_group_infos).setVisible(true);
 		} else {
 			mMenu.findItem(R.id.action_group_infos).setVisible(false);
@@ -286,7 +309,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			GroupInfo info = mGroupListAdapter.getGroupInfoInPosition(position);
 			if ( info == null )return;
 			mSelectGroupsInfo = info;
-			if ( GROUP_OF_LOCAL_FRIEND.equals(gid) ){
+			if ( GROUP_OF_LOCAL_FRIEND.equals(info.getId()) ){
 				mFriendsListFragment.loadLocalFriendsByGroup(info);
 			} else {
 				mFriendsListFragment.loadRomoteAccountsByGroup(info);
@@ -348,91 +371,159 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 			mCurGroupsInfos = mRemoteGroupsInfos;
 			updateUILoadGroupDone();
 		} else {
+			mRemoteGroupsInfos = new ArrayList<GroupInfo>();
 			mCurGroupsInfos = new ArrayList<GroupInfo>();
 			addStaticGroup(mCurGroupsInfos);
 			mGroupListAdapter.setData(mCurGroupsInfos);
 			loadRemoteGroups();
 		}
 	}
-	private void loadRemoteGroups(){
-		
+	private void loadRemoteGroupsFromAVOS(){
 		mUserInfo = AccountInfo.getInstance();
 		updateUILoadingGroup();
-		SContactAsyncHttpClient.post(
-				GroupParams.getUserGroupParams(mUserInfo.getId()),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onFinish() {
-						updateUILoadGroupDone();
+		AVQuery<UserGroupRelationInfo> myGroups = AVQuery.getQuery(UserGroupRelationInfo.class);
+		myGroups.whereEqualTo(UserGroupRelationInfo.FieldName.user, mUserInfo);
+		myGroups.include(UserGroupRelationInfo.FieldName.group);
+		myGroups.include(UserGroupRelationInfo.FieldName.group+"."+GroupInfo.FieldName.OWNER);
+		myGroups.include(UserGroupRelationInfo.FieldName.contacts);
+		myGroups.include(UserGroupRelationInfo.FieldName.user);
+		myGroups.setCachePolicy(CachePolicy.NETWORK_ELSE_CACHE);
+		myGroups.findInBackground(new FindCallback<UserGroupRelationInfo>() {
+			@Override
+			public void done(List<UserGroupRelationInfo> arg0, AVException arg1) {
+				List<GroupInfo> groupinfos = new ArrayList<GroupInfo>();
+				if ( arg1 == null && arg0 != null ){
+					for ( UserGroupRelationInfo ugri : arg0 ){
+						if (GlobalValue.GSTATUS_USED.equals(ugri.getGroup().getStatus()))
+						groupinfos.add(ugri.getGroup());
 					}
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						List<GroupInfo> infos = GsonHelper.getInfosFromJson(arg2, new TypeToken<List<GroupInfo>>(){}.getType());
-						
-						if ( infos == null ){
-							Bog.toastErrorInfo(arg2);
-						} else {
-							if ( mRemoteGroupsInfos == null ){
-								mRemoteGroupsInfos = new ArrayList<GroupInfo>();
-							}
-							addStaticGroup(mRemoteGroupsInfos);
-							mRemoteGroupsInfos.addAll(infos);
-							mCurGroupsInfos = mRemoteGroupsInfos;
-							for ( GroupInfo g : mRemoteGroupsInfos ){
-								if ( mFriendsListFragment != null ){
-									mFriendsListFragment.addGroupForLoad(g);
-								}
-							}
+					
+					addStaticGroup(mRemoteGroupsInfos);
+					mRemoteGroupsInfos.addAll(groupinfos);
+					mCurGroupsInfos = mRemoteGroupsInfos;
+					for ( GroupInfo g : mRemoteGroupsInfos ){//去加载群组内的好友
+						if ( mFriendsListFragment != null ){
+							mFriendsListFragment.addGroupForLoad(g);
 						}
 					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(getString(R.string.load_groups_err));
-					}
-				});
+				} else {
+					Bog.toast(arg1.getMessage());
+				}
+				updateUILoadGroupDone();
+			}
+		});
+	}
+	private void loadRemoteGroups(){
+		loadRemoteGroupsFromAVOS();
+//		mUserInfo = AccountInfo.getInstance();
+//		updateUILoadingGroup();
+//		SContactAsyncHttpClient.post(
+//				GroupParams.getUserGroupParams(mUserInfo.getId()),
+//				null, new AsyncHttpResponseHandler(){
+//					@Override
+//					public void onFinish() {
+//						updateUILoadGroupDone();
+//					}
+//					@Override
+//					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+//						List<GroupInfo> infos = GsonHelper.getInfosFromJson(arg2, new TypeToken<List<GroupInfo>>(){}.getType());
+//						
+//						if ( infos == null ){
+//							Bog.toastErrorInfo(arg2);
+//						} else {
+//							if ( mRemoteGroupsInfos == null ){
+//								mRemoteGroupsInfos = new ArrayList<GroupInfo>();
+//							}
+//							addStaticGroup(mRemoteGroupsInfos);
+//							mRemoteGroupsInfos.addAll(infos);
+//							mCurGroupsInfos = mRemoteGroupsInfos;
+//							for ( GroupInfo g : mRemoteGroupsInfos ){
+//								if ( mFriendsListFragment != null ){
+//									mFriendsListFragment.addGroupForLoad(g);
+//								}
+//							}
+//						}
+//					}
+//					@Override
+//					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+//							Throwable arg3) {
+//						Bog.toast(getString(R.string.load_groups_err));
+//					}
+//				});
 	}
 	
 	void loadInboxNumber(){
-		
-		SContactAsyncHttpClient.post(
-				ValidationParams.getMyInboxNumberParams(AccountInfo.getInstance().getId()),
-				null,
-				new AsyncHttpResponseHandler(){
-					
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						try {
-							mInboxNum = Long.valueOf(StringUtil.getStringForByte(arg2));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						
-					}
-					@Override
-					public void onFinish() {
-						supportInvalidateOptionsMenu();
-					}
-				});
-	}
-	void loadMyAllContacts(){
-		SContactAsyncHttpClient.post(ContactParams.getUserContactsParams(mUserInfo.getId()),
-				null, new AsyncHttpResponseHandler(){
+		mUserInfo = AccountInfo.getInstance();
+		AVQuery<ValidateInfo> mymessages = AVQuery.getQuery(ValidateInfo.class);
+		mymessages.whereEqualTo(ValidateInfo.FieldName.TO_USER, mUserInfo);
+//		mymessages.include(ValidateInfo.FieldName.FROM_GROUP);
+//		mymessages.include(ValidateInfo.FieldName.TO_USER);
+//		mymessages.include(ValidateInfo.FieldName.FROM_USER);
+//		mymessages.include(ValidateInfo.FieldName.WITH_CONTACT_IDS);
+		mymessages.countInBackground(new CountCallback() {
 			@Override
-			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-				myAllContacts = GsonHelper.getInfosFromJson(arg2, new ContactInfo().listType());
-				if ( myAllContacts != null ){
-					ContactInfo.saveToPref(myAllContacts);
+			public void done(int arg0, AVException arg1) {
+				if ( arg1 == null ){
+					mInboxNum = (long) arg0;
+					supportInvalidateOptionsMenu();
 				} else {
-					Bog.toastErrorInfo(arg2);
+					
 				}
-			}
-			@Override
-			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-					Throwable arg3) {
-				Bog.toast( R.string.load_contacts_err );
+
 			}
 		});
+//		SContactAsyncHttpClient.post(
+//				ValidationParams.getMyInboxNumberParams(AccountInfo.getInstance().getId()),
+//				null,
+//				new AsyncHttpResponseHandler(){
+//					
+//					@Override
+//					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+//						try {
+//							mInboxNum = Long.valueOf(StringUtil.getStringForByte(arg2));
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//						
+//					}
+//					@Override
+//					public void onFinish() {
+//						supportInvalidateOptionsMenu();
+//					}
+//				});
+	}
+	void loadMyAllContacts(){
+		mUserInfo = AccountInfo.getInstance();
+		AVQuery<ContactInfo> mycontacts = AVQuery.getQuery(ContactInfo.class);
+		mycontacts.whereEqualTo(ContactInfo.FieldName.owner, mUserInfo);
+		mycontacts.findInBackground(new FindCallback<ContactInfo>() {
+			@Override
+			public void done(List<ContactInfo> arg0, AVException arg1) {
+				if ( arg1 == null ){
+					myAllContacts = arg0;
+					ContactInfo.saveToPref(arg0);
+				} else {
+					Bog.toast( R.string.load_contacts_err );
+				}
+			}
+		});
+//		SContactAsyncHttpClient.post(ContactParams.getUserContactsParams(mUserInfo.getId()),
+//				null, new AsyncHttpResponseHandler(){
+//			@Override
+//			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+//				myAllContacts = GsonHelper.getInfosFromJson(arg2, new ContactInfo().listType());
+//				if ( myAllContacts != null ){
+//					ContactInfo.saveToPref(myAllContacts);
+//				} else {
+//					Bog.toastErrorInfo(arg2);
+//				}
+//			}
+//			@Override
+//			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+//					Throwable arg3) {
+//				Bog.toast( R.string.load_contacts_err );
+//			}
+//		});
 		
 	}
 	//end private methods===========
@@ -461,7 +552,9 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	@Override
 	public void onExited(GroupInfo g) {
 		GroupInfo cur = mGroupListAdapter.getSeletedGroupInfo();
-		long id = Long.MIN_VALUE;
+//		long id = Long.MIN_VALUE;
+		String id = "unknowid";
+		int newIdx = 0;
 		if ( cur != null ){
 			id = cur.getId();
 		}
@@ -473,23 +566,19 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 				}
 			}
 		}
-		if ( id != Long.MIN_VALUE ){
-			for ( int i = 0 ; i < mRemoteGroupsInfos.size(); i++ ){
-				GroupInfo info = mRemoteGroupsInfos.get(i);
-				if ( info.getId().equals(id)){
-					id = i;
-					break;
-				}
+		for ( int i = 0 ; i < mRemoteGroupsInfos.size(); i++ ){
+			GroupInfo info = mRemoteGroupsInfos.get(i);
+			if ( info.getId().equals(id)){
+				newIdx = i;
+				break;
 			}
 		}
-		if ( id == Long.MIN_VALUE )id = 0;
 		mGroupListAdapter.setData(mRemoteGroupsInfos);
 		if ( cur != null && g != null && cur.getId().equals(g.getId() )){
 			onItemClick(mGroupListView, mGroupListView.getChildAt(0), 0, 0);
 		} else {
-			mSelectedGroupPos = (int) id;
+			mSelectedGroupPos = newIdx;
 			mGroupListAdapter.setSelected(mSelectedGroupPos);
-			
 		}
 		
 	}
@@ -504,6 +593,7 @@ public final class SContactMainActivity extends CustomSherlockFragmentActivity
 	@Override
 	protected void onResume() {
 		super.onResume();
+//		refreshCache();
 		if ( needRefreshFriendList ){
 			onItemClick(mGroupListView,
 					mGroupListView.getChildAt(mSelectedGroupPos), mSelectedGroupPos, 0);

@@ -1,5 +1,6 @@
 package com.trible.scontact.components.adpater;
 
+import java.security.acl.Owner;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +45,7 @@ public class GroupsListAdapter extends BaseAdapter {
 			public void doInBackground() {
 				List<GroupInfo> tmp = GroupInfo.getGroupsFromSpf();
 				if ( mDatas != null && tmp != null ){
-					HashSet<Long> nowids = new HashSet<Long>();
+					HashSet<String> nowids = new HashSet<String>();
 					for ( GroupInfo g : mDatas ){
 						nowids.add(g.getId());
 					}
@@ -104,7 +105,8 @@ public class GroupsListAdapter extends BaseAdapter {
 	@Override
 	public long getItemId(int position) {
 		if ( position >= getCount() )return Integer.MIN_VALUE;
-		return mDatas.get(position).getId();
+//		return mDatas.get(position).getId();
+		return position;
 	}
 
 	@Override
@@ -122,11 +124,12 @@ public class GroupsListAdapter extends BaseAdapter {
 		}
 		
 		GroupInfo info = (GroupInfo) getItem(position);
+		AccountInfo owner = info.getOwner();
 		mHolder.mGroupName.setText(info.getDisplayName());
 		mHolder.mGroupNum.setVisibility(View.GONE);
-		if ( getItemId(position) <= 0 ){
+		if ( owner == null ){
 			mHolder.mGroupColor.setBackgroundResource(R.color.yellow);
-		} else if ( AccountInfo.getInstance().getId().equals(info.getOwnerId()) ){
+		} else if ( AccountInfo.getInstance().getId().equals(info.getOwner().getId()) ){
 			mHolder.mGroupColor.setBackgroundResource(R.color.pink);
 		} else {
 			mHolder.mGroupColor.setBackgroundResource(R.color.green);

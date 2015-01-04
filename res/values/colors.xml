@@ -26,9 +26,11 @@
     <color name="grey_666666">#266666</color>
     <color name="blue_deep">#0072d6</color>
     <color name="blue_white">#00A7F8</color>
-    <color name="blue_qq">#0079FF</color>
+    <color name="blue_qq">#409AFF</color>
+    <color name="blue_deep">#0079FF</color>
     <color name="red">#ff00</color>
     <color name="yellow">#FDE200</color>
     <color name="green">#86CA25</color>
     <color name="pink">#FF9B9A</color>
+    <color name="green_light">#01EEC4</color>
 </resources>

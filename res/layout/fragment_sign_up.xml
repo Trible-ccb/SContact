@@ -22,27 +22,61 @@
 			    android:src="@drawable/ic_launcher"
 			    android:layout_centerHorizontal="true"
 			    android:id="@+id/logo"
-			    android:visibility="invisible"
+			    android:visibility="gone"
 			     />
+	    <TextView
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:textSize="18sp"
+		        android:padding="6dp"
+		        android:textColor="@color/blue_qq"
+		        android:text="@string/go_sign_in"
+		        android:layout_alignParentLeft="true"
+		        android:id="@+id/go_sign_in"
+		        android:background="@drawable/pressor_bg_white_border"
+		        android:layout_marginTop="16dp"
+		        android:layout_marginBottom="16dp"
+		        />
 		<LinearLayout 
 		    android:layout_width="wrap_content"
         	android:layout_height="wrap_content"
         	android:orientation="vertical"
         	android:background="@drawable/bg_white_border"
-        	android:layout_below="@id/logo"
+        	android:layout_below="@id/go_sign_in"
         	android:id="@+id/sign_up_btns"
 		    >
 		    	<include 
 				    layout="@layout/layout_custom_edit_text" 
-				    android:id="@+id/username_layout"/>
-				<include 
+				    android:id="@+id/phone_input_layout"/>
+		    	<include 
 				    layout="@layout/layout_custom_edit_text" 
-				    android:id="@+id/email_layout"/>
+				    android:id="@+id/username_layout"/>
 				<include layout="@layout/layout_custom_edit_password" 
 				    android:id="@+id/password_layout"/>
-		
+				<include layout="@layout/layout_divider"/>
+				<LinearLayout 
+				    android:layout_width="match_parent"
+				    android:layout_height="wrap_content"
+				    android:orientation="horizontal"
+				    >
+				    <include 
+				    layout="@layout/layout_custom_edit_text"
+				    android:layout_weight="1"
+				    android:layout_width="match_parent"
+		            android:layout_height="wrap_content"
+				    android:id="@+id/valid_code_layout"/>
+					<Button
+		            android:id="@+id/btn_fetch_valid_code"
+		            android:layout_width="match_parent"
+		            android:layout_height="wrap_content"
+		            android:background="@drawable/pressor_bg_white_border"
+		            android:text="@string/fetch_valid_code"
+		            android:layout_weight="1"
+		             />
+				</LinearLayout>
+				
+				
 		</LinearLayout>
-
 
         <Button
             android:id="@+id/btn_sign_up"
@@ -51,7 +85,7 @@
             android:layout_marginTop="20dp"
             android:background="@drawable/pressor_bg_white_border"
             android:text="@string/sign_up"
-            style="@style/ButtonFull.BlueText"
+            style="@style/ButtonFull.RedText"
             android:layout_below="@id/sign_up_btns"
             android:layout_marginBottom="12dp"
              />

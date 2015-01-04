@@ -9,7 +9,8 @@
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/indicators"
+        android:layout_below="@+id/tip"
+        android:layout_marginTop="10dp"
          />
 
     <RadioGroup

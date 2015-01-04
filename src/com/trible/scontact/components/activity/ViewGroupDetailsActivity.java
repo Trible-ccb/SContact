@@ -17,6 +17,10 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.FindCallback;
+import com.avos.avoscloud.SaveCallback;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.ChooseContactsListDialog;
@@ -33,7 +37,7 @@ import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.ValidateInfo;
 import com.trible.scontact.pojo.GsonHelper;
-import com.trible.scontact.pojo.PhoneAndGroupInfo;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
 import com.trible.scontact.pojo.UserRelationInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
@@ -55,7 +59,7 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 	
 	GroupInfo mGroupInfo;
 	AccountInfo mOwnerInfo;
-	Boolean mUserInGroup;
+	boolean mUserInGroup;
 	ChooseContactsListDialog mContactsListDialog;
 	ChooseGroupActionDialog mGroupActionDialog;
 	LoadingDialog mLoadingDialog;
@@ -63,10 +67,13 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 	
 	boolean isGroupInfoChange;
 	
+	public static GroupInfo viewedGroup;
+	
 	public static Bundle getInentMyself(GroupInfo info) {
 		Bundle b = new Bundle();
 		b.putSerializable("clazz", ViewGroupDetailsActivity.class);
 		b.putSerializable("ViewGroup", info);
+		viewedGroup = info;
 		return b;
 	}
 	
@@ -74,12 +81,18 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
 		mGroupInfo = (GroupInfo) getIntent().getSerializableExtra("ViewGroup");
+		mGroupInfo = viewedGroup;
+		mOwnerInfo = viewedGroup.getOwner();
 		if ( mGroupInfo == null )finish();
 		setContentView(R.layout.activity_view_group);
 		setTitle(R.string.action_group_profile, R.color.blue_qq);
 		initView();
 	}
-
+	@Override
+	protected void onDestroy() {
+		viewedGroup = null;
+		super.onDestroy();
+	}
 	void initView(){
 		mGroupAction = (Button) findViewById(R.id.group_action);
 		mGroupAction.setOnClickListener(this);
@@ -104,67 +117,60 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 	}
 	
 	void loadOwnerData(){
-		SContactAsyncHttpClient.post(
-				AccountParams.getAccountByIdParams(mGroupInfo.getOwnerId()),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						mOwnerInfo = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
-						if ( mOwnerInfo != null && mOwnerInfo.getId() != null ){
-							refreshGroupInfo();
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
-					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(R.string.connect_server_err);
-					}
-		});
+//		SContactAsyncHttpClient.post(
+//				AccountParams.getAccountByIdParams(mGroupInfo.getOwnerId()),
+//				null, new AsyncHttpResponseHandler(){
+//					@Override
+//					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+//						mOwnerInfo = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
+//						if ( mOwnerInfo != null && mOwnerInfo.getId() != null ){
+//							refreshGroupInfo();
+//						} else {
+//							Bog.toastErrorInfo(arg2);
+//						}
+//					}
+//					@Override
+//					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+//							Throwable arg3) {
+//						Bog.toast(R.string.connect_server_err);
+//					}
+//		});
 	}
 	void checkAccountInGroup(){
-		SContactAsyncHttpClient.post(
-				PhoneAndGroupParams.getCheckUserInGroupParams(
-						mGroupInfo.getId(),AccountInfo.getInstance().getId()),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						PhoneAndGroupInfo result = GsonHelper.getInfoFromJson(arg2, PhoneAndGroupInfo.class);
-						if ( result != null && result.getId() != null){
-							mUserInGroup = true;
-						} else if ( result == null ){
-							mUserInGroup = false;
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
-						mGroupAction.setVisibility(View.VISIBLE);
-						if ( AccountInfo.getInstance().getId().equals( mGroupInfo.getOwnerId() )){
-							mGroupAction.setText(R.string.apart_group_lable);
-							mGroupAction.setTextColor(getResources().getColor(R.color.red));
-						} else {
-							if ( mUserInGroup != null ){
-								if( mUserInGroup ){
-									mGroupAction.setText(R.string.exit_group_lable);
-									mGroupAction.setTextColor(getResources().getColor(R.color.red));
-								} else {
-									mGroupAction.setText(R.string.join_group_lable);
-								}
-							}
-						}
+		AVQuery<UserGroupRelationInfo> check = AVQuery.getQuery(UserGroupRelationInfo.class);
+		check.whereEqualTo(UserGroupRelationInfo.FieldName.group, mGroupInfo);
+		check.whereEqualTo(UserGroupRelationInfo.FieldName.user, AccountInfo.getInstance());
+		check.findInBackground(new FindCallback<UserGroupRelationInfo>() {
+			
+			@Override
+			public void done(List<UserGroupRelationInfo> arg0, AVException arg1) {
+				if ( ListUtil.isNotEmpty(arg0) ){
+					mUserInGroup = true;
+				} else {
+					mUserInGroup = false;
+				}
+				if ( arg1 != null ){
+					Bog.toast(R.string.connect_server_err);
+				}
+				mGroupAction.setVisibility(View.VISIBLE);
+				if ( AccountInfo.getInstance().getId().equals( mGroupInfo.getOwner().getId() )){
+					mGroupAction.setText(R.string.apart_group_lable);
+					mGroupAction.setTextColor(getResources().getColor(R.color.red));
+				} else {
+					if( mUserInGroup ){
+						mGroupAction.setText(R.string.exit_group_lable);
+						mGroupAction.setTextColor(getResources().getColor(R.color.red));
+					} else {
+						mGroupAction.setText(R.string.join_group_lable);
 					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(R.string.connect_server_err);
-						
-					}
+				}
+			}
 		});
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getSupportMenuInflater().inflate(R.menu.activity_view_group_menu, menu);
-		if ( AccountInfo.getInstance().getId().equals(mGroupInfo.getOwnerId()) ){
+		if ( AccountInfo.getInstance().getId().equals(mGroupInfo.getOwner().getId()) ){
 			menu.findItem(R.id.action_edit).setVisible(true);
 		} else {
 			menu.findItem(R.id.action_edit).setVisible(false);
@@ -201,55 +207,39 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 						name));
 		mOwnerDesc.setText(desp);
 	}
-	void onSureToJoin(String contactids){
-		if ( TextUtils.isEmpty(contactids) ){
+	void onSureToJoin(List<ContactInfo> contactids){
+		if ( ListUtil.isEmpty(contactids) ){
 			Bog.toast(R.string.selected_empty);
 		} else {
 			mLoadingDialog.show();
-			ValidateInfo info = new ValidateInfo();
-			info.setContact_ids(contactids);
-			info.setGroupId(mGroupInfo.getId());
-			info.setIs_group_to_user(0);
-			info.setStart_user_id(AccountInfo.getInstance().getId());
-			info.setEnd_user_id(mGroupInfo.getOwnerId());
-			SContactAsyncHttpClient.post(
-					ValidationParams.getAddRelationshipParams(info)
-					, null
-					, new AsyncHttpResponseHandler(){
-						@Override
-						public void onSuccess(int arg0, Header[] arg1,
-								byte[] arg2) {
-							super.onSuccess(arg0, arg1, arg2);
-							UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
-							if ( result != null && result.getId() != null){
-								
-								Intent itent = new Intent();
-								if (GlobalValue.GIDENTIFY_NEEDED.equals(mGroupInfo.getIdentify())){
-									itent.putExtra("SendGroupValidation", result);
-									Bog.toast(R.string.request_have_send);
-								} else {
-									itent.putExtra("JoinGroup", mGroupInfo);
-									Bog.toast(StringUtil.catStringFromResId(
-											ViewGroupDetailsActivity.this, R.string.join_group_lable,R.string.success));
-								}
-								setResult(RESULT_OK, itent);
-								finish();
-							} else {
-								Bog.toastErrorInfo(arg2);
-							}
+			final ValidateInfo info = new ValidateInfo();
+			info.setContactsList(contactids);
+			info.setGroupInfo(mGroupInfo);
+			info.setIsGroupToUser(false);
+			info.setFromUser(AccountInfo.getInstance());
+			info.setToUser(mGroupInfo.getOwner());
+			info.setFetchWhenSave(true);
+			info.saveInBackground(new SaveCallback() {
+				@Override
+				public void done(AVException arg0) {
+					mLoadingDialog.getDialog().dismissDialogger();
+					if ( arg0 == null ){
+						Intent itent = new Intent();
+						if (GlobalValue.GIDENTIFY_NEEDED.equals(mGroupInfo.getIdentify())){
+							itent.putExtra("SendGroupValidation", info);
+							Bog.toast(R.string.request_have_send);
+						} else {
+							itent.putExtra("JoinGroup", mGroupInfo);
+							Bog.toast(StringUtil.catStringFromResId(
+									R.string.join_group_lable,R.string.success));
 						}
-						@Override
-						public void onFailure(int arg0, Header[] arg1,
-								byte[] arg2, Throwable arg3) {
-							super.onFailure(arg0, arg1, arg2, arg3);
-							Bog.toast(R.string.connect_server_err);
-						}
-						@Override
-						public void onFinish() {
-							super.onFinish();
-							mLoadingDialog.getDialog().dismissDialogger();
-						}
-					});
+						setResult(RESULT_OK, itent);
+						finish();
+					} else {
+						Bog.toast(R.string.connect_server_err);
+					}
+				}
+			});
 		}
 	}
 	@Override
@@ -296,7 +286,7 @@ public class ViewGroupDetailsActivity extends CustomSherlockFragmentActivity
 							if ( ListUtil.isEmpty(c) ){
 								Bog.toast(R.string.selected_empty);
 							} else {
-								onSureToJoin(ContactInfo.arrayToString(c));
+								onSureToJoin(c);
 								mContactsListDialog.getDialog().dismissDialogger();
 							}
 						}

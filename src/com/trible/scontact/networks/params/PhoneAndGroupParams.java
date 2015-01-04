@@ -3,7 +3,7 @@ package com.trible.scontact.networks.params;
 import com.google.gson.Gson;
 import com.trible.scontact.components.activity.SContactApplication;
 import com.trible.scontact.pojo.AccountInfo;
-import com.trible.scontact.pojo.PhoneAndGroupInfo;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.StringUtil;
 
@@ -17,10 +17,10 @@ public class PhoneAndGroupParams {
 	 * @return
 	 */
 	public static String getJoinGroupParams(Long gid,String contactIds){
-		PhoneAndGroupInfo info = new PhoneAndGroupInfo();
-		info.setContactIds(contactIds);
-		info.setGroupId(gid);
-		info.setUserId(AccountInfo.getInstance().getId());
+		UserGroupRelationInfo info = new UserGroupRelationInfo();
+//		info.setContactIds(contactIds);
+//		info.setGroupId(gid);
+//		info.setUserId(AccountInfo.getInstance().getId());
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPhoneAndGroupPath 
 				+ "/join_or_update_in_group"
@@ -36,9 +36,9 @@ public class PhoneAndGroupParams {
 	 * @return 
 	 */
 	public static String getExitGroupParams(Long gid,Long uid){
-		PhoneAndGroupInfo info = new PhoneAndGroupInfo();
-		info.setGroupId(gid);
-		info.setUserId(uid);
+		UserGroupRelationInfo info = new UserGroupRelationInfo();
+//		info.setGroupId(gid);
+//		info.setUserId(uid);
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPhoneAndGroupPath 
 				+ "/exit_group"
@@ -49,9 +49,9 @@ public class PhoneAndGroupParams {
 	}
 	
 	public static String getCheckUserInGroupParams(Long gid,Long uid){
-		PhoneAndGroupInfo info = new PhoneAndGroupInfo();
-		info.setGroupId(gid);
-		info.setUserId(uid);
+		UserGroupRelationInfo info = new UserGroupRelationInfo();
+//		info.setGroupId(gid);
+//		info.setUserId(uid);
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPhoneAndGroupPath 
 				+ "/check_phoneandgroupInfo"

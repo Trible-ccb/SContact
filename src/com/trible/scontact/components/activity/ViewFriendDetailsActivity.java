@@ -1,5 +1,6 @@
 package com.trible.scontact.components.activity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.Header;
@@ -22,6 +23,12 @@ import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.DeleteCallback;
+import com.avos.avoscloud.FindCallback;
+import com.avos.avoscloud.GetCallback;
+import com.avos.avoscloud.SaveCallback;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.adpater.FriendContactsListAdapter;
@@ -40,6 +47,7 @@ import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
 import com.trible.scontact.pojo.UserRelationInfo;
 import com.trible.scontact.pojo.ValidateInfo;
 import com.trible.scontact.utils.Bog;
@@ -69,15 +77,18 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 	
 	List<ContactInfo> mContacts;
 	AccountInfo mFriend;
-	
 	GroupInfo mGroupInfo;//which the friend belong to
 	int mFirendFlag;//0 stranger,1 friend,2 local friend,3 myself
+	public static AccountInfo viewedAccount;
+	public static GroupInfo viewedAccountBelongToGroup;
 	
 	public static Bundle getInentMyself(AccountInfo f,GroupInfo gf) {
 		Bundle b = new Bundle();
 		b.putSerializable("clazz", ViewFriendDetailsActivity.class);
 		b.putSerializable("ViewFriend", f);
 		b.putSerializable("InGroup", gf);
+		viewedAccount = f;
+		viewedAccountBelongToGroup = gf;
 		return b;
 	}
 	
@@ -86,8 +97,9 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		super.onCreate(arg0);
 		mFriend = (AccountInfo) getIntent().getSerializableExtra("ViewFriend");
 		mGroupInfo = (GroupInfo) getIntent().getSerializableExtra("InGroup");
+		mFriend = viewedAccount;
+		mGroupInfo = viewedAccountBelongToGroup;
 		if ( mFriend == null ) {
-			Bog.toast(R.string.failed);
 			finish();
 			return;
 		}
@@ -102,7 +114,12 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		initViewData();
 		checkIsFriend();
 	}
-
+	@Override
+	protected void onDestroy() {
+		viewedAccount = null;
+		viewedAccountBelongToGroup = null;
+		super.onDestroy();
+	}
 	void initView(){
 		mContactsListDialog = new ChooseContactsListDialog(this);
 		mFriendAction = (Button) findViewById(R.id.friend_action);
@@ -183,13 +200,13 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 							Bog.toast(R.string.selected_empty);
 						} else {
 							ValidateInfo info = new ValidateInfo();
-							info.setStart_user_id(AccountInfo.getInstance().getId());
-							info.setContact_ids(ContactInfo.arrayToString(c));
+							info.setFromUser(AccountInfo.getInstance());
+							info.setContactsList(c);
 							if ( mFirendFlag == 3 ){
-								info.setGroupId(mGroupInfo.getId());
-								info.setEnd_user_id(mGroupInfo.getOwnerId());
+								info.setGroupInfo(mGroupInfo);
+								info.setToUser(mGroupInfo.getOwner());
 							} else if ( mFirendFlag == 1 ){
-								info.setEnd_user_id(mFriend.getId());
+								info.setToUser(mFriend);
 							}
 							onSureToUpdateVisibleContacts(info);
 							mContactsListDialog.getDialog().dismissDialogger();
@@ -258,104 +275,116 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 		if (AccountInfo.getInstance().getId().equals(mFriend.getId()) ){
 			mFirendFlag = 3;
 			return;
-		} 
-		SContactAsyncHttpClient.post(
-				AccountParams.getCheckIsFriendsParams(
-						AccountInfo.getInstance().getId(),mFriend.getId()),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
-						if ( result != null && result.getId() != null){
-							mFirendFlag = 1;
-							mFriendAction.setText(R.string.remove_friend_lable);
-							mFriendAction.setTextColor(getResources().getColor(R.color.red));
-						} else if ( result == null ){
-							mFirendFlag = 0;
-							mFriendAction.setText(R.string.add_friend_lable);
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
-						mFriendAction.setVisibility(View.VISIBLE);
-					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(R.string.connect_server_err);
-					}
-					@Override
-					public void onFinish() {
-						supportInvalidateOptionsMenu();
-					}
+		}
+		AVQuery<UserRelationInfo> check = AVQuery.getQuery(UserRelationInfo.class);
+		check.whereEqualTo(UserRelationInfo.FieldName.user, AccountInfo.getInstance());
+		check.whereEqualTo(UserRelationInfo.FieldName.follower, mFriend);
+		check.findInBackground(new FindCallback<UserRelationInfo>() {
+			
+			@Override
+			public void done(List<UserRelationInfo> arg0, AVException arg1) {
+				if ( ListUtil.isNotEmpty(arg0) ){
+					mFirendFlag = 1;
+					mFriendAction.setText(R.string.remove_friend_lable);
+					mFriendAction.setTextColor(getResources().getColor(R.color.red));
+				} else {
+					mFirendFlag = 0;
+					mFriendAction.setText(R.string.add_friend_lable);
+				}
+				mFriendAction.setVisibility(View.VISIBLE);
+				if(arg1 != null ){
+					Bog.toast(R.string.connect_server_err);
+					Bog.i(arg1.getMessage());
+				}
+				supportInvalidateOptionsMenu();
+			}
 		});
 	}
 	
-	void onSureToUpdateVisibleContacts(ValidateInfo info){
+	void onSureToUpdateVisibleContacts(final ValidateInfo info){
 		mLoadingDialog.show();
-		SContactAsyncHttpClient.post(
-				ValidationParams.getUpdateRelationshipParams(info)
-				, null
-				, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1,
-							byte[] arg2) {
-						UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
-						if ( result != null && result.getId() != null){
-							Bog.toast(R.string.success);
-							SContactMainActivity.needRefreshFriendList = true;
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
-					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1,
-							byte[] arg2, Throwable arg3) {
+		if (info.getGroupInfo() != null ){
+			AVQuery<UserGroupRelationInfo> check = AVQuery.getQuery(UserGroupRelationInfo.class);
+			check.whereEqualTo(UserGroupRelationInfo.FieldName.group, info.getGroupInfo());
+			check.whereEqualTo(UserGroupRelationInfo.FieldName.user, info.getFromUser());
+			check.getFirstInBackground(new GetCallback<UserGroupRelationInfo>() {
+				
+				@Override
+				public void done(UserGroupRelationInfo arg0, AVException arg1) {
+					if ( arg0 != null ){
+						arg0.setContacts(info.getContactsList());
+						arg0.saveInBackground(new SaveCallback() {
+							@Override
+							public void done(AVException arg0) {
+								mLoadingDialog.getDialog().dismissDialogger();
+								if ( arg0 == null ){
+									Bog.toast(R.string.success);
+									SContactMainActivity.needRefreshFriendList = true;
+								} else {
+									Bog.toast(R.string.connect_server_err);
+								}
+							}
+						});
+					} else {
+						mLoadingDialog.getDialog().dismissDialogger();
 						Bog.toast(R.string.connect_server_err);
 					}
-					@Override
-					public void onFinish() {
-						mLoadingDialog.getDialog().dismissDialogger();
-					}
-				});
+				}
+			});
+		}
 	}
-	void onSureToAddFriend(String contactids){
-		if ( TextUtils.isEmpty(contactids) ){
+	void onSureToAddFriend(List<ContactInfo> contactids){
+		if ( ListUtil.isEmpty(contactids) ){
 			Bog.toast(R.string.selected_empty);
 		} else {
 			mLoadingDialog.show();
 			ValidateInfo info = new ValidateInfo();
-			info.setContact_ids(contactids);
-			info.setIs_group_to_user(0);
-			info.setStart_user_id(AccountInfo.getInstance().getId());
-			info.setEnd_user_id(mFriend.getId());
-			SContactAsyncHttpClient.post(
-					ValidationParams.getAddRelationshipParams(info)
-					, null
-					, new AsyncHttpResponseHandler(){
-						@Override
-						public void onSuccess(int arg0, Header[] arg1,
-								byte[] arg2) {
-							UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
-							if ( result != null && result.getId() != null){
-								Bog.toast(R.string.request_have_send);
-								finish();
-							} else {
-								Bog.toastErrorInfo(arg2);
-							}
-						}
-						@Override
-						public void onFailure(int arg0, Header[] arg1,
-								byte[] arg2, Throwable arg3) {
-							Bog.toast(R.string.connect_server_err);
-						}
-						@Override
-						public void onFinish() {
-							mLoadingDialog.getDialog().dismissDialogger();
-						}
-					});
+			info.setContactsList(contactids);
+			info.setIsGroupToUser(false);
+			info.setFromUser(AccountInfo.getInstance());
+			info.setToUser(mFriend);
+			info.saveInBackground(new SaveCallback() {
+				@Override
+				public void done(AVException arg0) {
+					mLoadingDialog.getDialog().dismissDialogger();
+					if (arg0 == null){
+						Bog.toast(R.string.request_have_send);
+						finish();
+					} else {
+						Bog.toast(R.string.connect_server_err);
+					}
+				}
+			});
 		}
 	}
-	
+	void onSureToRemoveFriend(ValidateInfo info){
+		final LoadingDialog ldialog = new LoadingDialog(ViewFriendDetailsActivity.this);
+		ldialog.show();
+		AVQuery<UserRelationInfo> check = AVQuery.getQuery(UserRelationInfo.class);
+		check.whereEqualTo(UserRelationInfo.FieldName.user, info.getFromUser());
+		check.whereEqualTo(UserRelationInfo.FieldName.follower, info.getToUser());
+		AVQuery<UserRelationInfo> check2 = AVQuery.getQuery(UserRelationInfo.class);
+		check2.whereEqualTo(UserRelationInfo.FieldName.follower, info.getFromUser());
+		check2.whereEqualTo(UserRelationInfo.FieldName.user, info.getToUser());
+		List<AVQuery<UserRelationInfo>> queries = new ArrayList<AVQuery<UserRelationInfo>>();
+		queries.add(check);
+		queries.add(check2);
+		AVQuery<UserRelationInfo> checks = AVQuery.or(queries);
+		checks.deleteAllInBackground(new DeleteCallback() {
+			
+			@Override
+			public void done(AVException arg0) {
+				ldialog.getDialog().dismissDialogger();
+				if (arg0 == null){
+					Bog.toast(R.string.success);
+					SContactMainActivity.needRefreshFriendList = true;
+					finish();
+				} else {
+					Bog.toast(R.string.connect_server_err);
+				}
+			}
+		});
+	}
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -371,44 +400,10 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 						public void onYesButton() {
 							dialog.getDialog().dismissDialogger();
 							ValidateInfo info = new ValidateInfo();
-							info.setEnd_user_id(mFriend.getId());
-							info.setStart_user_id(AccountInfo.getInstance().getId());
-							final LoadingDialog ldialog = new LoadingDialog(ViewFriendDetailsActivity.this);
-							ldialog.getDialog().setmDismisslistener(new OnDismissListener() {
-								
-								@Override
-								public void onDismiss(DialogInterface dialog) {
-									SContactAsyncHttpClient.cancel(ViewFriendDetailsActivity.this, true);
-								}
-							});
-							ldialog.show();
-							SContactAsyncHttpClient.post(
-									ValidationParams.getRemoveRelationshipParams(info),
-									null, 
-									new AsyncHttpResponseHandler(){
-										@Override
-										public void onSuccess(int arg0,
-												Header[] arg1, byte[] arg2) {
-											UserRelationInfo result = GsonHelper.getInfoFromJson(arg2, UserRelationInfo.class);
-											if ( result != null && result.getId() != null ){
-												Bog.toast(R.string.success);
-												SContactMainActivity.needRefreshFriendList = true;
-												finish();
-											} else {
-												Bog.toast(R.string.failed);
-											}
-										}
-										@Override
-										public void onFailure(int arg0,
-												Header[] arg1, byte[] arg2,
-												Throwable arg3) {
-											Bog.toast(R.string.connect_server_err);
-										}
-										@Override
-										public void onFinish() {
-											ldialog.getDialog().dismissDialogger();
-										}
-									});
+							info.setToUser(mFriend);
+							info.setFromUser(AccountInfo.getInstance());
+
+							onSureToRemoveFriend(info);
 							dialog.getDialog().dismissDialogger();
 						}
 						@Override
@@ -428,7 +423,7 @@ public class ViewFriendDetailsActivity extends CustomSherlockFragmentActivity
 							if ( ListUtil.isEmpty(c) ){
 								Bog.toast(R.string.selected_empty);
 							} else {
-								onSureToAddFriend(ContactInfo.arrayToString(c));
+								onSureToAddFriend(c);
 								mContactsListDialog.getDialog().dismissDialogger();
 							}
 						}

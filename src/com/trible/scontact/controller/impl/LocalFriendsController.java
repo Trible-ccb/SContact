@@ -1,7 +1,6 @@
 package com.trible.scontact.controller.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,13 +13,15 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.Data;
 import android.text.TextUtils;
 
 import com.trible.scontact.controller.IFriendsControl;
+import com.trible.scontact.controller.impl.RemoteFriendsController.GetAccountInfoByPhoneNumberListner;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.ContactTypes;
-import com.trible.scontact.value.GlobalValue;
+import com.trible.scontact.utils.StringUtil;
 
 public class LocalFriendsController implements IFriendsControl {
 
@@ -67,7 +68,7 @@ public class LocalFriendsController implements IFriendsControl {
             AccountInfo ce = new AccountInfo();  
   
 //            ce.setContactId(raw_contact_id);
-            ce.setId((long) raw_contact_id);
+            ce.setId((long) raw_contact_id+"");
   
             Cursor dataCursor = mContext.getContentResolver().query(dataUri,  
                     null, "raw_contact_id=?",  
@@ -92,20 +93,20 @@ public class LocalFriendsController implements IFriendsControl {
                     	ci.setContact(data1);
                     	contacts.add(ci);
                     	ci.setType(ContactTypes.getInstance().getCellPhoneType());
-                    	ci.setId((long) id);
+                    	ci.setId((long) id+"");
                     } else if (mime.toLowerCase().contains("name")) {
                     	ce.setDisplayName(data1); 
                     } else if (mime.toLowerCase().contains("email")) {
                     	ContactInfo ci = new ContactInfo();
                     	ci.setContact(data1);
                     	contacts.add(ci);
-                    	ci.setId((long) id);
+                    	ci.setId((long) id+"");
                     	ci.setType(ContactTypes.getInstance().getEmailType());
                     } else if (mime.toLowerCase().contains("im")) {
                     	ContactInfo ci = new ContactInfo();
                     	ci.setContact(data1);
                     	contacts.add(ci);
-                    	ci.setId((long) id);
+                    	ci.setId((long) id+"");
                     }
                 }
             }
@@ -226,12 +227,13 @@ public class LocalFriendsController implements IFriendsControl {
 //	        }else {  
 //	            contactPhoto = BitmapFactory.decodeResource(getResources(), R.drawable.contact_photo);  
 //	        }  
-	          ci.setId(contactid);
+	          ci.setId(contactid+"");
 	          ci.setContact(phoneNumber);
-	          ci.setLastestUsedTime(lasttime);
+//	          ci.setLastestUsedTime(lasttime);
 	          contacts.add(ci);
 	          tmp.setDisplayName(displayName);
-	          tmp.setId(contactid);
+	          tmp.setPinyinname(StringUtil.converterToSpell(displayName));
+	          tmp.setId(contactid+"");
 	          tmp.setContactsList(contacts);
 	          tmp.setPhoneNumber(phoneNumber);
 //	          contactList.add(tmp);
@@ -245,6 +247,35 @@ public class LocalFriendsController implements IFriendsControl {
 	@Override
 	public List<AccountInfo> getSIMFriendsList() {
 		return null;
+	}
+
+	@Override
+	public void getAccountInfoByPhoneNumber(String number,
+			GetAccountInfoByPhoneNumberListner listner) {
+		if ( mContext == null ) return;
+		Uri uri = Phone.CONTENT_URI;
+		ContentResolver cr = mContext.getContentResolver();
+		String[] projection = {"display_name","data1"}; 
+		Cursor result = cr.query(
+				uri,
+				projection,
+				Data.DATA1 + "=? ",
+				new String[]{number},
+				null);
+		AccountInfo info = null;
+		if ( result != null && result.moveToFirst()){
+			String phoneNumber = result.getString(
+					result.getColumnIndex("data1"));
+			String displayName = result.getString(
+					result.getColumnIndex("display_name"));
+			info = new AccountInfo();
+			info.setDisplayName(displayName);
+			info.setPhoneNumber(phoneNumber);
+		}
+		if ( listner != null ){
+			listner.getResult(info);
+		}
+		
 	}
 
 }

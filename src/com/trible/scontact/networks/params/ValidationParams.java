@@ -46,7 +46,7 @@ public class ValidationParams {
 	
 	public static String getMyInboxListParams(Long uid){
 		ValidateInfo info = new ValidateInfo();
-		info.setEnd_user_id(uid);
+//		info.setEnd_user_id(uid);
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/getMyValidateList"
@@ -57,7 +57,7 @@ public class ValidationParams {
 	
 	public static String getMyInboxNumberParams(Long uid){
 		ValidateInfo info = new ValidateInfo();
-		info.setEnd_user_id(uid);
+//		info.setEnd_user_id(uid);
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/getMyInboxNumber"
@@ -69,7 +69,7 @@ public class ValidationParams {
 	public static String getAcceptOneValidateParams(
 			ValidateInfo info,String optionContactids){
 		ValidateInfo ret = new ValidateInfo();
-		ret.setId(info.getId());
+//		ret.setId(info.getId());
 		String v = new Gson().toJson(ret);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/AcceptOneValidate"
@@ -82,7 +82,7 @@ public class ValidationParams {
 	
 	public static String getNotAcceptOneValidateParams(ValidateInfo info){
 		ValidateInfo ret = new ValidateInfo();
-		ret.setId(info.getId());
+//		ret.setId(info.getId());
 		String v = new Gson().toJson(ret);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/NotAcceptOneValidate"

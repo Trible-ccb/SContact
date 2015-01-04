@@ -7,259 +7,168 @@ import java.text.Collator;
 import java.util.List;
 import java.util.Locale;
 
-import u.aly.an;
-
-import ccb.java.android.utils.encoder.SecurityMethod;
-
-import com.google.gson.Gson;
+import com.alibaba.fastjson.annotation.JSONField;
+import com.avos.avoscloud.AVInstallation;
+import com.avos.avoscloud.AVUser;
 import com.google.gson.reflect.TypeToken;
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.trible.scontact.database.DBConstants;
-import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.utils.StringUtil;
-import com.trible.scontact.value.GlobalValue;
-import com.trible.scontact.value.PrefKeys;
 
  
  
 @DatabaseTable(tableName=DBConstants.AccountFieldName.table_name) 
-public class AccountInfo extends BaseInfo implements Serializable,Comparable<AccountInfo>{
+public class AccountInfo extends AVUser implements Serializable,Comparable<AccountInfo>{
 
 	private static final long serialVersionUID = 1L;
 	
-	private Integer status;
-	
-	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.AccountFieldName.user_gender)
-	Integer gender;
-	
-	Long birthday;
-	
-	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.AccountFieldName.user_create_time)
-	Long createTime;
-	
-	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.AccountFieldName.user_id)
-	Long id;
-	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_display_name)
-	private String displayName;
-	
-	String phoneNumber;
-	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_photo_url)
-	String photoUrl;
+	public String getInstallationId() {
+		return getString(FieldName.INSTALLATION);
+	}
+	public void setInstallationId(String installation) {
+		if ( installation == null ){
+			put(FieldName.INSTALLATION, "");
+		} else {
+			put(FieldName.INSTALLATION, installation);
+		}
+	}
 
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_email)
-	String email;
-	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_real_name)
-	String realName;
-	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_description)
-	String description;
-	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_type)
-	String type;
-	
-	String password;
-	String cookie;
-	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.AccountFieldName.user_notify_id)
-	String notifyId;
-	
-	String thirdPartyId;
-
-	String pinyinname;
-	
+	public String getId(){
+		return getObjectId();
+	}
+	public void setId(String id){
+		setObjectId(id);
+	}
+	public String getDisplayName(){
+		return getUsername();
+	}
+	public void setDisplayName(String username){
+		setUsername(username);
+	}
+	//临时存放别人对用户的可见的联系方式
+	@JSONField(serialize=false)
 	private List<ContactInfo> contactsList;
 	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-	
-	public String getDisplayName() {
-		return displayName;
-	}
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
-		
-	}
-	
 	public String getPinyinname() {
+		String pinyinname = getString(FieldName.PINYINNAME);
+		String displayName = getUsername();
 		if ( pinyinname == null ){
 			setPinyinname(StringUtil.converterToSpell(displayName));
 		}
 		return pinyinname == null ? displayName : pinyinname;
 	}
 	public void setPinyinname(String pinyinname) {
-		this.pinyinname = pinyinname;
+		put(FieldName.PINYINNAME,pinyinname);
+		
 	}
 	
 	public Long getBirthday() {
-		return birthday;
+		return getLong(FieldName.BIRTHDAY);
 	}
 	public void setBirthday(Long birthday) {
-		this.birthday = birthday;
+		put(FieldName.BIRTHDAY, birthday);
 	}
 	
-	public String getThirdPartyId() {
-		return thirdPartyId;
-	}
-	public void setThirdPartyId(String thirdPartyId) {
-		this.thirdPartyId = thirdPartyId;
-	}
-	
-	public Long getCreateTime() {
-		return createTime;
-	}
-	public void setCreateTime(Long createTime) {
-		this.createTime = createTime;
-	}
-	 
 	public Integer getStatus() {
-		return status;
+		return getInt(FieldName.STATUS);
 	}
 	/**
 	 *  
 	 */
 	public void setStatus(Integer status) {
-		this.status = status;
+		put(FieldName.STATUS, status);
 	}
 	
 	 
 	public Integer getGender() {
-		return gender;
+		return getInt(FieldName.GENDER);
 	}
 	/**
 	 *  
 	 */
 	public void setGender(Integer gender) {
-		this.gender = gender;
+		put(FieldName.GENDER, gender);
 	}
 	
 	 
 	public String getPhoneNumber() {
-		return SecurityMethod.getAESInstance().Decryptor(phoneNumber);
+		return getMobilePhoneNumber();
 	}
 	/**
 	 *  
 	 */
 	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = SecurityMethod.getAESInstance().Encrytor(phoneNumber);
-	}
-	
-	 
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
+		setMobilePhoneNumber(phoneNumber);
 	}
 	
 	 
 	public String getRealName() {
-		return realName;
+		return getString(FieldName.REALNAME);
 	}
 	public void setRealName(String realName) {
-		this.realName = realName;
+		put(FieldName.REALNAME,realName);
 	}
 	
-	 
 	public String getDescription() {
-		return description;
+		return getString(FieldName.DESCRIPTION);
 	}
 	public void setDescription(String description) {
-		this.description = description;
+		put(FieldName.DESCRIPTION,description);
 	}
 	
 	 
 	public String getType() {
-		return type;
+		return getString(FieldName.TYPE);
 	}
 	/**
 	 *  
 	 */
 	public void setType(String type) {
-		this.type = type;
-	}
-	
-	 
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	public String getNotifyId() {
-		return notifyId;
-	}
-	public void setNotifyId(String notifyId) {
-		this.notifyId = notifyId;
-	}
-	 
-	public String getCookie() {
-		return cookie;
-	}
-	public void setCookie(String cookie) {
-		this.cookie = cookie;
+		put(FieldName.TYPE, type);
 	}
 	public String getPhotoUrl() {
-		return photoUrl;
+		return getString(FieldName.PHOTOURL);
 	}
 	public void setPhotoUrl(String photoUrl) {
-		this.photoUrl = photoUrl;
+		put(FieldName.PHOTOURL, photoUrl);
 	}
 	
 	static AccountInfo sInstance;
 	public static AccountInfo getInstance(){
+		if ( sInstance == null ){
+			sInstance = AccountInfo.getCurrentUser(AccountInfo.class);
+		}
 		if (sInstance == null)
 		sInstance = new AccountInfo();
 		return sInstance;
 	}
 	public AccountInfo copy(){
 		AccountInfo tmp = new AccountInfo();
-		tmp.setBirthday(birthday);
-		tmp.setContactsList(contactsList);
-		tmp.setCookie(cookie);
-		tmp.setCreateTime(createTime);
-		tmp.setDescription(description);
-		tmp.setDisplayName(displayName);
-		tmp.setEmail(email);
-		tmp.setGender(gender);
-		tmp.setStatus(status);
-		tmp.setId(id);
-		tmp.setPassword(password);
-		tmp.setPhoneNumber(phoneNumber);
-		tmp.setPhotoUrl(photoUrl);
-		tmp.setRealName(realName);
-		tmp.setType(type);
-		tmp.setNotifyId(notifyId);
-		tmp.setThirdPartyId(thirdPartyId);
+		tmp.setDisplayName(getDisplayName());
+		tmp.setBirthday(getBirthday());
+		tmp.setDescription(getDescription());
+		tmp.setEmail(getEmail());
+		tmp.setGender(getGender());
+		tmp.setStatus(getStatus());
+		tmp.setPhoneNumber(getMobilePhoneNumber());
+		tmp.setPhotoUrl(getPhotoUrl());
+		tmp.setRealName(getRealName());
+		tmp.setType(getType());
+		tmp.setId(getId());
 		return tmp;
 	}
 	public static void setAccountInfo(AccountInfo info){
 		sInstance = info;
+		AccountInfo.changeCurrentUser(info, true);
 	}
 	
 	public void saveToPref(){
-		PrefManager pref = PrefManager.getInstance();
-		String v = new Gson().toJson(this);
-		pref.putString(AccountInfo.class.getSimpleName() + id, v);
-		pref.putLong(PrefKeys.CURRENT_USER_ID, id);
 	}
 	
 	public static AccountInfo getFromPref(){
-		PrefManager pref = PrefManager.getInstance();
-		Long id = pref.getLong(PrefKeys.CURRENT_USER_ID);
-		AccountInfo info = new Gson().fromJson(
-				pref.getString(AccountInfo.class.getSimpleName() + id), AccountInfo.class);
-		return info;
+		return getInstance();
 	}
-	
+
 	public List<ContactInfo> getContactsList() {
 		return contactsList;
 	}
@@ -267,13 +176,17 @@ public class AccountInfo extends BaseInfo implements Serializable,Comparable<Acc
 		this.contactsList = mContactsList;
 	}
 	
-	@Override
 	public Type listType() {
 		return new TypeToken<List<AccountInfo>>(){}.getType();
 	}
-	
 	public boolean isSignOut(){
-		return GlobalValue.USTATUS_SIGN_OUT.equals(status);
+//		return GlobalValue.USTATUS_SIGN_OUT.equals(status);
+		return getInstance() == null ||  getUsername() == null  ;
+	}
+	public void signOut(){
+		setInstallationId(null);
+		saveInBackground();
+		logOut();
 	}
 	@Override
 	public int compareTo(AccountInfo another) {
@@ -281,9 +194,23 @@ public class AccountInfo extends BaseInfo implements Serializable,Comparable<Acc
 		Collator collator = Collator.getInstance(l);
 		String n1 = getPinyinname();
 		String n2 = another.getPinyinname();
+		if ( n1 == null )n1 ="";
+		if ( n2 == null )n2 = "";
 		CollationKey k1 = collator.getCollationKey(n1);
 		CollationKey k2 = collator.getCollationKey(n2);
 		return k1.compareTo(k2);
 	}
 	
+	public interface FieldName{
+		String INSTALLATION = "installationId";
+		String GENDER = "gender"; 
+		String BIRTHDAY = "birthday";
+		String STATUS = "status";
+		String REALNAME = "realname";
+		String PHOTOURL = "photo_url";
+		String TYPE = "type";
+		String DESCRIPTION = "description";
+		String PINYINNAME = "pinyinname";
+		
+	}
 }

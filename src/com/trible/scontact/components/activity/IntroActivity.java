@@ -1,5 +1,6 @@
 package com.trible.scontact.components.activity;
 
+import android.R.mipmap;
 import android.os.Bundle;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -7,11 +8,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
 import com.trible.scontact.R;
-import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.pojo.AccountInfo;
-import com.trible.scontact.value.GlobalValue;
-import com.umeng.message.PushAgent;
-import com.umeng.update.UmengUpdateAgent;
 
 public class IntroActivity extends CustomSherlockFragmentActivity implements AnimationListener{
 
@@ -25,19 +22,20 @@ public class IntroActivity extends CustomSherlockFragmentActivity implements Ani
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_intro);
 		mAnimIn = AnimationUtils.loadAnimation(this, R.anim.zoom_enter);
+		mAnimIn.setDuration(0);
 		mAnimIn.setAnimationListener(this);
 		mIntroImage = (ImageView) findViewById(R.id.logo_first);
 		mIntroImage.startAnimation(mAnimIn);
-		mInfo = AccountInfo.getInstance();
 		openNotifyPusher();
-		UmengUpdateAgent.update(this);
-		SContactAsyncHttpClient.refreshCookie();
-		
 	}
-
+	void refreshUser(){
+		if ( mInfo != null && mInfo.getSessionToken() == null ){
+			mInfo.refreshInBackground(null);
+		}
+	}
 	void openNotifyPusher(){
 //		use umeng message pusher
-		PushAgent.getInstance(this).enable();
+//		PushAgent.getInstance(this).enable();
 	}
 	@Override
 	public void onAnimationStart(Animation animation) {
@@ -46,7 +44,7 @@ public class IntroActivity extends CustomSherlockFragmentActivity implements Ani
 
 	@Override
 	public void onAnimationEnd(Animation animation) {
-		if ( GlobalValue.USTATUS_NORMAL.equals(mInfo.getStatus()) ){
+		if ( !AccountInfo.getInstance().isSignOut() && AccountInfo.getInstance().isMobilePhoneVerified()){
 			simpleDisplayActivity(SContactMainActivity.class);
 		} else {
 			simpleDisplayActivity(SignInUpActivity.class);

@@ -123,7 +123,7 @@ public class CustomSherlockFragmentActivity extends SherlockFragmentActivity
 		if ( mBar != null )
 		mBar.setLogo(rid);
 	}
-	public void setBarBackgroup(int rid){
+	public void setBarBackground(int rid){
 		if ( mBar != null )
 			mBar.setBackgroundDrawable(getResources().getDrawable(rid));
 	}

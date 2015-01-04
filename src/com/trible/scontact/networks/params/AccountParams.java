@@ -28,7 +28,7 @@ public class AccountParams {
 		AccountInfo info = new AccountInfo();
 		info.setDisplayName(name);
 		info.setPassword(password);
-		info.setNotifyId(uuid);
+//		info.setNotifyId(uuid);
 		String v = new Gson().toJson(info);
 		String url = Login + "?json=" + StringUtil.getEncodeURLParams(v);
 		Bog.v("login url = " + url);
@@ -78,7 +78,7 @@ public class AccountParams {
 	public static String getAccountByIdParams(Long id){
 		String GetAccount = SContactApplication.getURL() + mAccountPath + "/get_account";
 		AccountInfo info = new AccountInfo();
-		info.setId(id);
+		info.setId(id+"");
 		String v = new Gson().toJson(info);
 		String url = GetAccount + "?json=" + StringUtil.getEncodeURLParams(v);
 		return url;
@@ -87,7 +87,7 @@ public class AccountParams {
 	public static String getDeleteAccountByIdParams(Long id){
 		String Delete = SContactApplication.getURL() + mAccountPath + "/delete";
 		AccountInfo info = new AccountInfo();
-		info.setId(id);
+		info.setId(id+"");
 		String v = new Gson().toJson(info);
 		String url = Delete + "?json=" + StringUtil.getEncodeURLParams(v);
 		return url;
@@ -96,7 +96,7 @@ public class AccountParams {
 	public static String getAccountByGroupIdParams(Long gid){
 		String GetFromGroup = SContactApplication.getURL() + mAccountPath + "/get_accounts_of_group";
 		GroupInfo info = new GroupInfo();
-		info.setId(gid);
+//		info.setId(gid);
 		String v = new Gson().toJson(info);
 		String url = GetFromGroup + "?json=" + StringUtil.getEncodeURLParams(v);
 		return url;
@@ -104,7 +104,7 @@ public class AccountParams {
 	public static String getAccountByContactIdParams(Long cid){
 		String GetFromGroup = SContactApplication.getURL() + mAccountPath + "/get_contact_friends";
 		ContactInfo info = new ContactInfo();
-		info.setId(cid);
+		info.setId(cid+"");
 		String v = new Gson().toJson(info);
 		String url = GetFromGroup + "?json=" + StringUtil.getEncodeURLParams(v);
 		return url;
@@ -112,7 +112,7 @@ public class AccountParams {
 	public static String getFriendsByUserIdParams(Long uid){
 		String GetFromGroup = SContactApplication.getURL() + mAccountPath + "/get_friends_of_user";
 		AccountInfo info = new AccountInfo();
-		info.setId(uid);
+		info.setId(uid+"");
 		String v = new Gson().toJson(info);
 		String url = GetFromGroup + "?json=" + StringUtil.getEncodeURLParams(v);
 		return url;
@@ -120,8 +120,8 @@ public class AccountParams {
 	public static String getCheckIsFriendsParams(Long uid,Long fid){
 		String GetFromGroup = SContactApplication.getURL() + mAccountPath + "/checkIsFriend";
 		UserRelationInfo info = new UserRelationInfo();
-		info.setFollowUserId(fid);
-		info.setUserId(uid);
+//		info.setFollowUserId(fid);
+//		info.setUserId(uid);
 		String v = new Gson().toJson(info);
 		String url = GetFromGroup + "?json=" + StringUtil.getEncodeURLParams(v);
 		return url;

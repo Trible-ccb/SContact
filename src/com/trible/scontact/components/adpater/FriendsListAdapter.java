@@ -107,11 +107,10 @@ public class FriendsListAdapter extends EmptyBaseAdapter {
 //			desc = ContactInfo.arrayToString(info.getContactsList());
 		}
 		mHolder.mUserDesc.setText(desc);
-		Long time = info.getCreateTime();
-		if ( time != null ){
+		if ( info.getCreatedAt() != null ){
 			mHolder.mUserUpdateTime.setVisibility(View.VISIBLE);
 			mHolder.mUserUpdateTime.setText(
-					TimeUtil.toTimeString(info.getCreateTime()));
+					TimeUtil.dateToSimpleString(info.getCreatedAt()));
 		} else {
 			mHolder.mUserUpdateTime.setVisibility(View.GONE);
 		}
@@ -136,6 +135,7 @@ public class FriendsListAdapter extends EmptyBaseAdapter {
 	}
 	@Override
 	public long getDataId(int position) {
-		return mDatas.get(position).getId();
+//		return mDatas.get(position).getId();
+		return position;
 	}
 }

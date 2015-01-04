@@ -1,4 +1,4 @@
-package com.trible.scontact.components.fragment;
+ package com.trible.scontact.components.fragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +22,10 @@ import android.widget.GridView;
 import android.widget.ListView;
 
 import com.actionbarsherlock.app.SherlockFragment;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVQuery.CachePolicy;
+import com.avos.avoscloud.FindCallback;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.activity.CustomSherlockFragmentActivity;
@@ -40,6 +44,9 @@ import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
+import com.trible.scontact.pojo.UserRelationInfo;
+import com.trible.scontact.utils.Bog;
 
 public class FriendsListFragment extends SherlockFragment 
 						implements OnItemLongClickListener,OnItemClickListener{
@@ -122,14 +129,14 @@ public class FriendsListFragment extends SherlockFragment
 		} else {
 			mFriendsListAdapter.mUsePhoto = true;
 		}
-		mFriendsListAdapter.setData(null);
 		mFriendsListAdapter.showEmptyView(false);
+		mFriendsListAdapter.setData(null);
 		if ( mLoadingDialog == null )return;
 		mLoadingDialog.getDialog().setmDismisslistener(new OnDismissListener() {
 			
 			@Override
 			public void onDismiss(DialogInterface dialog) {
-				SContactAsyncHttpClient.cancel(mActivity, true);
+//				SContactAsyncHttpClient.cancel(mActivity, true);
 			}
 		});
 //		mLoadingDialog.show();
@@ -163,7 +170,8 @@ public class FriendsListFragment extends SherlockFragment
 				};
 				mFriendsListAdapter.mEmptyData.mBtnText = getString(R.string.re_try);
 				mFriendsListAdapter.mEmptyData.mText = getString(R.string.load_err);
-				if ( SContactMainActivity.GROUP_OF_LOCAL_FRIEND.equals(mFriendBelongToGroup.getId()) )
+				if ( SContactMainActivity.GROUP_OF_LOCAL_FRIEND.
+						equals(mFriendBelongToGroup.getId()) )
 				updateUIAfterLoadFriend();
 			}
 			
@@ -176,41 +184,74 @@ public class FriendsListFragment extends SherlockFragment
 			}
 		});
 	}
-	//like a background service
-	private void setUpLoadingMembersOfGroups(){
-		mLoadingMembersTask = new SimpleAsynTask();
-		mLoadingMembersTask.doTask(new AsynTaskListner() {
-			@Override
-			public void onTaskDone(NetWorkEvent event) {
-				mLoadingMembersTask = null;
-			}
-			@Override
-			public void doInBackground() {
-				while ( !mGroupQueueForLoading.isEmpty() ){
-					final GroupInfo g = mGroupQueueForLoading.poll();
-					if ( g != null 
-							&& !SContactMainActivity.GROUP_OF_LOCAL_FRIEND.equals(g.getId())){
-						String url = null;
-						if ( SContactMainActivity.GROUP_ID_OF_FRIEND.equals(g.getId()) ){
-							url = AccountParams.getFriendsByUserIdParams(
-									AccountInfo.getInstance().getId());
-						} else {
-							url = AccountParams.getAccountByGroupIdParams(g.getId());
-						}
-						ScontactHttpClient.post(url,
-								null, new AsyncHttpResponseHandler(){
-							@Override
-							public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-								List<AccountInfo> friendinfo = GsonHelper.getInfosFromJson(arg2, new AccountInfo().listType());
-								if ( friendinfo != null ){
-									g.saveMembersToSpf(friendinfo);
+	//like a background service for refresh friend list
+	private void setUpLoadingMembersOfGroupsFromAVOS(){
+		while ( !mGroupQueueForLoading.isEmpty() ){
+			final GroupInfo g = mGroupQueueForLoading.poll();
+			if ( g != null 
+					&& !SContactMainActivity.GROUP_OF_LOCAL_FRIEND.equals(g.getId())){
+				if ( SContactMainActivity.GROUP_ID_OF_FRIEND.equals(g.getId()) ){
+					//加载用户好友列表
+					AVQuery<UserRelationInfo> myfriends = AVQuery.getQuery(UserRelationInfo.class);
+					myfriends.include(UserRelationInfo.FieldName.contacts);
+					myfriends.include(UserRelationInfo.FieldName.follower);
+					myfriends.include(UserRelationInfo.FieldName.user);
+					myfriends.setCachePolicy(CachePolicy.NETWORK_ELSE_CACHE);
+					myfriends.whereEqualTo(UserRelationInfo.FieldName.follower, AccountInfo.getInstance());
+					myfriends.findInBackground(new FindCallback<UserRelationInfo>() {
+						@Override
+						public void done(List<UserRelationInfo> arg0, AVException arg1) {
+							List<AccountInfo> info = new ArrayList<AccountInfo>();
+							if ( arg1 == null && arg0 != null ){
+								for ( UserRelationInfo f : arg0 ){
+									AccountInfo user = f.getUser();
+									user.setContactsList(f.getContacts());
+									info.add(user);
 								}
+//								g.saveMembersToSpf(info);
+								if( g.getId().equals(mFriendBelongToGroup.getId()) ){
+									mFriendinfo = info;
+									updateUIAfterLoadFriend();
+								}
+							} else {
+								Bog.e(arg1.getMessage());
 							}
-						});
-					}
+						}
+					});
+				} else {
+					//加载某个群内的好友
+					AVQuery<UserGroupRelationInfo> myfriends = AVQuery.getQuery(UserGroupRelationInfo.class);
+					myfriends.include(UserGroupRelationInfo.FieldName.contacts);
+					myfriends.include(UserGroupRelationInfo.FieldName.user);
+					myfriends.whereEqualTo(UserGroupRelationInfo.FieldName.group, g);
+					myfriends.setCachePolicy(CachePolicy.NETWORK_ELSE_CACHE);
+					myfriends.findInBackground(new FindCallback<UserGroupRelationInfo>() {
+						@Override
+						public void done(List<UserGroupRelationInfo> arg0, AVException arg1) {
+							List<AccountInfo> info = new ArrayList<AccountInfo>();
+							if ( arg1 == null && arg0 != null ){
+								for ( UserGroupRelationInfo f : arg0 ){
+									AccountInfo user = f.getUser();
+									user.setContactsList(f.getContacts());
+									info.add(user);
+								}
+//								g.saveMembersToSpf(info);
+								if( g.getId().equals(mFriendBelongToGroup.getId()) ){
+									mFriendinfo = info;
+									updateUIAfterLoadFriend();
+								}
+							} else {
+								Bog.e(arg1.getMessage());
+							}
+						}
+					});
 				}
 			}
-		});
+		}
+	}
+	
+	private void setUpLoadingMembersOfGroups(){
+		setUpLoadingMembersOfGroupsFromAVOS();
 	}
 	public void addGroupForLoad(GroupInfo g){
 		mGroupQueueForLoading.add(g);
@@ -235,7 +276,7 @@ public class FriendsListFragment extends SherlockFragment
 					}
 				};
 				mFriendsListAdapter.mEmptyData.mBtnText = getString(R.string.re_try);
-				mFriendsListAdapter.mEmptyData.mText = getString(R.string.connect_server_err);
+				mFriendsListAdapter.mEmptyData.mText = getString(R.string.load_err);
 			}
 			//load data from cache first
 			addGroupForLoad(info);
@@ -245,7 +286,6 @@ public class FriendsListFragment extends SherlockFragment
 				public void onTaskDone(NetWorkEvent event) {
 					updateUIAfterLoadFriend();
 				}
-				
 				@Override
 				public void doInBackground() {
 					mFriendinfo = mFriendBelongToGroup.getMembersFromSpf();
@@ -281,17 +321,19 @@ public class FriendsListFragment extends SherlockFragment
 	}
 	void setTitle(String size){
 		String sub = null;
-		if ( mFriendBelongToGroup.getCapacity() != null ){
+		if ( mFriendBelongToGroup.getCapacity() != null 
+				&& mFriendBelongToGroup.getCapacity() != 0 ){
 			sub = "(" +size + "/" + mFriendBelongToGroup.getCapacity() +")";
 		} else {
-			sub = "(" +size +")";
+			sub = "(" +size + "/" + size + ")";
 		}
 		if (getSherlockActivity() != null )
 			getSherlockActivity().getSupportActionBar().setSubtitle(sub);
 	}
 	public void refreshList(){
 		if ( mFriendBelongToGroup != null ){
-			if ( SContactMainActivity.GROUP_OF_LOCAL_FRIEND.equals(mFriendBelongToGroup.getId() )){
+			if ( SContactMainActivity.GROUP_OF_LOCAL_FRIEND
+					.equals(mFriendBelongToGroup.getId() )){
 				loadLocalFriendsByGroup(mFriendBelongToGroup);
 			} else {
 				loadRomoteAccountsByGroup(mFriendBelongToGroup);

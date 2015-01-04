@@ -11,7 +11,7 @@ import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GroupInfo;
-import com.trible.scontact.pojo.PhoneAndGroupInfo;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
 import com.trible.scontact.pojo.UserRelationInfo;
 
 public class DBHelper extends OrmLiteSqliteOpenHelper{
@@ -46,7 +46,7 @@ public class DBHelper extends OrmLiteSqliteOpenHelper{
 		try {
 			TableUtils.createTableIfNotExists(arg1, ContactInfo.class);
 			TableUtils.createTableIfNotExists(arg1, GroupInfo.class);
-			TableUtils.createTableIfNotExists(arg1, PhoneAndGroupInfo.class);
+			TableUtils.createTableIfNotExists(arg1, UserGroupRelationInfo.class);
 			TableUtils.createTableIfNotExists(arg1, UserRelationInfo.class);
 		} catch (SQLException e) {
 			e.printStackTrace();

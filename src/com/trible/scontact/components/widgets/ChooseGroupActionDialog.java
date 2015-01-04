@@ -1,4 +1,4 @@
-package com.trible.scontact.components.widgets;
+ package com.trible.scontact.components.widgets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.http.Header;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,6 +19,10 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.DeleteCallback;
+import com.avos.avoscloud.SaveCallback;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.activity.CreateOrUpdateGroupActivity;
@@ -33,9 +38,11 @@ import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
 import com.trible.scontact.utils.MD5FileUtil;
+import com.trible.scontact.value.GlobalValue;
 import com.trible.scontact.value.RequestCode;
 
 public class ChooseGroupActionDialog{
@@ -148,41 +155,29 @@ public class ChooseGroupActionDialog{
 			
 			@Override
 			public void onDismiss(DialogInterface dialog) {
-				SContactAsyncHttpClient.cancel(mContext, true);
+//				SContactAsyncHttpClient.cancel(mContext, true);
 			}
 		});
 		mLoadingDialog.show();
-		SContactAsyncHttpClient.post(
-				GroupParams.getDeleteGroupParams(gInfo.getId()),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
-						GroupInfo result = GsonHelper.getInfoFromJson(arg2, GroupInfo.class);
-						if ( result != null && result.getId() != null ){
-							if ( mGroupActionListener != null ){
-								mGroupActionListener.onAparted(result);
-							}
-							Intent intent = new Intent();
-							intent.putExtra(APART, gInfo);
-							mContext.setResult(mContext.RESULT_OK, intent);
-							mContext.finish();
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
+		gInfo.setStatus(GlobalValue.GSTATUS_DELETED);
+		gInfo.setFetchWhenSave(true);
+		gInfo.saveInBackground(new SaveCallback() {
+			@Override
+			public void done(AVException arg0) {
+				mLoadingDialog.getDialog().dismissDialogger();
+				if(arg0 == null){
+					if ( mGroupActionListener != null ){
+						mGroupActionListener.onAparted(gInfo);
 					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
-						Bog.toast(R.string.connect_server_err);
-					}
-					@Override
-					public void onFinish() {
-						super.onFinish();
-						mLoadingDialog.getDialog().dismissDialogger();
-					}
-				});
+					Intent intent = new Intent();
+					intent.putExtra(APART, gInfo);
+					mContext.setResult(Activity.RESULT_OK, intent);
+					mContext.finish();
+				} else {
+					Bog.toast(R.string.connect_server_err);
+				}
+			}
+		});
 	}
 	
 	public void exitGroup(){
@@ -190,37 +185,27 @@ public class ChooseGroupActionDialog{
 		mLoadingDialog.setTipText(R.string.waiting);
 		AccountInfo user = AccountInfo.getInstance();
 		mLoadingDialog.show();
-		SContactAsyncHttpClient.post(
-				PhoneAndGroupParams.getExitGroupParams(gInfo.getId(), user.getId()),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						super.onSuccess(arg0, arg1, arg2);
-						GroupInfo result = GsonHelper.getInfoFromJson(arg2, GroupInfo.class);
-						if ( result != null && result.getId() != null ){
-							if ( mGroupActionListener != null ){
-								mGroupActionListener.onExited(result);
-							}
-							Intent intent = new Intent();
-							intent.putExtra(EXIT, gInfo);
-							mContext.setResult(mContext.RESULT_OK, intent);
-							mContext.finish();
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
+		AVQuery<UserGroupRelationInfo> delete = AVQuery.getQuery(UserGroupRelationInfo.class);
+		delete.whereEqualTo(UserGroupRelationInfo.FieldName.group, gInfo);
+		delete.whereEqualTo(UserGroupRelationInfo.FieldName.user, user);
+		delete.include(UserGroupRelationInfo.FieldName.group);
+		delete.deleteAllInBackground(new DeleteCallback() {
+			
+			@Override
+			public void done(AVException arg0) {
+				if ( arg0 == null ){
+					if ( mGroupActionListener != null ){
+					mGroupActionListener.onExited(gInfo);
 					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						super.onFailure(arg0, arg1, arg2, arg3);
-						Bog.toast(R.string.connect_server_err);
-					}
-					@Override
-					public void onFinish() {
-						super.onFinish();
-						mLoadingDialog.getDialog().dismissDialogger();
-					}
-				});
+					Intent intent = new Intent();
+					intent.putExtra(EXIT, gInfo);
+					mContext.setResult(mContext.RESULT_OK, intent);
+					mContext.finish();
+				} else {
+					Bog.toast(R.string.connect_server_err);
+				}
+			}
+		});
 	}
 	
 	public interface OnGroupActionListener{

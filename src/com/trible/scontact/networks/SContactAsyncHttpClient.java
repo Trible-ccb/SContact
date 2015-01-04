@@ -83,8 +83,8 @@ public class SContactAsyncHttpClient {
 	public static void refreshCookie(){
 		DefaultHttpClient dhc = ScontactHttpClient.client;
 		DefaultHttpClient dhc2 = (DefaultHttpClient) SContactAsyncHttpClient.client.getHttpClient();
-		setCookies(dhc2);
-		setCookies(dhc);
+//		setCookies(dhc2);
+//		setCookies(dhc);
 	}
 	public static void setCookies(DefaultHttpClient dhc) {
 //		DefaultHttpClient dhc = ScontactHttpClient.client;
@@ -94,9 +94,9 @@ public class SContactAsyncHttpClient {
 		if ( AccountInfo.getInstance().getId() != null ){
 			uid = AccountInfo.getInstance().getId() + "";
 		}
-		if ( AccountInfo.getInstance().getCookie() != null ){
-			cookie = AccountInfo.getInstance().getCookie();
-		}
+//		if ( AccountInfo.getInstance().getCookie() != null ){
+//			cookie = AccountInfo.getInstance().getCookie();
+//		}
 		
 		BasicClientCookie cookie1 = new BasicClientCookie(
 				"requestcookie",

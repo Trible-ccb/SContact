@@ -34,7 +34,7 @@ import com.trible.scontact.pojo.ErrorInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.ValidateInfo;
 import com.trible.scontact.pojo.GsonHelper;
-import com.trible.scontact.pojo.PhoneAndGroupInfo;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
 
@@ -110,31 +110,31 @@ public class SelectContactsActivity extends CustomSherlockFragmentActivity
 	void loadMyAllContacts(){
 		mLoadingDialog.setTipText(R.string.waiting);
 		mLoadingDialog.show();
-		SContactAsyncHttpClient.post(ContactParams.getUserContactsParams(mUserInfo.getId()),
-				null, new AsyncHttpResponseHandler(){
-			@Override
-			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-				super.onSuccess(arg0, arg1, arg2);
-				myAllContacts = GsonHelper.getInfosFromJson(arg2, new ContactInfo().listType());
-				if ( myAllContacts != null ){
-					mAdapter.setData(myAllContacts);
-				} else {
-					ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-					Bog.toast( err == null ? "" : err.toString());
-				}
-			}
-			@Override
-			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-					Throwable arg3) {
-				super.onFailure(arg0, arg1, arg2, arg3);
-				Bog.toast( R.string.connect_server_err );
-			}
-			@Override
-			public void onFinish() {
-				super.onFinish();
-				mLoadingDialog.getDialog().dismissDialogger();
-			}
-		});
+//		SContactAsyncHttpClient.post(ContactParams.getUserContactsParams(mUserInfo.getId()),
+//				null, new AsyncHttpResponseHandler(){
+//			@Override
+//			public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+//				super.onSuccess(arg0, arg1, arg2);
+//				myAllContacts = GsonHelper.getInfosFromJson(arg2, new ContactInfo().listType());
+//				if ( myAllContacts != null ){
+//					mAdapter.setData(myAllContacts);
+//				} else {
+//					ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
+//					Bog.toast( err == null ? "" : err.toString());
+//				}
+//			}
+//			@Override
+//			public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+//					Throwable arg3) {
+//				super.onFailure(arg0, arg1, arg2, arg3);
+//				Bog.toast( R.string.connect_server_err );
+//			}
+//			@Override
+//			public void onFinish() {
+//				super.onFinish();
+//				mLoadingDialog.getDialog().dismissDialogger();
+//			}
+//		});
 	}
 	
 //	void onSureToJoin(){

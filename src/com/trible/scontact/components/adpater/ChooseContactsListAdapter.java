@@ -69,7 +69,8 @@ public class ChooseContactsListAdapter extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		return mDatas.get(position).getId();
+//		return mDatas.get(position).getId();
+		return position;
 	}
 
 	@Override

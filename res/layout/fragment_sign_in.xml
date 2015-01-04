@@ -19,13 +19,26 @@
 				    android:src="@drawable/ic_launcher"
 				    android:layout_centerHorizontal="true"
 				    android:id="@+id/logo"
-				    android:visibility="invisible"
+				    android:visibility="gone"
 				     />
+		    <TextView
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:textSize="18sp"
+		        android:padding="6dp"
+		        android:textColor="@color/red"
+		        android:text="@string/go_sign_up"
+		        android:layout_alignParentRight="true"
+		        android:id="@+id/go_sign_up"
+		        android:background="@drawable/pressor_bg_white_border"
+		        android:layout_marginTop="16dp"
+		        android:layout_marginBottom="16dp"
+		        />
 	        <LinearLayout 
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
 	            android:orientation="vertical"
-	            android:layout_below="@id/logo"
+	            android:layout_below="@id/go_sign_up"
 	            android:id="@+id/sign_input_layout"
 	            android:gravity="center_vertical"
 	            android:background="@drawable/bg_white_border"

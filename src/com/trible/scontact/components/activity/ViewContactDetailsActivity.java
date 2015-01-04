@@ -84,10 +84,11 @@ public class ViewContactDetailsActivity extends CustomSherlockFragmentActivity
 			
 			@Override
 			public void onSubmit(ContactInfo info) {
-				info.setId(mContactInfo.getId());
+//				info.setId(mContactInfo.getId());
 				info.setStatus(mContactInfo.getStatus());
-				info.setUserId(mContactInfo.getUserId());
-				info.setLastestUsedTime(System.currentTimeMillis());
+//				info.setUserId(mContactInfo.getUserId());
+				info.setOwner(mContactInfo.getOwner());
+//				info.setLastestUsedTime(System.currentTimeMillis());
 				doEditContact(info);
 				mContactDialog.getDialog().dismissDialogger();
 			}
@@ -115,64 +116,64 @@ public class ViewContactDetailsActivity extends CustomSherlockFragmentActivity
 	void loadContactInfos(){
 		final LoadingDialog dialog = new LoadingDialog(this);
 		dialog.setTipText(R.string.processing);
-		SContactAsyncHttpClient.post(
-				GroupParams.getContactGroupParams(mContactInfo.getId()),
-				null,
-				new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						List<GroupInfo> result = GsonHelper.getInfosFromJson(
-								arg2, new GroupInfo().listType());
-						if ( result == null ){
-						} else {
-							if ( ListUtil.isNotEmpty(result) ){
-								SectionData groupsection = new SectionData(
-										getString(R.string.search_group_lable));
-								mObjects.add(groupsection);
-								mObjects.addAll(result);
-							}
-						}
-					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(R.string.connect_server_err);
-					}
-					@Override
-					public void onFinish() {
-						SContactAsyncHttpClient.post(
-								AccountParams.getAccountByContactIdParams(mContactInfo.getId()),
-								null,
-								new AsyncHttpResponseHandler(){
-									@Override
-									public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-										List<AccountInfo> result = GsonHelper.getInfosFromJson(
-												arg2, new AccountInfo().listType());
-										if ( result == null ){
-										} else {
-											if ( ListUtil.isNotEmpty(result) ){
-												SectionData friendsection = new SectionData(
-														getString(R.string.search_people_lable));
-												mObjects.add(friendsection);
-												mObjects.addAll(result);
-											}
-											
-										}
-									}
-									@Override
-									public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-											Throwable arg3) {
-										Bog.toast(R.string.connect_server_err);
-									}
-									@Override
-									public void onFinish() {
-										mAdapter.setData(mObjects);
-										mAdapter.showEmptyView(true);
-										dialog.getDialog().dismissDialogger();
-									}
-						});
-					}
-		});
+//		SContactAsyncHttpClient.post(
+//				GroupParams.getContactGroupParams(mContactInfo.getId()),
+//				null,
+//				new AsyncHttpResponseHandler(){
+//					@Override
+//					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+//						List<GroupInfo> result = GsonHelper.getInfosFromJson(
+//								arg2, new GroupInfo().listType());
+//						if ( result == null ){
+//						} else {
+//							if ( ListUtil.isNotEmpty(result) ){
+//								SectionData groupsection = new SectionData(
+//										getString(R.string.search_group_lable));
+//								mObjects.add(groupsection);
+//								mObjects.addAll(result);
+//							}
+//						}
+//					}
+//					@Override
+//					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+//							Throwable arg3) {
+//						Bog.toast(R.string.connect_server_err);
+//					}
+//					@Override
+//					public void onFinish() {
+//						SContactAsyncHttpClient.post(
+//								AccountParams.getAccountByContactIdParams(mContactInfo.getId()),
+//								null,
+//								new AsyncHttpResponseHandler(){
+//									@Override
+//									public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
+//										List<AccountInfo> result = GsonHelper.getInfosFromJson(
+//												arg2, new AccountInfo().listType());
+//										if ( result == null ){
+//										} else {
+//											if ( ListUtil.isNotEmpty(result) ){
+//												SectionData friendsection = new SectionData(
+//														getString(R.string.search_people_lable));
+//												mObjects.add(friendsection);
+//												mObjects.addAll(result);
+//											}
+//											
+//										}
+//									}
+//									@Override
+//									public void onFailure(int arg0, Header[] arg1, byte[] arg2,
+//											Throwable arg3) {
+//										Bog.toast(R.string.connect_server_err);
+//									}
+//									@Override
+//									public void onFinish() {
+//										mAdapter.setData(mObjects);
+//										mAdapter.showEmptyView(true);
+//										dialog.getDialog().dismissDialogger();
+//									}
+//						});
+//					}
+//		});
 		
 	}
 	@Override
@@ -218,25 +219,25 @@ public class ViewContactDetailsActivity extends CustomSherlockFragmentActivity
 				final LoadingDialog ldialog = new LoadingDialog(ViewContactDetailsActivity.this);
 				ldialog.setTipText(R.string.processing);
 				ldialog.show();
-				SContactAsyncHttpClient.post(
-						ContactParams.getDeleteContactParams(mContactInfo.getId()),
-						null,
-						new AsyncHttpResponseHandler(){
-							@Override
-							public void onSuccess(int arg0, Header[] arg1,
-									byte[] arg2) {
-								finish();
-							}
-							@Override
-							public void onFailure(int arg0, Header[] arg1,
-									byte[] arg2, Throwable arg3) {
-								Bog.toast(R.string.connect_server_err);
-							}
-							@Override
-							public void onFinish() {
-								ldialog.getDialog().dismissDialogger();
-							}
-						});
+//				SContactAsyncHttpClient.post(
+//						ContactParams.getDeleteContactParams(mContactInfo.getId()),
+//						null,
+//						new AsyncHttpResponseHandler(){
+//							@Override
+//							public void onSuccess(int arg0, Header[] arg1,
+//									byte[] arg2) {
+//								finish();
+//							}
+//							@Override
+//							public void onFailure(int arg0, Header[] arg1,
+//									byte[] arg2, Throwable arg3) {
+//								Bog.toast(R.string.connect_server_err);
+//							}
+//							@Override
+//							public void onFinish() {
+//								ldialog.getDialog().dismissDialogger();
+//							}
+//						});
 			}
 			@Override
 			public void onNoButton() {

@@ -14,6 +14,9 @@ import android.widget.ListView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.DeleteCallback;
+import com.avos.avoscloud.SaveCallback;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.adpater.ContactTypeSpinnerAdapter;
@@ -163,67 +166,48 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 		isShowInput = true;
 	}
 	
-	void doAddContact(ContactInfo info){
+	void doAddContact(final ContactInfo info){
 		mDialog.setTipText(R.string.processing);
 		mDialog.show();
-		SContactAsyncHttpClient.post(
-				ContactParams.getAddContactParams(info),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						ContactInfo result = GsonHelper.getInfoFromJson(arg2, ContactInfo.class);
-						if ( result != null && result.getId() != null ){
-							mAdapter.addData(result);
-							refreshTitle();
-							mContactChange = true;
-							closeAddAction();
-							mContactDialog.clear();
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
-					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(R.string.connect_server_err);
-					}
-					@Override
-					public void onFinish() {
-						mDialog.getDialog().dismissDialogger();
-					}
-				});
+		info.setFetchWhenSave(true);
+		info.saveInBackground(new SaveCallback() {
+			
+			@Override
+			public void done(AVException arg0) {
+				mDialog.getDialog().dismissDialogger();
+				if ( arg0 == null ){
+					mAdapter.addData(info);
+					refreshTitle();
+					mContactChange = true;
+					closeAddAction();
+					mContactDialog.clear();
+				} else {
+					Bog.toast(arg0.getMessage());
+				}
+			}
+		});
 	}
-	void doUpdateContact(ContactInfo info){
+	void doUpdateContact(final ContactInfo info){
 		mDialog.setTipText(R.string.processing);
 		mDialog.show();
-		SContactAsyncHttpClient.post(
-				ContactParams.getUpdateContactParams(info),
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						ContactInfo result = GsonHelper.getInfoFromJson(arg2, ContactInfo.class);
-						if ( result != null && result.getId() != null ){
-							int idx = mAdapter.indexOfContact(result);
-							if ( idx != -1 ){
-								mContacts.set(idx, result);
-							}
-							mAdapter.notifyDataSetChanged();
-							mContactChange = true;
-							closeAddAction();
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
+		info.saveInBackground(new SaveCallback() {
+			@Override
+			public void done(AVException arg0) {
+				mDialog.getDialog().dismissDialogger();
+				if ( arg0 == null ){
+					int idx = mAdapter.indexOfContact(info);
+					if ( idx != -1 ){
+						mContacts.set(idx, info);
 					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(R.string.connect_server_err);
-					}
-					@Override
-					public void onFinish() {
-						mDialog.getDialog().dismissDialogger();
-					}
-				});
+					mAdapter.notifyDataSetChanged();
+					mContactChange = true;
+					closeAddAction();
+				} else {
+					Bog.toast(arg0.getMessage());
+				}
+
+			}
+		});
 	}
 	void doDeleteContact(final ContactInfo info){
 		final YesOrNoTipDialog dialog = new YesOrNoTipDialog(
@@ -235,27 +219,19 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 				dialog.getDialog().dismissDialogger();
 				mDialog.setTipText(R.string.processing);
 				mDialog.show();
-				SContactAsyncHttpClient.post(
-						ContactParams.getDeleteContactParams(info.getId()),
-						null,
-						new AsyncHttpResponseHandler(){
-							@Override
-							public void onSuccess(int arg0, Header[] arg1,
-									byte[] arg2) {
-								mContacts.remove(info);
-								mAdapter.setData(mContacts);
-								refreshTitle();
-							}
-							@Override
-							public void onFailure(int arg0, Header[] arg1,
-									byte[] arg2, Throwable arg3) {
-								Bog.toast(R.string.connect_server_err);
-							}
-							@Override
-							public void onFinish() {
-								mDialog.getDialog().dismissDialogger();
-							}
-						});
+				info.deleteInBackground(new DeleteCallback() {
+					@Override
+					public void done(AVException arg0) {
+						mDialog.getDialog().dismissDialogger();
+						if ( arg0 == null ){
+							mContacts.remove(info);
+							mAdapter.setData(mContacts);
+							refreshTitle();
+						} else {
+							Bog.toast(arg0.getMessage());
+						}
+					}
+				});
 			}
 			@Override
 			public void onNoButton() {
@@ -267,14 +243,16 @@ public class MyContactsActivity extends CustomSherlockFragmentActivity
 	public void onActionClick(final ContactInfo c,String action) {
 		if ( getString(R.string.action_edit).equals(action) ){
 			final AddUpdateContactDialog contactDialog = new AddUpdateContactDialog(this);
-			contactDialog.setSelectType(c.getType(), c.getContact());
+//			contactDialog.setSelectType(c.getType(), c.getContact());
+			contactDialog.setSelectConactInfo(c);
 			contactDialog.setmListener(new OnSubmitContactListener() {
 				@Override
 				public void onSubmit(ContactInfo info) {
-					info.setId(c.getId());
+//					info.setId(c.getId());
 					info.setStatus(c.getStatus());
-					info.setUserId(c.getUserId());
-					info.setLastestUsedTime(System.currentTimeMillis());
+//					info.setUserId(c.getUserId());
+					info.setOwner(c.getOwner());
+//					info.setLastestUsedTime(System.currentTimeMillis());
 					doUpdateContact(info);
 					contactDialog.getDialog().dismissDialogger();
 				}

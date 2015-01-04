@@ -130,7 +130,7 @@ public class GlobalValue {
 	public static final String GTYPE_DEV = "dev";
 	public static final String GTYPE_LEVE1 = "level1";
 	public static final String GTYPE_LEVEL2 = "level2";
-	public static final String GTYPE_NULL = UTYPE_NORMAL;
+	public static final String GTYPE_NULL = GTYPE_NORMAL;
 	
 //	status : 0 used, 1 deleted.2 frozen
 	public static final Integer GSTATUS_USED = 0;

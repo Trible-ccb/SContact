@@ -34,7 +34,7 @@ public class LocalGroupControlller implements IGroupControl{
                 		cursor.getColumnIndex(Groups._ID)); // 组id  
                 String groupName = cursor.getString(
                 		cursor.getColumnIndex(Groups.TITLE)); // 组名  
-                ge.setId(Long.valueOf(groupId));
+                ge.setId(groupId+"");
                 ge.setDisplayName(groupName);
                 if ( !TextUtils.isEmpty(groupName) ){
                 	gInfos.add(ge);

@@ -8,7 +8,7 @@ import com.trible.scontact.database.dao.GroupDao;
 import com.trible.scontact.database.dao.UserRelationDao;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GroupInfo;
-import com.trible.scontact.pojo.PhoneAndGroupInfo;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
 import com.trible.scontact.pojo.UserRelationInfo;
 
 public class DaoMangers {
@@ -53,7 +53,7 @@ public class DaoMangers {
 	public static ContactGroupDao getContactGroupDao(){
 		if ( mContactGroupDao == null ){
 			try {
-				mContactGroupDao = DBHelper.getInstance().getDao(PhoneAndGroupInfo.class);
+				mContactGroupDao = DBHelper.getInstance().getDao(UserGroupRelationInfo.class);
 			} catch (SQLException e) {
 				e.printStackTrace();
 				throw new IllegalAccessError();

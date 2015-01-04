@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import com.avos.avoscloud.AVClassName;
+import com.avos.avoscloud.AVObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.trible.scontact.database.DBConstants;
 import com.trible.scontact.database.impl.GroupDaoImpl;
@@ -15,57 +15,55 @@ import com.trible.scontact.managers.PrefManager;
 import com.trible.scontact.utils.ListUtil;
 
 
-
+@AVClassName(GroupInfo.FieldName.TABLE_NAME)
 @DatabaseTable(tableName=DBConstants.GroupFieldName.table_name,daoClass=GroupDaoImpl.class)
-public class GroupInfo extends BaseInfo implements Serializable{
+public class GroupInfo extends AVObject implements Serializable{
 
 	private static final long serialVersionUID = 5992369539881658675L;
 	
-	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.GroupFieldName.group_status)
-	private Integer status;
-	
-	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.GroupFieldName.group_capacity)
-	Integer capacity;
-	
-	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.GroupFieldName.group_identify)
-	Integer identify;
+//	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.GroupFieldName.group_status)
+//	private Integer status;
+//	
+//	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.GroupFieldName.group_capacity)
+//	Integer capacity;
+//	
+//	@DatabaseField(dataType=DataType.INTEGER_OBJ,columnName=DBConstants.GroupFieldName.group_identify)
+//	Integer identify;
 	
 	private int groupMembers;
 	
-	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.GroupFieldName.group_create_time)
-	private Long createTime;
+//	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.GroupFieldName.group_create_time)
+//	private Long createTime;
 	
-	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.GroupFieldName.group_update_time)
-	Long updateTime;
+//	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.GroupFieldName.group_update_time)
+//	Long updateTime;
 	
-	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.GroupFieldName.id)
-	Long id;
+//	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.GroupFieldName.id)
+//	Long id;
+//	
+//	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.GroupFieldName.owner_user_id)
+//	Long ownerId;
 	
-	@DatabaseField(dataType=DataType.LONG_OBJ,columnName=DBConstants.GroupFieldName.owner_user_id)
-	Long ownerId;
+//	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.GroupFieldName.displayName)
+//	private String displayName;
 	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.GroupFieldName.displayName)
-	private String displayName;
+//	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.GroupFieldName.description)
+//	String description;
 	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.GroupFieldName.description)
-	String description;
+//	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.GroupFieldName.type)
+//	String type;
 	
-	@DatabaseField(dataType=DataType.STRING,columnName=DBConstants.GroupFieldName.type)
-	String type;
-	
-	public Long getId() {
-		return id;
+	public String getId() {
+		return getObjectId();
 	}
-	public void setId(Long id) {
-		this.id = id;
+	public void setId(String id) {
+		setObjectId(id);
 	}
-	
-	
-	public Long getOwnerId() {
-		return ownerId;
+	public AccountInfo getOwner(){
+		return getAVUser(FieldName.OWNER, AccountInfo.class);
 	}
-	public void setOwnerId(Long ownerId) {
-		this.ownerId = ownerId;
+	public void setOwner(AccountInfo account){
+		put(FieldName.OWNER, account);
 	}
 	public int getGroupMembers() {
 		return groupMembers;
@@ -75,120 +73,107 @@ public class GroupInfo extends BaseInfo implements Serializable{
 	}
 	
 	public Integer getStatus() {
-		return status;
+		return getInt(FieldName.STATUS);
 	}
 	/**
 	 * 
 	 */
 	public void setStatus(Integer status) {
-		this.status = status;
+		put(FieldName.STATUS, status);
 	}
 	
 	
 	public Integer getCapacity() {
-		return capacity;
+		return getInt(FieldName.CAPACITY);
 	}
 	/**
 	 * 
 	 */
 	public void setCapacity(Integer capacity) {
-		this.capacity = capacity;
+		put(FieldName.CAPACITY,capacity);
 	}
 	
 	
 	public String getDisplayName() {
-		return displayName;
+		return getString(FieldName.NAME);
 	}
 	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
+		put(FieldName.NAME, displayName);
 	}
-	
 	
 	public String getDescription() {
-		return description;
+		return getString(FieldName.DESCRIPTION);
 	}
 	public void setDescription(String description) {
-		this.description = description;
+		put(FieldName.DESCRIPTION, description);
 	}
-	
-	
+	public String getPinyinName() {
+		return getString(FieldName.PINYINNAME);
+	}
+	public void setPinyinName(String pinyin) {
+		put(FieldName.PINYINNAME, pinyin);
+	}
 	public String getType() {
-		return type;
+		return getString(FieldName.TYPE);
 	}
 	/**
 	 * 
 	 */
 	public void setType(String type) {
-		this.type = type;
+		put(FieldName.TYPE, type);
 	}
-	
-	
-	public Long getCreateTime() {
-		return createTime;
-	}
-	public void setCreateTime(Long createTime) {
-		this.createTime = createTime;
-	}
-	
-	
-	public Long getUpdateTime() {
-		return updateTime;
-	}
-	public void setUpdateTime(Long updateTime) {
-		this.updateTime = updateTime;
-	}
-	
 	
 	public Integer getIdentify() {
-		return identify;
+		return getInt(FieldName.IDENTIFY);
 	}
 	/**
 	 * 
 	 */
 	public void setIdentify(Integer identify) {
-		this.identify = identify;
+		put(FieldName.IDENTIFY, identify);
 	}
 	
 	@Override
 	public boolean equals(Object o) {
 		if ( o == null )return false;
 		if ( o instanceof GroupInfo ){
-			return ((GroupInfo)o).getId().equals(id);
+			return ((GroupInfo)o).getId().equals(getId());
 		}
 		return super.equals(o);
 	}
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		return getId().hashCode();
 	}
-	@Override
 	public Type listType() {
 		return new TypeToken<List<GroupInfo>>(){}.getType();
 	}
 	
 	public static List<GroupInfo> getGroupsFromSpf(){
-		PrefManager m = PrefManager.getInstance("groups"+AccountInfo.getInstance().getId() );
-		String ason = m.getString("groups");
-		List<GroupInfo> infos = new Gson().fromJson(ason,new GroupInfo().listType());
-		return infos;
+//		PrefManager m = PrefManager.getInstance("groups"+AccountInfo.getInstance().getId() );
+//		String ason = m.getString("groups");
+//		List<GroupInfo> infos = new Gson().fromJson(ason,new GroupInfo().listType());
+//		return infos;
+		return null;
 	}
 	public static void saveGroupsFromSpf(List<GroupInfo> groups){
 		if ( ListUtil.isEmpty(groups) )return;
-		PrefManager m = PrefManager.getInstance("groups"+AccountInfo.getInstance().getId() );
-		String ason = new Gson().toJson(groups);
-		m.putString("groups", ason);
+//		PrefManager m = PrefManager.getInstance("groups"+AccountInfo.getInstance().getId() );
+//		String ason = new Gson().toJson(groups);
+//		m.putString("groups", ason);
 	}
 	public List<AccountInfo> getMembersFromSpf(){
-		PrefManager m = PrefManager.getInstance(getSpfNameForSaveGroupMem() );
-		String ason = m.getString(getDisplayName()+"_"+getId());
-		List<AccountInfo> infos = new Gson().fromJson(ason,new AccountInfo().listType());
-		return infos;
+//		PrefManager m = PrefManager.getInstance(getSpfNameForSaveGroupMem() );
+//		String ason = m.getString(getDisplayName()+"_"+getId());
+//		List<AccountInfo> infos = new Gson().fromJson(ason,new AccountInfo().listType());
+//		return infos;
+		return null;
 	}
 	
 	public void saveMembersToSpf(List<AccountInfo> accounts){
-		PrefManager m = PrefManager.getInstance(getSpfNameForSaveGroupMem() );
-		String ason = new Gson().toJson(accounts);
-		m.putString(getDisplayName()+"_"+getId(), ason);
+//		PrefManager m = PrefManager.getInstance(getSpfNameForSaveGroupMem() );
+//		String ason = new Gson().toJson(accounts);
+//		m.putString(getDisplayName()+"_"+getId(), ason);
 	}
 	private String getSpfNameForSaveGroupMem(){
 		return "membersIn_" + getDisplayName() 
@@ -205,5 +190,17 @@ public class GroupInfo extends BaseInfo implements Serializable{
 	}
 	public void deleteSpf(){
 		PrefManager.getInstance().deleteFile(getSpfNameForSaveGroupMem());
+	}
+	public interface FieldName{
+		String TABLE_NAME = "Group_infos";
+		String NAME = "group_name"; //群组名字
+		String CAPACITY = "capacity";//群组容量
+		String STATUS = "status";//群状态
+		String IDENTIFY = "identify";//加群验证方式
+		String PHOTOURL = "photo_url";//群头像
+		String TYPE = "type";//群类型
+		String DESCRIPTION = "description";//群描述
+		String PINYINNAME = "pinyinname";//群组名字的拼音
+		String OWNER = "creator";//群创建者
 	}
 }

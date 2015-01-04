@@ -12,7 +12,7 @@ public class ContactParams {
 	
 	public static String getContactByIdParams(Long cid){
 		ContactInfo info = new ContactInfo();
-		info.setId(cid);
+		info.setId(cid+"");
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/get_contact"
@@ -55,7 +55,7 @@ public class ContactParams {
 	
 	public static String getDeleteContactParams(Long cid){
 		ContactInfo info = new ContactInfo();
-		info.setId(cid);
+		info.setId(cid+"");
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/delete_contact"
@@ -67,7 +67,7 @@ public class ContactParams {
 	
 	public static String getUserContactsParams(Long uid){
 		ContactInfo info = new ContactInfo();
-		info.setUserId(uid);
+//		info.setUserId(uid);
 		String v = new Gson().toJson(info);
 		String url = SContactApplication.getURL() + mPath 
 				+ "/get_user_contacts"

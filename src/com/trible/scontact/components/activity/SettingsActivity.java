@@ -26,7 +26,6 @@ import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
 import com.trible.scontact.utils.IntentUtil;
 import com.trible.scontact.value.GlobalValue;
-import com.umeng.message.PushAgent;
 
 public class SettingsActivity extends  CustomSherlockFragmentActivity implements OnClickListener{
 	
@@ -140,15 +139,16 @@ public class SettingsActivity extends  CustomSherlockFragmentActivity implements
 	}
 	
 	void doSignOut(){
-		uInfo.setStatus(GlobalValue.USTATUS_SIGN_OUT);
-		uInfo.saveToPref();
+//		uInfo.setStatus(GlobalValue.USTATUS_SIGN_OUT);
+//		uInfo.saveToPref();
+		uInfo.signOut();
 		DBHelper.reset();
 		clearPojoCache();
 		simpleDisplayActivity(SignInUpActivity.class);
 		Intent in = new Intent();
 		in.putExtra(SIGN_OUT_TAG, true);
 		setResult(Activity.RESULT_OK,in);
-		PushAgent.getInstance(this).disable();
+//		PushAgent.getInstance(this).disable();
 		UmengController.getService().loginout(this,null);
 		finish();
 	}

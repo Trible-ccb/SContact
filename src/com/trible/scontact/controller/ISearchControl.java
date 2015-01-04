@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface ISearchControl<T> {
 
-	List<T> searchByName(String qStr);
+	List<T> searchByName(String qStr); 
 	
 }

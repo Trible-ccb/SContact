@@ -17,6 +17,10 @@ import android.widget.RadioGroup;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.GetCallback;
+import com.avos.avoscloud.SaveCallback;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.ChooseContactsListDialog;
@@ -32,8 +36,10 @@ import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
 import com.trible.scontact.pojo.GroupInfo;
 import com.trible.scontact.pojo.GsonHelper;
+import com.trible.scontact.pojo.UserGroupRelationInfo;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.ListUtil;
+import com.trible.scontact.utils.StringUtil;
 import com.trible.scontact.value.GlobalValue;
 
 public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
@@ -55,6 +61,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 	List<ContactInfo> mContactsInGroup;//the contact list already in group
 	
 	public static final String RESULT_GROUP = "result_group";
+	public static GroupInfo LATEST_GROUP = null;//添加或者更新后的群组
 	
 	public static Bundle getIntentMyself(GroupInfo info){
 		Bundle b = new Bundle();
@@ -101,6 +108,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 	}
 	
 	void initViewData(){
+		LATEST_GROUP = null;
 		if ( mGroupInfo != null ){//edit
 			mGroupNameInput.getmEditText().setText(mGroupInfo.getDisplayName());
 			mGroupDespInput.getmEditText().setText(mGroupInfo.getDescription());
@@ -190,7 +198,7 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 		GroupInfo gInfo = new GroupInfo();
 		gInfo.setDisplayName(mGroupNameInput.getmEditText().getText().toString());
 		gInfo.setDescription(mGroupDespInput.getmEditText().getText().toString());
-		gInfo.setOwnerId(mUserInfo.getId());
+		gInfo.setOwner(mUserInfo);
 		int capatity = 50;
 		switch (mCapatityRadio.getCheckedRadioButtonId()) {
 			case R.id.capatity_normal:
@@ -224,50 +232,55 @@ public class CreateOrUpdateGroupActivity extends CustomSherlockFragmentActivity
 		return gInfo;
 	}
 	//add or edit group info
+	void saveToAVOS(){
+		
+	}
 	void onSave(){
 		if (!verifyInput()){
 			return;
 		}
+		final boolean isAdd;
 		mLoadingDialog.getDialog().dismissDialogger();
 		mLoadingDialog.show();
-		GroupInfo tmp = getGroupInfoFromInput();
-		List<ContactInfo> chooseContacts = mChooseContactsListDialog.getSelectedContacts();
+		final GroupInfo tmp = getGroupInfoFromInput();
+		final List<ContactInfo> chooseContacts = mChooseContactsListDialog.getSelectedContacts();
 		if ( mGroupInfo != null ){
-			mGroupInfo.setCapacity(tmp.getCapacity());
-			mGroupInfo.setDescription(tmp.getDescription());
-			mGroupInfo.setDisplayName(tmp.getDisplayName());
-			mGroupInfo.setIdentify(tmp.getIdentify());
+			isAdd = false;
+			if ( TextUtils.isEmpty(mGroupInfo.getType())){
+				tmp.setType(GlobalValue.GTYPE_NORMAL);
+			} else {
+				tmp.setType(mGroupInfo.getType());
+			}
+			tmp.setObjectId(mGroupInfo.getObjectId());
+		} else {
+			isAdd = true;
 		}
-		String url = mGroupInfo == null 
-				? GroupParams.getAddParams(tmp,ContactInfo.arrayToString(chooseContacts)) 
-						: GroupParams.getUpdateParams(mGroupInfo);
-		SContactAsyncHttpClient.post(
-				url,
-				null, new AsyncHttpResponseHandler(){
-					@Override
-					public void onFinish() {
-						mLoadingDialog.getDialog().dismissDialogger();
+		tmp.setStatus(GlobalValue.GSTATUS_USED);
+		tmp.setFetchWhenSave(true);
+		tmp.saveInBackground(new SaveCallback() {
+			@Override
+			public void done(AVException arg0) {
+				if ( arg0 == null){
+					Bog.toast(R.string.done);
+					LATEST_GROUP = tmp;
+					Intent intent = new Intent();
+					intent.putExtra(RESULT_GROUP, tmp);
+					setResult(RESULT_OK, intent);
+					finish();
+					if ( isAdd ){
+						UserGroupRelationInfo ugri = new UserGroupRelationInfo();
+						ugri.setUser(AccountInfo.getInstance());
+						ugri.setContacts(chooseContacts);
+						ugri.setGroup(tmp);
+						ugri.saveInBackground();
 					}
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						GroupInfo result = null;
-						result = GsonHelper.getInfoFromJson(arg2, GroupInfo.class);
-						if ( result != null && result.getId() != null ){
-							Bog.toast(R.string.done);
-							Intent intent = new Intent();
-							intent.putExtra(RESULT_GROUP, result);
-							setResult(RESULT_OK, intent);
-							finish();
-						} else {
-							Bog.toastErrorInfo(arg2);
-						}
-					}
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(getString(R.string.connect_server_err));
-					}
-				});
+
+				} else {
+					Bog.toast(StringUtil.catStringFromResId(
+							R.string.submit,R.string.failed));
+				}
+			}
+		});
 	}
 	
 	@Override

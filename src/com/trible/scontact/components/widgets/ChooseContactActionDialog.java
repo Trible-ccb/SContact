@@ -93,8 +93,8 @@ public class ChooseContactActionDialog{
 					IntentUtil.sendEmail(mContext, contact, "", "");
 				} else if ( mContext.getString(R.string.invite_lable).equals(action) ){
 					if ( StringUtil.isValidEmail(contact) ){
-						IntentUtil.sendEmail(
-								mContext, contact
+						IntentUtil.sendEmail(mContext,
+								contact
 								, "", mContext.getString(R.string.promote_email));
 					} else if ( StringUtil.isValidPhoneNumber(contact) ){
 						IntentUtil.sendMsg(mContext, contact,mContext.getString(R.string.promote_msg));
@@ -131,10 +131,14 @@ public class ChooseContactActionDialog{
 			new TypeHandler(mContext) {
 				@Override
 				protected void onPhone() {
-					if ( TimeUtil.withinWeek(mContactInfo.getLastestUsedTime()) ){
+					long ms = 0;
+					if ( mContactInfo.getUpdatedAt() != null ){
+						ms = mContactInfo.getUpdatedAt().getTime();
+					}
+					if ( TimeUtil.withinWeek(ms) ){
 						dialogger.setTitleText(
 								mContext.getString(R.string.contact_used_within_week) + contact);
-					} else if (TimeUtil.withinWeek(mContactInfo.getLastestUsedTime())){
+					} else if (TimeUtil.withinWeek(ms)){
 						dialogger.setTitleText(
 								mContext.getString(R.string.contact_used_within_month) + contact);
 					} 

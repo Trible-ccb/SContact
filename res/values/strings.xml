@@ -36,6 +36,8 @@
     <string name="action_inbox">Inbox</string>
     
     <!-- toast text -->
+    <string name="send_valid_code">valid code has been send.</string>
+    <string name="pls_input_correct_phone">pls input correct phone number.</string>
     <string name="notify_register"> Notify register </string>
     <string name="added_to_clip"> is Added to clipboard.</string>
     <string name="cannot_take_photo">Cannot take photo.</string>
@@ -72,10 +74,15 @@
     <string name="hint_contact">Email or Numbers etc.</string>
     <string name="hint_action_search">Group Or Friend</string>
     <string name="hint_username">Username </string>
+    <string name="hint_login_username">Username or Phone Number </string>
+    <string name="hint_signup_username">Username(2~30 characters)</string>
+    <string name="hint_signup_password">password(6~20 characters) </string>
+    <string name="hint_reset_password">new password(6~20 characters) </string>
+    <string name="hint_password"> Password </string>
     
-    <string name="hint_password">Password </string>
-    <string name="hint_email">Email</string>
-    <string name="hint_phone">Phone</string>
+    <string name="hint_email"> Email</string>
+    <string name="hint_phone"> Phone Number</string>
+    <string name="hint_valid_code">Valid Code</string>
     <string name="hint_group_name">Group name</string>
     <string name="hint_description">Description</string>
     <string name="hint_public_group">Anyone can find this group by search.</string>
@@ -83,6 +90,9 @@
     <!-- long text -->
     
     <!-- label / title text -->
+    <string name="are_you_sure_to_delete_valid">Are you sure to delete this item？</string>
+    <string name="refetch_valid_code">Refetch after %ds</string>
+    <string name="fetch_valid_code">Fetch Valid Code</string>
     <string name="login_sina">Login with Sina</string>
     <string name="login_qq">Login with QQ</string>
     <string name="use_qq_profile">Use QQ Profile</string>
@@ -101,6 +111,9 @@
     <string name="forget_pwd">Forget Password</string>
     <string name="sign_in">Sign In</string>
     <string name="sign_up">Sign Up</string>
+    <string name="reset_pwd">Reset password </string>
+    <string name="go_sign_up">Sign Up</string>
+    <string name="go_sign_in">Sign In</string>
     <string name="accept">Accept</string>
     <string name="reject">Reject</string>
     <string name="ok">OK</string>
@@ -148,7 +161,7 @@
     <string name="friend_in_group_details_title">infos in %1$s .</string>
     <string name="discard_title">Discard</string> 
     <string name="setting_title">Setting</string>
-    <string name="add_title">Add</string>
+    <string name="add_title"> Add </string>
     <string name="remote_contacts">Remote Contacts</string>
     <string name="local_contacts">Local Contacts</string>
     <string name="local_friends">Local </string>

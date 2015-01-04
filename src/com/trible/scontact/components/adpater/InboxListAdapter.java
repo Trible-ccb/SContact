@@ -62,7 +62,8 @@ public class InboxListAdapter extends BaseAdapter {
 	}
 	@Override
 	public long getItemId(int position) {
-		return mDatas.get(position).getId();
+//		return mDatas.get(position).getId();
+		return position;
 	}
 
 	@Override
@@ -102,28 +103,28 @@ public class InboxListAdapter extends BaseAdapter {
 			}
 		});
 		String desp = null;
-		if ( info.getGroupId() == null ){
-			if ( info.getStartUser() != null 
-					&& info.getEndUser() != null )
+		if ( info.getGroupInfo() == null ){
+			if ( info.getFromUser() != null 
+					&& info.getToUser() != null )
 			desp = mContext.getString(
 					R.string.format_user_as_friend,
-					info.getStartUser().getDisplayName());
-		} else if ( info.getIs_group_to_user() == 0 ){
-			if (info.getStartUser() != null 
+					info.getFromUser().getDisplayName());
+		} else if ( !info.isGroupToUser() ){//申请加入群
+			if (info.getFromUser() != null 
 					&& info.getGroupInfo() != null )
 			desp = mContext.getString(
 					R.string.format_user_join_group,
-					info.getStartUser().getDisplayName(),
+					info.getFromUser().getDisplayName(),
 					info.getGroupInfo().getDisplayName());
-		} else if (info.getStartUser() != null 
-				&& info.getGroupInfo() != null ){
+		} else if (info.getFromUser() != null 
+				&& info.getGroupInfo() != null ){//群邀请信息
 			desp = mContext.getString(
 					R.string.format_invite_user_join_group,
-					info.getStartUser().getDisplayName(),
+					info.getFromUser().getDisplayName(),
 					info.getGroupInfo().getDisplayName());
 		}
 		mHolder.desp.setText(desp);
-		mHolder.time.setText(TimeUtil.toTimeString(info.getCreateTime()));
+		mHolder.time.setText(TimeUtil.dateToSimpleString(info.getCreatedAt()));
 		return convertView;
 	}
 

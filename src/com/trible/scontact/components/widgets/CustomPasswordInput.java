@@ -17,9 +17,11 @@ public class CustomPasswordInput {
 	Activity mContext;
 	EditText mEditText;
 	CheckBox mBox;
+	View mRoot;
 	
 	public CustomPasswordInput(View rootView) {
 //		mContext = rootView.getContext();
+		mRoot = rootView;
 		mEditText = (EditText) rootView.findViewById(R.id.edt_input_password);
 		mBox = (CheckBox) rootView.findViewById(R.id.checkbox);
 		mBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -36,6 +38,19 @@ public class CustomPasswordInput {
 		});
 	}
 
+	public View getmRoot() {
+		return mRoot;
+	}
+
+	public void setmRoot(View mRoot) {
+		this.mRoot = mRoot;
+	}
+	public void show(){
+		getmRoot().setVisibility(View.VISIBLE);
+	}
+	public void hide(){
+		getmRoot().setVisibility(View.GONE);
+	}
 	public EditText getmEditText() {
 		return mEditText;
 	}

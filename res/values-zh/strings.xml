@@ -32,6 +32,8 @@
     <string name="action_inbox">消息列表</string>
     
     <!-- toast text -->
+    <string name="send_valid_code">验证码已发送</string>
+    <string name="pls_input_correct_phone">请输入正确的手机号</string>
     <string name="notify_register"> 注册消息推送 </string>
     <string name="added_to_clip"> 已添加到粘贴板</string>
     <string name="cannot_take_photo">不支持照相</string>
@@ -44,7 +46,7 @@
     <string name="pls_input_correct"> 请正确输入内容 </string>
     <string name="pls_input_others">请输入其他字符 </string>
     <string name="empty">\t为空 </string>     
-    <string name="username_rule">\t不能为空 </string>
+    <string name="username_rule">\t至少两个字符 </string>
     <string name="password_rule"> 至少6个字符 </string>
     <string name="load_contacts_err"> 加载联系方式失败</string>
     <string name="loading_groups">正在加载群列表</string>
@@ -55,7 +57,7 @@
     <string name="done">完成</string>
     <string name="failed">失败</string>
     <string name="update"> 更新 </string>
-    <string name="invalid_account">账户名或密码不正确.</string>
+    <string name="invalid_account">用户名或密码不正确.</string>
     <string name="success">成功.</string>
     <string name="waiting">稍后..</string>
     <string name="hint_contacts_list">联系列表</string>
@@ -67,11 +69,15 @@
     <string name="hint_input_type">例如地址,公司</string>
     <string name="hint_contact">邮箱或者号码等.</string>
     <string name="hint_action_search">群名或者好友名</string>
-    <string name="hint_username">账户名 </string>
-    
-    <string name="hint_password">密码 </string>
+    <string name="hint_username">用户名 </string>
+    <string name="hint_login_username">用户名或手机号 </string>
+    <string name="hint_signup_username">用户名(2~30个字符)</string>
+    <string name="hint_signup_password">密码(6~20个字符) </string>
+    <string name="hint_reset_password">新密码(6~20个字符) </string>
+    <string name="hint_password"> 密码 </string>
     <string name="hint_email">邮箱</string>
     <string name="hint_phone">手机号</string>
+    <string name="hint_valid_code">验证码</string>
     <string name="hint_group_name">群名字</string>
     <string name="hint_description">描述</string>
     <string name="hint_public_group">任何人可以搜索到该群组.</string>
@@ -79,6 +85,9 @@
     <!-- long text -->
     
     <!-- label / title text -->
+    <string name="are_you_sure_to_delete_valid">你确定删除这条请求？</string>
+    <string name="refetch_valid_code">%ds后重新获取</string>
+    <string name="fetch_valid_code">获取验证码</string>
     <string name="login_sina">新浪微博登录</string>
     <string name="login_qq">QQ登录</string>
     <string name="use_qq_profile">使用QQ资料</string>
@@ -97,12 +106,15 @@
     <string name="forget_pwd">忘记密码</string>
     <string name="sign_in">登录</string>
     <string name="sign_up">注册</string>
+    <string name="reset_pwd">更改密码</string>
+    <string name="go_sign_up">先注册</string>
+    <string name="go_sign_in">去登录</string>
     <string name="accept">同意</string>
     <string name="reject">拒绝</string>
     <string name="ok">确定</string>
     <string name="email_label"> 邮箱 </string>
     <string name="phone_number_lable"> 手机号 </string>
-    <string name="username_lable"> 账户名 </string>
+    <string name="username_lable"> 用户名 </string>
     <string name="password_lable"> 密码 </string>
     <string name="photo_lable"> 头像 </string>
     <string name="gender_lable"> 性别 </string>
@@ -144,7 +156,7 @@
     <string name="friend_in_group_details_title">在 %1$s 的信息</string>
     <string name="discard_title">丢弃</string> 
     <string name="setting_title">设置</string>
-    <string name="add_title">添加</string>
+    <string name="add_title"> 添加 </string>
     <string name="remote_contacts">删除联系方式</string>
     <string name="local_contacts">本地联系方式</string>
     <string name="local_friends">本地联系人 </string>

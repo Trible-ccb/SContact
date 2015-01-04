@@ -14,11 +14,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVUser;
+import com.avos.avoscloud.GetCallback;
+import com.avos.avoscloud.SaveCallback;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.tencent.connect.UserInfo;
-import com.tencent.tauth.IUiListener;
-import com.tencent.tauth.Tencent;
-import com.tencent.tauth.UiError;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.ChoosePictureDialog;
 import com.trible.scontact.components.widgets.ChoosePictureDialog.OnPickListener;
@@ -31,7 +33,6 @@ import com.trible.scontact.networks.ListImageAsynTask.ItemImageLoadingListner;
 import com.trible.scontact.networks.SContactAsyncHttpClient;
 import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.pojo.AccountInfo;
-import com.trible.scontact.pojo.GsonHelper;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
 import com.trible.scontact.utils.StringUtil;
@@ -68,14 +69,19 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 			public void onSubmit(String input) {
 				if ( TextUtils.isEmpty(input) )return;
 				String title = mInputDialog.getDialog().getTitleText();
-				AccountInfo tmp = AccountInfo.getInstance().copy();
+				String key = null;
+				String value = null;
 				if ( getString(R.string.realname_lable).equals(title) ){
-					tmp.setRealName(input);
+					key = AccountInfo.FieldName.REALNAME;
+					value = input;
 				} else if ( getString(R.string.description_lable).equals(title) ){
-					tmp.setDescription(input);
+					key = AccountInfo.FieldName.DESCRIPTION;
+					value = input;
 				} else if ( getString(R.string.gender_lable).equals(title) ){
+					key = AccountInfo.FieldName.GENDER;
+					value = input;
 				}
-				updateAccountToServer(tmp);
+				updateAccountToServer(key,value);
 				mInputDialog.getDialog().dismissDialogger();
 			}
 		});
@@ -116,10 +122,11 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 				mInputDialog.getDialog().setTitleText(getString(R.string.description_lable));
 				mInputDialog.mEditText.setHint("");
 				String va = mDesription.mValue.getText().toString();
-				if ( !unset.equals(v) ){
+				if ( !unset.equals(va) ){
 					mInputDialog.mEditText.setText(va);
 				} else {
 					mInputDialog.mEditText.setText("");
+					mInputDialog.mEditText.setHint(unset);
 				}
 				mInputDialog.show();
 			}
@@ -132,30 +139,32 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 				mInputDialog.getDialog().setTitleText(getString(R.string.realname_lable));
 				mInputDialog.mEditText.setHint("");
 				String va = mRealname.mValue.getText().toString();
-				if ( !unset.equals(v) ){
+				if ( !unset.equals(va) ){
 					mInputDialog.mEditText.setText(va);
 				} else {
 					mInputDialog.mEditText.setText("");
+					mInputDialog.mEditText.setHint(unset);
 				}
 				mInputDialog.show();
 			}
 		});
 		
-		mGender.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				mInputDialog.getDialog().setTitleText(getString(R.string.gender_lable));
-				mInputDialog.mEditText.setHint("");
-				String va = mGender.mValue.getText().toString();
-				if ( !unset.equals(v) ){
-					mInputDialog.mEditText.setText(va);
-				} else {
-					mInputDialog.mEditText.setText("");
-				}
-				mInputDialog.show();
-			}
-		});
+//		mGender.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View v) {
+//				mInputDialog.getDialog().setTitleText(getString(R.string.gender_lable));
+//				mInputDialog.mEditText.setHint("");
+//				String va = mGender.mValue.getText().toString();
+//				if ( !unset.equals(va) ){
+//					mInputDialog.mEditText.setText(va);
+//				} else {
+//					mInputDialog.mEditText.setText("");
+//					mInputDialog.mEditText.setHint(unset);
+//				}
+//				mInputDialog.show();
+//			}
+//		});
 		mMyContacts.setKeyText(getString(R.string.action_my_contacts));
 		mMyContacts.mRoot.setVisibility(View.GONE);
 //		mMyContacts.setValueText(
@@ -183,7 +192,6 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 	
 	void refreshInfo(){
 		mUserInfo = AccountInfo.getInstance();
-		
 		mPhoto.setKeyText(getString(R.string.photo_lable));
 		mPhoto.setValueText("");
 		if ( mPhotoLoaded ){
@@ -238,29 +246,28 @@ public class MyProfileActivity extends CustomSherlockFragmentActivity implements
 		mGender.setValueText(gender);
 	}
 	
-	void updateAccountToServer(final AccountInfo tmp){
+	void updateAccountToServer(final String key,final Object value){
 		mLoadingDialog = new LoadingDialog(this);
 		mLoadingDialog.show();
-		SContactAsyncHttpClient.post(AccountParams.getUpdateParams(tmp), null,
-				new AsyncHttpResponseHandler(){
-					@Override
-					public void onFailure(int arg0, Header[] arg1, byte[] arg2,
-							Throwable arg3) {
-						Bog.toast(
-								StringUtil.catStringFromResId(
-										MyProfileActivity.this, 
-										R.string.update,R.string.failed));
-					}
-					@Override
-					public void onSuccess(int arg0, Header[] arg1, byte[] arg2) {
-						AccountInfo.setAccountInfo(tmp);
-						AccountInfo.getInstance().saveToPref();
-						refreshInfo();
-					}
-					@Override
-					public void onFinish() {
-						mLoadingDialog.getDialog().dismissDialogger();
-					}
+		final Object oldv = AccountInfo.getInstance().get(key);
+		AccountInfo.getInstance().put(key, value);
+		AccountInfo.getInstance().setFetchWhenSave(true);
+		AccountInfo.getInstance().saveInBackground(new SaveCallback() {
+			@Override
+			public void done(AVException arg0) {
+				mLoadingDialog.getDialog().dismissDialogger();
+				if (arg0 == null){
+					AccountInfo.getInstance().put(key, value);
+					refreshInfo();
+				} else {
+					AccountInfo.getInstance().put(key, oldv);
+					refreshInfo();
+					Bog.toast(
+					StringUtil.catStringFromResId(
+							R.string.update,R.string.failed));
+					Bog.v(arg0.getMessage());
+				}
+			}
 		});
 	}
 }

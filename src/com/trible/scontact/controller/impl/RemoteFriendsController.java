@@ -5,8 +5,15 @@ import java.util.List;
 
 import android.content.Context;
 
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVQuery.CachePolicy;
+import com.avos.avoscloud.FindCallback;
+import com.avos.avoscloud.GetCallback;
 import com.trible.scontact.controller.IFriendsControl;
 import com.trible.scontact.pojo.AccountInfo;
+import com.trible.scontact.pojo.ContactInfo;
+import com.trible.scontact.utils.StringUtil;
 
 public class RemoteFriendsController implements IFriendsControl {
 
@@ -17,6 +24,27 @@ public class RemoteFriendsController implements IFriendsControl {
 		mContext = c;
 	}
 	
+	public interface GetAccountInfoByPhoneNumberListner{
+		void getResult(AccountInfo account);
+	}
+	public void getAccountInfoByPhoneNumber(String number,final GetAccountInfoByPhoneNumberListner listner){
+		if ( StringUtil.isValidPhoneNumber(number) ){
+			AVQuery<ContactInfo> check = AVQuery.getQuery(ContactInfo.class);
+			check.whereEqualTo(ContactInfo.FieldName.contact, number);
+			check.setCachePolicy(CachePolicy.CACHE_ELSE_NETWORK);
+			check.include(ContactInfo.FieldName.owner);
+			check.getFirstInBackground(new GetCallback<ContactInfo>() {
+				@Override
+				public void done(ContactInfo arg0, AVException arg1) {
+					if ( arg0 != null ){
+						if ( listner != null ){
+							listner.getResult(arg0.getOwner());
+						}
+					}
+				}
+			});
+		}
+	}
 	/** 
      * 获取某个分组下的 所有联系人信息 
      * 思路：通过组的id 去查询 RAW_CONTACT_ID, 通过RAW_CONTACT_ID去查询联系人 

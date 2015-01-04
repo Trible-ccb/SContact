@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVUser;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.EmptyViewHolder;
 import com.trible.scontact.components.widgets.EmptyViewHolder.EmptyViewData;
@@ -54,8 +55,8 @@ public class MixFriendsGroupsListAdapter extends EmptyBaseAdapter {
 		Object obj = getItem(position);
 		if ( obj instanceof SectionData ){
 			return getSectionView(position, convertView, parent, (SectionData)obj);
-		} else if ( obj instanceof AccountInfo ){
-			return getFriendView(position, convertView, parent, (AccountInfo)obj);
+		} else if ( obj instanceof AVUser ){
+			return getFriendView(position, convertView, parent, AVUser.cast((AVUser)obj,AccountInfo.class));
 		} else if ( obj instanceof GroupInfo ){
 			return getGroupView(position, convertView, parent, (GroupInfo)obj);
 		} else {
@@ -81,7 +82,7 @@ public class MixFriendsGroupsListAdapter extends EmptyBaseAdapter {
 		}
 		holder.desp.setText(obj.getDescription());
 		holder.title.setText(obj.getDisplayName());
-		holder.time.setText(TimeUtil.toTimeString(obj.getCreateTime()));
+		holder.time.setText(TimeUtil.dateToSimpleString(obj.getCreatedAt()));
 		holder.img.setImageResource(R.drawable.ic_action_person);
 		String url = obj.getPhotoUrl();
 		int tw = DeviceUtil.dip2px(mContext, 64);
@@ -124,7 +125,7 @@ public class MixFriendsGroupsListAdapter extends EmptyBaseAdapter {
 		}
 		holder.desp.setText(obj.getDescription());
 		holder.title.setText(obj.getDisplayName());
-		holder.time.setText(TimeUtil.toTimeString(obj.getCreateTime()));
+		holder.time.setText(TimeUtil.dateToSimpleString(obj.getCreatedAt()));
 		holder.img.setImageResource(R.drawable.ic_action_group);
 		return convertView;
 	}

@@ -1,9 +1,14 @@
 package com.trible.scontact.components.activity;
 
-import org.apache.http.Header;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -16,27 +21,32 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import ccb.java.android.utils.encoder.SecurityMethod;
 
 import com.actionbarsherlock.view.Window;
-import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVInstallation;
+import com.avos.avoscloud.AVMobilePhoneVerifyCallback;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVUser;
+import com.avos.avoscloud.DeleteCallback;
+import com.avos.avoscloud.LogInCallback;
+import com.avos.avoscloud.RequestMobileCodeCallback;
+import com.avos.avoscloud.SaveCallback;
+import com.avos.avoscloud.SignUpCallback;
+import com.avos.avoscloud.UpdatePasswordCallback;
 import com.trible.scontact.R;
 import com.trible.scontact.components.widgets.CustomPasswordInput;
 import com.trible.scontact.components.widgets.CustomTextInput;
 import com.trible.scontact.components.widgets.LoadingDialog;
-import com.trible.scontact.networks.SContactAsyncHttpClient;
-import com.trible.scontact.networks.params.AccountParams;
 import com.trible.scontact.pojo.AccountInfo;
 import com.trible.scontact.pojo.ContactInfo;
-import com.trible.scontact.pojo.ErrorInfo;
-import com.trible.scontact.pojo.GsonHelper;
+import com.trible.scontact.pojo.ContactTypes;
 import com.trible.scontact.thirdparty.umeng.UmengController;
 import com.trible.scontact.utils.Bog;
 import com.trible.scontact.utils.DeviceUtil;
+import com.trible.scontact.utils.SecurityMethod;
 import com.trible.scontact.utils.StringUtil;
 import com.trible.scontact.value.GlobalValue;
-import com.umeng.message.PushAgent;
-import com.umeng.message.UmengRegistrar;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.bean.SnsAccount;
 import com.umeng.socialize.bean.SocializeEntity;
@@ -45,8 +55,13 @@ import com.umeng.socialize.controller.listener.SocializeListeners.FetchUserListe
 import com.umeng.socialize.controller.listener.SocializeListeners.SocializeClientListener;
 import com.umeng.socialize.controller.listener.SocializeListeners.UMAuthListener;
 import com.umeng.socialize.exception.SocializeException;
-import com.umeng.socialize.sso.UMSsoHandler;
 
+/**
+ * @author Trible Chen
+ * 登录与注册只需要简单的用户名/手机号与密码 不使用第三方登录
+ * 这里负责注册，登录，找回密码。
+ *{@link https://cn.avoscloud.com/docs/android_guide.html#用户}
+ */
 public class SignInUpActivity extends CustomSherlockFragmentActivity 
 								implements OnClickListener,OnPageChangeListener {
 	
@@ -54,7 +69,7 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	ViewPager mViewPager;
 	SignInUpAdapter mViewPagerAdapter;
 	SignInHandler mSignInHandler;
-	SignUpHandler mSignUpHandler;
+	SignUpHandler mSignUpHandler,mForgetPwdHandler;//忘记密码共用一个类
 	LoginByThirdParty mThirdParty;
 	
 	String device_token;
@@ -62,13 +77,17 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	LoadingDialog mDialog;
 	RadioGroup mIndicator;
 	TextView mTipText;
+	Map<String, Boolean> isNumberFetchedValidCodeAndSignedUp = new HashMap<String, Boolean>();
+	int refetchValidCodeInterval = 60;//重新获取验证码时间间隔（秒）
+	List<View> pagerViews = new ArrayList<View>();
+	String signUpSuccessPhoneNumber = "";
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_sign_in_out_layout);
-		setBarBackgroup(R.color.transparent);
+		setBarBackground(R.color.transparent);
 		setLogo(R.color.transparent);
 		DeviceUtil.setAlpha(findViewById(R.id.pager), 0.9f);
 		mInflater = LayoutInflater.from(this);
@@ -76,11 +95,21 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPagerAdapter = new SignInUpAdapter();
 		mViewPager.setOnPageChangeListener(this);
-		mViewPager.setAdapter(mViewPagerAdapter);
+		
 		setTitle(R.string.sign_in,R.color.white_f0);
 		mTipText = (TextView) findViewById(R.id.tip);
 		mTipText.setOnClickListener(this);
 		mIndicator.setVisibility(View.GONE);
+		View v1 = mInflater.inflate(R.layout.fragment_sign_in, null);
+		mSignInHandler = new SignInHandler(v1);
+		View v2 = mInflater.inflate(R.layout.fragment_sign_up, null);
+		mSignUpHandler = new SignUpHandler(v2);
+		View v3 = mInflater.inflate(R.layout.fragment_sign_up, null);
+		mForgetPwdHandler = new SignUpHandler(v3);
+		pagerViews.add(v1);
+		pagerViews.add(v2);
+		pagerViews.add(v3);
+		mViewPager.setAdapter(mViewPagerAdapter);
 		hideTip();
 		UmengController.getService().getConfig()
 		.supportQQPlatform(this, GlobalValue.QQAPPID, GlobalValue.QQAPPKEY, "");
@@ -89,7 +118,7 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	private void showTip(String tip){
 		mTipText.setText(tip);
 		mTipText.setVisibility(View.VISIBLE);
-		mThirdParty.enableButtons();
+//		mThirdParty.enableButtons();
 		if ( mDialog != null && mDialog.getDialog() != null){
 			mDialog.getDialog().dismissDialogger();
 		}
@@ -106,44 +135,45 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 		@Override
 		public void destroyItem(ViewGroup container, int position, Object object) {
 //			super.destroyItem(container, position, object);
+			container.removeView(pagerViews.get(position));
 		}
 
 		@Override
 		public int getItemPosition(Object object) {
-			return super.getItemPosition(object);
+//			return super.getItemPosition(object);
+			return pagerViews.indexOf(object);
 		}
 
 		@Override
 		public int getCount() {
-			return 1;
+			return pagerViews.size();
 		}
 		@Override
 		public Object instantiateItem(ViewGroup container, int position) {
 			ViewPager mViewPager = (ViewPager) container;
-			View v = null;
-			switch (position) {
-				case 0:
-					v = mInflater.inflate(R.layout.fragment_thirdparty, null);
-					mThirdParty =  new LoginByThirdParty(v);
-					break;
-				case 1:
-					v = mInflater.inflate(R.layout.fragment_sign_up, null);
-					mSignUpHandler = new SignUpHandler(v);
-					break;
-				case 2:
-					v = mInflater.inflate(R.layout.fragment_sign_in, null);
-					mSignInHandler = new SignInHandler(v);
-					break;
-				default:
-					break;
-			}
+			View v = pagerViews.get(position);
 			mViewPager.addView(v);
 			return v;
 		}
-		
-		
 	}
-	@Deprecated
+	void goIntoMain(){
+		ContactInfo.clear();
+		if ( !AccountInfo.getInstance().isSignOut() ){
+			if ( !AccountInfo.getInstance().isMobilePhoneVerified() ){
+				showTip("Account is not active.");
+				return;
+			}
+			final AVInstallation install = AVInstallation.getCurrentInstallation();
+			install.saveInBackground();
+			AccountInfo.getInstance().setInstallationId(install.getInstallationId());
+			AccountInfo.getInstance().setFetchWhenSave(true);
+			AccountInfo.getInstance().saveInBackground();
+			simpleDisplayActivity(SContactMainActivity.class);
+			finish();
+		} else {
+			showTip(getString(R.string.invalid_account));
+		}
+	}
 	class SignInHandler{
 		Button mSignInBtn;
 		TextView mForget;
@@ -158,13 +188,14 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 		}
 		
 		public SignInHandler(View v) {
+			v.findViewById(R.id.go_sign_up).setOnClickListener(SignInUpActivity.this);
 			mNameInput = new CustomTextInput(v.findViewById(R.id.username_layout));
 			mPwdInput = new CustomPasswordInput(v.findViewById(R.id.password_layout));
 			mSignInBtn = (Button) v.findViewById(R.id.btn_sign_in);
 			mForget = (TextView) v.findViewById(R.id.forget_password);
 			mSignInBtn.setOnClickListener(SignInUpActivity.this);
 			mNameInput.getImageButton().setVisibility(View.GONE);
-			mNameInput.getmEditText().setHint(R.string.hint_username);
+			mNameInput.getmEditText().setHint(R.string.hint_login_username);
 			mPwdInput.getmEditText().setHint(R.string.hint_password);
 			mSignInBtn.setOnLongClickListener(new OnLongClickListener() {
 				@Override
@@ -173,81 +204,54 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 				}
 			});
 			mForget.setOnClickListener(SignInUpActivity.this);
-			mForget.setVisibility(View.GONE);
+//			mForget.setVisibility(View.GONE);
 		}
 		public void signIn(){
-			String s = mNameInput.getmEditText().getText().toString();
-			String p = mPwdInput.getmEditText().getText().toString();
+			final String s = mNameInput.getmEditText().getText().toString();
+			final String p = mPwdInput.getmEditText().getText().toString();
 			
 			if ( !StringUtil.isValidName(s) ){
 				Bog.toast(StringUtil.catStringFromResId(
-						SignInUpActivity.this, R.string.username_lable,R.string.invalid));
+						R.string.username_lable,R.string.invalid));
 				return;
 			}
 			if ( !StringUtil.isValidPwd(p) ){
 				Bog.toast(StringUtil.catStringFromResId(
-						SignInUpActivity.this, R.string.password_lable,R.string.invalid));
+						R.string.password_lable,R.string.invalid));
 				return;
-			}
-			final String device_token = UmengRegistrar.getRegistrationId(SignInUpActivity.this);
-			if ( TextUtils.isEmpty(device_token) ){
-				Bog.toast(
-						StringUtil.catStringFromResId(
-								SignInUpActivity.this,
-								R.string.notify_register,R.string.failed));
 			}
 			mDialog = new LoadingDialog(SignInUpActivity.this);
 			mDialog.setTipText(R.string.waiting);
 			hideTip();
-			SContactAsyncHttpClient.post(
-					AccountParams.getLoginParams(s, SecurityMethod.encryptSHA(p+s),device_token),
-					null, 
-					new AsyncHttpResponseHandler(){
-						@Override
-						public void onStart() {
-							mDialog.show();
-						}
-						@Override
-						public void onFinish() {
-							mDialog.getDialog().dismissDialogger();
-						}
-						@Override
-						public void onSuccess(int arg0, Header[] arg1,
-								byte[] arg2) {
-							try {
-								AccountInfo result = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
-								if (result != null ) {
-									Long id = result.getId();
-									if ( id != null ){
-										AccountInfo.setAccountInfo(result);
-										result.saveToPref();
-										ContactInfo.clear();
-										if ( !AccountInfo.getInstance().isSignOut() ){
-											simpleDisplayActivity(SContactMainActivity.class);
-											finish();
-										}
-									} else {
-										showTip(getString(R.string.invalid_account));
-									}
+			mDialog.show();
+			AVUser.loginByMobilePhoneNumberInBackground(s, p, 
+					new LogInCallback<AccountInfo>() {
+				@Override
+				public void done(AccountInfo arg0, AVException arg1) {
+					mDialog.getDialog().dismissDialogger();
+					if ( arg1 != null ){//尝试使用用户名登录
+						AVUser.logInInBackground(s, p, new LogInCallback<AccountInfo>() {
+							@Override
+							public void done(AccountInfo arg0, AVException arg1) {
+								if( arg1 == null ){
+									AccountInfo.setAccountInfo(arg0);
+									goIntoMain();
 								} else {
-									Bog.toastErrorInfo(arg2);
+									showTip(arg1.getMessage());
 								}
-							} catch (Exception e) {
-								e.printStackTrace();
 							}
-						}
-						@Override
-						public void onFailure(int arg0, Header[] arg1,
-								byte[] arg2, Throwable arg3) {
-							showTip(getString(R.string.connect_server_err));
-						}
-					});
+						},AccountInfo.class);
+					} else {
+						AccountInfo.setAccountInfo(arg0);
+						goIntoMain();
+					}
+				}
+			},AccountInfo.class);
 		}
 	}
-	@Deprecated
 	class SignUpHandler{
-		Button mSignUpBtn;
-		CustomTextInput mNameInput,mPhoneInput;
+		Button mSignUpBtn,mFetchValidCodeBtn;
+		CustomTextInput mNameInput,mPhoneInput,mValidCodeInput;
 		CustomPasswordInput mPwdInput;
 		
 		public CustomTextInput getmNameInput() {
@@ -264,79 +268,234 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 		}
 		public SignUpHandler(View v) {
 			mSignUpBtn = (Button) v.findViewById(R.id.btn_sign_up);
+			mFetchValidCodeBtn = (Button) v.findViewById(R.id.btn_fetch_valid_code);
+			mSignUpBtn.setText(R.string.sign_up);
 			mSignUpBtn.setOnClickListener(SignInUpActivity.this);
+			mFetchValidCodeBtn.setOnClickListener(SignInUpActivity.this);
+			v.findViewById(R.id.go_sign_in).setOnClickListener(SignInUpActivity.this);
 			mNameInput = new CustomTextInput(v.findViewById(R.id.username_layout));
-			mPhoneInput = new CustomTextInput(v.findViewById(R.id.email_layout));
+			mPhoneInput = new CustomTextInput(v.findViewById(R.id.phone_input_layout));
 			mPwdInput = new CustomPasswordInput(v.findViewById(R.id.password_layout));
+			mValidCodeInput = new CustomTextInput(v.findViewById(R.id.valid_code_layout));
+			
 			mNameInput.getImageButton().setVisibility(View.GONE);
 			mPhoneInput.getImageButton().setVisibility(View.GONE);
-			mNameInput.getmEditText().setHint(R.string.hint_username);
-			mPwdInput.getmEditText().setHint(R.string.hint_password);
+			mValidCodeInput.getImageButton().setVisibility(View.GONE);
+			mNameInput.getmEditText().setHint(R.string.hint_signup_username);
+			mPwdInput.getmEditText().setHint(R.string.hint_signup_password);
 			mPhoneInput.getmEditText().setHint(R.string.hint_phone);
+			mValidCodeInput.getmEditText().setHint(R.string.hint_valid_code);
 		}
-		public void signUp(){
+//		注册并获取验证码
+		public void signUpWithPhoneNumberAndFetchValidCode(){
+			
+			final String mobilePhoneNumber = mPhoneInput.getmEditText().getText().toString();
+			if ( !StringUtil.isValidPhoneNumber(mobilePhoneNumber)){
+				Bog.toast(R.string.pls_input_correct_phone);
+				return;
+			}
 			String s = mNameInput.getmEditText().getText().toString();
 			String p = mPwdInput.getmEditText().getText().toString();
-			String e = mPhoneInput.getmEditText().getText().toString();
 			
 			if ( !StringUtil.isValidName(s) ){
 				Bog.toast(StringUtil.catStringFromResId(
-						SignInUpActivity.this, R.string.username_lable,R.string.invalid,R.string.username_rule));
+						R.string.username_lable,R.string.invalid,R.string.username_rule));
 				return;
 			}
 			if ( !StringUtil.isValidPwd(p) ){
 				Bog.toast(StringUtil.catStringFromResId(
-						SignInUpActivity.this, R.string.password_lable,R.string.invalid,R.string.password_rule));
+						R.string.password_lable,R.string.invalid,R.string.password_rule));
+				return;
+			}
+			signUpSuccessPhoneNumber = "";
+			mDialog = new LoadingDialog(SignInUpActivity.this);
+			mDialog.setTipText(R.string.waiting);
+			hideTip();
+			mDialog.show();
+			
+			final AccountInfo user = AccountInfo.getInstance();
+			user.setFetchWhenSave(true);
+			user.setUsername(s);
+			user.setPassword(p);
+			user.setPhoneNumber(mobilePhoneNumber);
+			user.setDescription("");
+			user.setPinyinname(StringUtil.converterToSpell(s));
+			
+			user.setStatus(GlobalValue.USTATUS_NORMAL);
+			mSignUpBtn.setEnabled(false);
+//			注册并且发送验证码
+			AVQuery<AccountInfo> deleteNotVerify = AVQuery.getQuery(AccountInfo.class);
+			deleteNotVerify.whereEqualTo("mobilePhoneNumber",mobilePhoneNumber);
+			deleteNotVerify.whereEqualTo("mobilePhoneVerified", false);
+			deleteNotVerify.deleteAllInBackground(new DeleteCallback() {
+				@Override
+				public void done(AVException arg0) {
+					
+				}
+			});
+			user.signUpInBackground(new SignUpCallback() {
+				@Override
+				public void done(AVException arg0) {
+					mSignUpBtn.setEnabled(true);
+					mDialog.getDialog().dismissDialogger();
+					if ( arg0 == null ){
+						showTip(getString(R.string.send_valid_code));
+						countFetchValidCodeSeconds();
+						mValidCodeInput.show();
+						isNumberFetchedValidCodeAndSignedUp.put(mobilePhoneNumber, true);
+						mSignUpBtn.setText(R.string.sign_up);
+						AccountInfo.logOut();
+					} else {
+						showTip(arg0.getMessage());
+					}
+				}
+			});
+		}
+//		重新获取验证码
+		void reFetchValidCode(){
+			String mobilePhoneNumber = mPhoneInput.getmEditText().getText().toString();
+			if ( !StringUtil.isValidPhoneNumber(mobilePhoneNumber)){
+				Bog.toast(R.string.pls_input_correct_phone);
+				return;
+			}
+			mFetchValidCodeBtn.setEnabled(false);
+			AVUser.requestMobilePhoneVerifyInBackground(
+					mobilePhoneNumber,new RequestMobileCodeCallback() {
+			      @Override
+			      public void done(AVException e) {
+			    	  mFetchValidCodeBtn.setEnabled(true);
+			    	  if ( e == null ){
+			    		  countFetchValidCodeSeconds();
+			    		  showTip(getString(R.string.send_valid_code));
+			    	  } else {
+			    		  showTip(e.getMessage());
+			    	  }
+			      }
+			});
+		}
+		void countFetchValidCodeSeconds(){
+			Handler hander = new Handler(){
+				@Override
+				public void handleMessage(Message msg) {
+					super.handleMessage(msg);
+					int left = msg.what;
+					if ( left == 0 ){
+						mFetchValidCodeBtn.setText(R.string.fetch_valid_code);
+						mFetchValidCodeBtn.setEnabled(true);
+					} else {
+						mFetchValidCodeBtn.setEnabled(false);
+						mFetchValidCodeBtn.setText(
+								String.format(getString(R.string.refetch_valid_code),
+										left));
+						sendEmptyMessageDelayed(--left, 1000);
+					}
+				}
+			};
+			hander.sendEmptyMessageDelayed(refetchValidCodeInterval, 0);
+		}
+		public void valifyPhoneNumber(){
+			final String mobilePhoneNumber = mPhoneInput.getmEditText().getText().toString();
+			String smsCode = mValidCodeInput.getmEditText().getText().toString();
+			if ( TextUtils.isEmpty(smsCode) ){
 				return;
 			}
 			mDialog = new LoadingDialog(SignInUpActivity.this);
 			mDialog.setTipText(R.string.waiting);
 			hideTip();
-			SContactAsyncHttpClient.post(
-					AccountParams.getRegisterParams(
-							s,SecurityMethod.encryptSHA(p+s), e), 
-					null, 
-					new AsyncHttpResponseHandler(){
-						@Override
-						public void onStart() {
-							mDialog.show();
-						}
-						@Override
-						public void onFinish() {
-							mDialog.getDialog().dismissDialogger();
-						}
-						@Override
-						public void onSuccess(int arg0, Header[] arg1,
-								byte[] arg2) {
-							try {
-								AccountInfo result = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
-								if (result != null ) {
-									Long id = result.getId();
-									if ( id != null ){
-										AccountInfo.setAccountInfo(result);
-										mViewPager.setCurrentItem(0,true);
-										Bog.toast(StringUtil.catStringFromResId(
-												SignInUpActivity.this, R.string.sign_up,R.string.success));
+			mDialog.show();
+			AVUser.verifyMobilePhoneInBackground(smsCode, new AVMobilePhoneVerifyCallback() {
+
+			      @Override
+			      public void done(AVException arg0) {
+			    	  	mSignUpBtn.setEnabled(true);
+						mDialog.getDialog().dismissDialogger();
+						if ( arg0 == null ){
+							ContactInfo nc = new ContactInfo();
+							nc.setContact(mobilePhoneNumber);
+							nc.setOwner(AccountInfo.getInstance());
+							nc.setStatus(GlobalValue.CSTATUS_USED);
+							nc.setType(ContactTypes.getInstance().getCellPhoneType());
+//							nc.saveEventually();
+							nc.saveInBackground(new SaveCallback() {
+								@Override
+								public void done(AVException arg0) {
+									if ( arg0 == null ){
+										
 									} else {
-										ErrorInfo err = GsonHelper.getInfoFromJson(arg2, ErrorInfo.class);
-										showTip(err.getMessgae().toLowerCase());
+										
 									}
-								} else {
-									Bog.toastErrorInfo(arg2);
 								}
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
+							});
+							signUpSuccessPhoneNumber = mobilePhoneNumber;
+							mViewPager.setCurrentItem(0, true);
+							Bog.toast(StringUtil.catStringFromResId(
+									R.string.sign_up,R.string.success));
+						} else {
+							showTip(arg0.getMessage());
 						}
-						@Override
-						public void onFailure(int arg0, Header[] arg1,
-								byte[] arg2, Throwable arg3) {
-							showTip(getString(R.string.connect_server_err));
-						}
-					});
+			      }
+			});
+		}
+		public void requestPasswordResetBySmsCode(){
+			
+			String mobilePhoneNumber = mPhoneInput.getmEditText().getText().toString();
+			if ( !StringUtil.isValidPhoneNumber(mobilePhoneNumber)){
+				Bog.toast(R.string.pls_input_correct_phone);
+				return;
+			}
+			
+			mDialog = new LoadingDialog(SignInUpActivity.this);
+			mDialog.setTipText(R.string.waiting);
+			hideTip();
+			mDialog.show();
+			mFetchValidCodeBtn.setEnabled(false);
+			AVUser.requestPasswordResetBySmsCodeInBackground(
+					mobilePhoneNumber,new RequestMobileCodeCallback() {
+		          @Override
+		          public void done(AVException e) {
+		        	  mFetchValidCodeBtn.setEnabled(true);
+			    	  if ( e == null ){
+			    		  countFetchValidCodeSeconds();
+			    		  showTip(getString(R.string.send_valid_code));
+			    	  } else {
+			    		  showTip(e.getMessage());
+			    	  }
+		          }
+	        });
+		}
+		public void resetPasswordBySmsCode(){
+			String newPassword = mPwdInput.getmEditText().getText().toString();
+			String smsCode = mValidCodeInput.getmEditText().getText().toString();
+			if ( TextUtils.isEmpty(smsCode) ){
+				return;
+			}
+			if ( !StringUtil.isValidPwd(newPassword) ){
+				Bog.toast(StringUtil.catStringFromResId(
+						R.string.password_lable,R.string.invalid,R.string.password_rule));
+				return;
+			}
+			mDialog = new LoadingDialog(SignInUpActivity.this);
+			mDialog.setTipText(R.string.waiting);
+			hideTip();
+			mDialog.show();
+			AVUser.resetPasswordBySmsCodeInBackground(smsCode,newPassword,
+					new UpdatePasswordCallback() {
+			      @Override
+			      public void done(AVException e) {
+			    	  mDialog.getDialog().dismissDialogger();
+			        if(e == null){
+			        	String s = StringUtil.catStringFromResId(R.string.reset_pwd,R.string.success);
+			        	Bog.toast(s);
+			        	showTip(s);
+			        } else {
+			        	showTip(e.getMessage());
+			        	Bog.toast(e.getMessage());
+			        }
+			      }
+			});
 		}
 	}
-
+	@Deprecated
 	class LoginByThirdParty{
 		
 		View mLoginQQView;
@@ -359,7 +518,6 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	}
 	void loginThirdParty(final SHARE_MEDIA m){
 		hideTip();
-		PushAgent.getInstance(SignInUpActivity.this).enable();
 		mThirdParty.disableButtons();
 		mDialog = new LoadingDialog(SignInUpActivity.this);
 		mDialog.setTipText(R.string.loading);
@@ -407,22 +565,20 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 										mThirdParty.enableButtons();
 										if ( code != 200 || user.mLoginAccount == null ){
 											showTip(StringUtil.catStringFromResId(
-													SignInUpActivity.this,
 													R.string.sign_in,R.string.failed));
 											return;
 										}
-										device_token = UmengRegistrar.getRegistrationId(SignInUpActivity.this);
+//										device_token = UmengRegistrar.getRegistrationId(SignInUpActivity.this);
 										SnsAccount a = user.mLoginAccount;
 										AccountInfo wrap = new AccountInfo();
 										wrap.setDisplayName(a.getUserName());
-										wrap.setThirdPartyId(a.getUsid());
+//										wrap.setThirdPartyId(a.getUsid());
 										if ( TextUtils.isEmpty(device_token) ){
 											Bog.toast(
 													StringUtil.catStringFromResId(
-															SignInUpActivity.this,
 															R.string.notify_register,R.string.failed));
 										} else {
-											wrap.setNotifyId(device_token);
+//											wrap.setNotifyId(device_token);
 										}
 										wrap.setPhotoUrl(a.getAccountIconUrl());
 										wrap.setDescription(a.getProfileUrl());
@@ -455,50 +611,6 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 										}
 										
 										wrap.setGender(g);
-										SContactAsyncHttpClient.post(
-												AccountParams.getLoginWithSocialParams(wrap),
-												null,
-												new AsyncHttpResponseHandler(){
-													@Override
-													public void onFailure(int arg0,
-															Header[] arg1, byte[] arg2,
-															Throwable arg3) {
-														showTip(getString(R.string.connect_server_err));
-													}
-													public void onStart() {
-														mThirdParty.disableButtons();
-													};
-													@Override
-													public void onFinish() {
-														mDialog.getDialog().dismissDialogger();
-														mThirdParty.enableButtons();
-													}
-													@Override
-													public void onSuccess(int arg0,
-															Header[] arg1, byte[] arg2) {
-														if ( !mDialog.getDialog().isShowing() )return;
-														AccountInfo result = GsonHelper.getInfoFromJson(arg2, AccountInfo.class);
-														if ( result != null ){
-															Long id = result.getId();
-															if ( id != null ){
-																AccountInfo.setAccountInfo(result);
-																result.saveToPref();
-																ContactInfo.clear();
-																SContactAsyncHttpClient.refreshCookie();
-																if ( !AccountInfo.getInstance().isSignOut() ){
-																	simpleDisplayActivity(SContactMainActivity.class);
-																	finish();
-																}
-															} else {
-																showTip(getString(R.string.invalid_account));
-															}
-														} else {
-															Bog.toastErrorInfo(arg2);
-														}
-														
-													}
-										});
-										
 									}
 								});
 							}
@@ -519,6 +631,7 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 		
 		
 	}
+	
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -529,12 +642,35 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 				loginThirdParty(SHARE_MEDIA.SINA);
 				break;
 			case R.id.btn_sign_up:
-				mSignUpHandler.signUp();
+				if ( mViewPager.getCurrentItem() == 2 ){
+					mForgetPwdHandler.resetPasswordBySmsCode();
+				} else {
+					mSignUpHandler.valifyPhoneNumber();
+				}
+				break;
+			case R.id.btn_fetch_valid_code:
+				if ( mViewPager.getCurrentItem() == 2) {
+					mForgetPwdHandler.requestPasswordResetBySmsCode();
+				} else {
+					String mobilePhoneNumber = mSignUpHandler.mPhoneInput.getmEditText().getText().toString();
+					if ( isNumberFetchedValidCodeAndSignedUp.containsKey(mobilePhoneNumber) ){
+						mSignUpHandler.reFetchValidCode();
+					} else {
+						mSignUpHandler.signUpWithPhoneNumberAndFetchValidCode();
+					}
+				}
 				break;
 			case R.id.btn_sign_in:
 				mSignInHandler.signIn();
 				break;
+			case R.id.go_sign_in:
+				mViewPager.setCurrentItem(0, true);
+				break;
+			case R.id.go_sign_up:
+				mViewPager.setCurrentItem(1, true);
+				break;
 			case R.id.forget_password:
+				mViewPager.setCurrentItem(2,true);
 				break;
 			case R.id.tip:
 				hideTip();
@@ -557,19 +693,17 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	public void onPageSelected(int arg0) {
 		switch (arg0) {
 			case 0:
-				String tmp = AccountInfo.getInstance().getDisplayName();
-				if ( tmp == null ){
-					tmp = mSignUpHandler.getmNameInput().getmEditText().getText().toString();
-				}
-				mSignInHandler.setmName(tmp);
-				setTitle(R.string.sign_in,R.color.white_f0);
-				mIndicator.check(R.id.radio0);
+				mSignInHandler.setmName(signUpSuccessPhoneNumber);
+//				setTitle(R.string.sign_up,R.color.white_f0);
+//				mIndicator.check(R.id.radio1);
 				break;
 			case 1:
-				String tmp2 = mSignInHandler.getmNameInput().getmEditText().getText().toString();
-				mSignUpHandler.setmName(tmp2);
-				setTitle(R.string.sign_up,R.color.white_f0);
-				mIndicator.check(R.id.radio1);
+//				setTitle(R.string.sign_in,R.color.white_f0);
+//				mIndicator.check(R.id.radio0);
+				break;
+			case 2:
+				mForgetPwdHandler.mSignUpBtn.setText(R.string.reset_pwd);
+				mForgetPwdHandler.mNameInput.hide();
 				break;
 			default:
 				break;
@@ -578,10 +712,5 @@ public class SignInUpActivity extends CustomSherlockFragmentActivity
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		/**使用SSO授权必须添加如下代码 */
-	    UMSsoHandler ssoHandler = UmengController.getService().getConfig().getSsoHandler(requestCode) ;
-	    if(ssoHandler != null){
-	       ssoHandler.authorizeCallBack(requestCode, resultCode, data);
-	    }
 	}
 }

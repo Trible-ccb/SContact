@@ -2,6 +2,7 @@ package com.trible.scontact.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -11,6 +12,16 @@ public class TimeUtil {
 		Calendar c = Calendar.getInstance();
 		c.setTimeInMillis(ms);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		return sdf.format(c.getTime());
+	}
+	public static String dateToSimpleString(Date d , String... format){
+		Calendar c = Calendar.getInstance();
+		c.setTime(d);
+		String f = "yyyy-MM-dd";
+		if ( format != null && format.length > 0 ){
+			f = format[0];
+		}
+		SimpleDateFormat sdf = new SimpleDateFormat(f);
 		return sdf.format(c.getTime());
 	}
 	public static boolean withinWeek(long ms){
